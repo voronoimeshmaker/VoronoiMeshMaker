@@ -3,7 +3,7 @@
 // Name        : VTK_Legacy_PolyLines.hpp
 // Project     : VoronoiMeshMaker (VMM)
 // Module      : IO / Boundary2D / Writers
-// Description : Writer VTK Legacy (.vtk) POLYDATA + POLYLINES (ASCII).
+// Description : Writer VTK Legacy (.vtk) POLYDATA + LINES (ASCII).
 // License     : GNU GPL v3
 // Version     : 0.2.0 (Refined)
 //==============================================================================
@@ -25,9 +25,19 @@ VORMAKER_NAMESPACE_OPEN
 IO_NAMESPACE_OPEN
 
 /**
- * @brief Functor writer: VTK Legacy (.vtk) POLYDATA com POLYLINES (ASCII).
+ * @brief Functor writer: VTK Legacy (.vtk) POLYDATA with closed LINES (ASCII).
  */
 struct VTK_Legacy_PolyLinesWriter {
+    template <class Sink>
+    void operator()( const ::vmm::b2d::Boundary2DData& data,
+                     const VtkOptions& opt,
+                     Sink& sink) const
+    {
+        // Compatibility path while the IO module is being migrated to topology
+        // views. Future code should prefer constructing PolyLinesView explicitly.
+        (*this)(PolyLinesView{data}, opt, sink);
+    }
+
     template <class Sink>
     void operator()( const PolyLinesView& view, // ✅ MODIFICADO: Aceita a View
                       const VtkOptions& opt,
@@ -49,7 +59,7 @@ struct VTK_Legacy_PolyLinesWriter {
 
         // --- Header VTK ---
         sink.write("# vtk DataFile Version 4.2\n");
-        sink.write("VMM Boundary2D (POLYLINES)\n");
+        sink.write("VMM Boundary2D (LINES)\n");
         sink.write("ASCII\n");
         sink.write("DATASET POLYDATA\n");
 
@@ -59,16 +69,16 @@ struct VTK_Legacy_PolyLinesWriter {
         ss << "POINTS " << b2d.vertex_count() << " double\n";
         ss << std::fixed << std::setprecision(opt.precision);
         for (const auto& p : b2d.points) {
-            ss << static_cast<double>(p.x) << " " << static_cast<double>(p.y);
-            if (opt.write_z) ss << " 0.0";
-            ss << "\n";
+            ss << static_cast<double>(p.x) << " "
+               << static_cast<double>(p.y) << " 0.0\n";
         }
         sink.write(ss.str());
         ss.str(""); // Limpa o stream
 
-        // --- POLYLINES ---
-        // ✅ MODIFICADO: Usa os valores pré-calculados da View para o cabeçalho.
-        ss << "LINES " << view.num_lines() << " " << view.total_connectivity_size() << "\n";
+        // --- LINES ---
+        // VTK Legacy POLYDATA uses the keyword LINES for polyline cells.
+        ss << "LINES " << view.num_lines() << " "
+           << view.total_connectivity_size() << "\n";
         for (std::size_t r = 0; r < view.num_lines(); ++r) {
             const auto ring_view = b2d.ring(static_cast<Index>(r));
             const auto n = ring_view.size();

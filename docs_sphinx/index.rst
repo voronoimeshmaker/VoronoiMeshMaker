@@ -35,6 +35,14 @@ Welcome to the **VoronoiMeshMaker** documentation - a C++20 library for Voronoi 
       Practical code examples
 
    .. grid-item-card::
+      :link: sites2d
+      :text-align: center
+
+      🔵 Sites2D
+      ^^^
+      Site patterns, validation, and boundary filtering
+
+   .. grid-item-card::
       :link: api/library_root
       :text-align: center
       
@@ -57,6 +65,7 @@ Welcome to the **VoronoiMeshMaker** documentation - a C++20 library for Voronoi 
    :caption: User Guide
 
    getting_started
+   sites2d
    examples
    api/library_root
 

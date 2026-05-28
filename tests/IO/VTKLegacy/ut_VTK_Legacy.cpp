@@ -91,9 +91,11 @@ TEST(IO_VTK_Legacy_Integration, WriteFile_WithPathUtils_AndFileSink) {
     }
     {
         std::ostringstream expect;
-        expect << "POLYLINES " << rc << " " << total_idx;
+        expect << "LINES " << rc << " " << total_idx;
         EXPECT_NE(s.find(expect.str()), std::string::npos);
     }
+    EXPECT_NE(s.find("2.000000000000 1.000000000000 0.0"), std::string::npos);
+    EXPECT_EQ(s.find("1.000000000000 2.000000000000 0.0"), std::string::npos);
 
     EXPECT_NE(s.find("CELL_DATA 1"), std::string::npos);
     EXPECT_NE(s.find("SCALARS loop_kind int 1"), std::string::npos);

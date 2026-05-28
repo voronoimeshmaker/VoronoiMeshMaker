@@ -46,15 +46,29 @@
 VORMAKER_NAMESPACE_OPEN
 BOUNDARY2D_NAMESPACE_OPEN
 
+/**
+ * @brief Axis-aligned rectangle polygonized as four CCW vertices.
+ *
+ * `Rectangle` is deliberately not responsible for rotation. Build the boundary
+ * with `make_boundary(rectangle)` and use `rotate_in_place` when an oriented
+ * rectangle is needed.
+ *
+ * @invariant `w > 0`
+ * @invariant `h > 0`
+ */
 struct Rectangle {
     // ----- Tags ----------------------------------------------------------------
     struct CenteredTag { };
     static constexpr CenteredTag Centered{};
 
     // ----- State ----------------------------------------------------------------
-    // Lower-left anchor (LL), width and height
+    ///< Lower-left anchor.
     Point2 ll{Real{0}, Real{0}};
+
+    ///< Width. Must be strictly positive.
     Real   w{1.0};
+
+    ///< Height. Must be strictly positive.
     Real   h{1.0};
 
     [[nodiscard]] constexpr bool has_positive_dims() const noexcept {
@@ -62,7 +76,7 @@ struct Rectangle {
     }
 
     // ----- Constructors ---------------------------------------------------------
-    /// (1) Default: anchored at origin (LL = (0,0))
+    /// @brief Construct anchored at the origin (LL = (0,0)).
     explicit Rectangle(Real w_, Real h_)
     : ll{Point2{Real{0}, Real{0}}}, w{w_}, h{h_}
     {
@@ -73,7 +87,7 @@ struct Rectangle {
         }
     }
 
-    /// (2) Explicit lower-left anchor
+    /// @brief Construct with explicit lower-left anchor.
     Rectangle(Point2 ll_, Real w_, Real h_)
     : ll{ll_}, w{w_}, h{h_}
     {
@@ -84,7 +98,7 @@ struct Rectangle {
         }
     }
 
-    /// (3) Centered at origin via tag
+    /// @brief Construct centered at the origin via tag.
     Rectangle(Real w_, Real h_, CenteredTag)
     : ll{Point2{-w_ * Real{0.5}, -h_ * Real{0.5}}}, w{w_}, h{h_}
     {

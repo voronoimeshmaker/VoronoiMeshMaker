@@ -26,8 +26,8 @@ include(GoogleTest)
 find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
 
-# Procurar TBB (Threading Building Blocks)
-find_package(TBB REQUIRED)
+# Procurar TBB (Threading Building Blocks), opcional.
+find_package(TBB QUIET)
 
 # --- Core lib para resolver símbolos (ex.: ErrorConfig::ErrorConfig) ---
 set(VMM_CORE_LIB VoronoiMeshMaker)
@@ -80,7 +80,7 @@ file(GLOB_RECURSE _ALL_UT_CPP RELATIVE "${TESTS_ROOT}" "ut_*.cpp")
 # Se não encontrar, tenta métodos alternativos
 if(NOT _ALL_UT_CPP)
   message(WARNING "No ut_*.cpp files found with GLOB_RECURSE. Trying alternative search...")
-  
+
   # Método alternativo: lista diretórios primeiro, depois procura por ut_*.cpp
   file(GLOB_RECURSE _ALL_DIRS RELATIVE "${TESTS_ROOT}" "*")
   foreach(item IN LISTS _ALL_DIRS)
@@ -173,8 +173,10 @@ foreach(ut_file_rel IN LISTS _ALL_UT_CPP)
     GTest::gtest
     GTest::gtest_main
     Threads::Threads
-    TBB::tbb
   )
+  if(TARGET TBB::tbb)
+    target_link_libraries(${target_name} PRIVATE TBB::tbb)
+  endif()
   if(TARGET GTest::gmock)
     target_link_libraries(${target_name} PRIVATE GTest::gmock)
   endif()
@@ -278,7 +280,7 @@ if(_HAVE_VALGRIND AND ALL_TEST_TARGETS)
       DEPENDS ${VALGRIND_RUN_TARGETS}
       COMMENT "Running all test drivers under Valgrind"
     )
-    
+
     # Execução paralela dos testes com Valgrind
     add_custom_target(run_valgrind_parallel
       COMMAND ${CMAKE_COMMAND} --build . --target ${VALGRIND_RUN_TARGETS} -j ${NPROC}
@@ -296,7 +298,7 @@ endif()
 if(_HAVE_GCOVR AND ALL_TEST_TARGETS)
   # Cria diretório para relatórios de coverage
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage_reports)
-  
+
   add_custom_target(coverage
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${NPROC}
                                    --no-tests=error
@@ -315,7 +317,7 @@ if(_HAVE_GCOVR AND ALL_TEST_TARGETS)
     DEPENDS ${ALL_TEST_TARGETS}
     COMMENT "Generating coverage report in coverage_reports/"
   )
-  
+
   # Target adicional para coverage apenas dos testes
   add_custom_target(coverage_tests_only
     COMMAND ${GCOVR_EXECUTABLE}
@@ -328,10 +330,10 @@ if(_HAVE_GCOVR AND ALL_TEST_TARGETS)
     DEPENDS ${ALL_TEST_TARGETS}
     COMMENT "Generating tests-only coverage report"
   )
-  
+
 else()
   message(STATUS "[Coverage] gcovr not found. Target 'coverage' disabled.")
-  
+
   # Target dummy para quando coverage não está disponível
   add_custom_target(coverage
     COMMAND ${CMAKE_COMMAND} -E echo "Coverage not available: gcovr not found"

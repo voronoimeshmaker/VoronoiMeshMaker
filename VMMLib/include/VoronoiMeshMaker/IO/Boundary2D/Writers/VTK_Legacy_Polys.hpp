@@ -62,9 +62,8 @@ struct VTK_Legacy_PolysWriter {
         ss << "POINTS " << b2d.vertex_count() << " double\n";
         ss << std::fixed << std::setprecision(opt.precision);
         for (const auto& p : b2d.points) {
-            ss << static_cast<double>(p.x) << " " << static_cast<double>(p.y);
-            if (opt.write_z) ss << " 0.0";
-            ss << "\n";
+            ss << static_cast<double>(p.x) << " "
+               << static_cast<double>(p.y) << " 0.0\n";
         }
         sink.write(ss.str());
         ss.str(""); // Limpa o stream

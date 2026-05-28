@@ -1,40 +1,77 @@
-# ------------------------------------------------------------
 # Main library target
-# ------------------------------------------------------------
 
-# Find sources
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-     "${VMMLib_DIR}/src/*.cpp")
+include(CMakePackageConfigHelpers)
 
-# Create library
-add_library(VoronoiMeshMaker SHARED ${SOURCES})
-
-# Link dependencies
-target_link_libraries(VoronoiMeshMaker
-    PUBLIC CGAL::CGAL CGAL::CGAL_Core
+file(GLOB_RECURSE VMM_SOURCES CONFIGURE_DEPENDS
+    "${VMMLib_DIR}/src/*.cpp"
 )
 
-# Set optimizations
-set_target_optimizations(VoronoiMeshMaker)
+add_library(VoronoiMeshMaker ${VMM_SOURCES})
+add_library(VoronoiMeshMaker::VoronoiMeshMaker ALIAS VoronoiMeshMaker)
 
-# Output directories
 set_target_properties(VoronoiMeshMaker PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${VMM_OUTPUT_BIN_DIR}
-    LIBRARY_OUTPUT_DIRECTORY ${VMM_OUTPUT_BIN_DIR}
-    RUNTIME_OUTPUT_DIRECTORY ${VMM_OUTPUT_BIN_DIR}
+    POSITION_INDEPENDENT_CODE ON
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
 
-# Install rules
+target_include_directories(VoronoiMeshMaker
+    PUBLIC
+        $<BUILD_INTERFACE:${VMMLib_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_compile_features(VoronoiMeshMaker
+    PUBLIC
+        cxx_std_${VMM_CXX_STANDARD}
+)
+
+target_link_libraries(VoronoiMeshMaker
+    PUBLIC
+        CGAL::CGAL
+        CGAL::CGAL_Core
+        TBB::tbb
+    PRIVATE
+        vmm_project_options
+        vmm_project_warnings
+)
+
 install(TARGETS VoronoiMeshMaker
     EXPORT VoronoiMeshMakerTargets
-    LIBRARY DESTINATION ${VMM_OUTPUT_BIN_DIR}
-    ARCHIVE DESTINATION ${VMM_OUTPUT_BIN_DIR}
-    RUNTIME DESTINATION ${VMM_OUTPUT_BIN_DIR})
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
-install(DIRECTORY ${VMMLib_DIR}/include/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.tpp")
+install(DIRECTORY "${VMMLib_DIR}/include/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING
+        PATTERN "*.h"
+        PATTERN "*.hpp"
+        PATTERN "*.tpp"
+)
 
-install(DIRECTORY ${VMMLib_DIR}/src/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.tpp")
+install(EXPORT VoronoiMeshMakerTargets
+    FILE VoronoiMeshMakerTargets.cmake
+    NAMESPACE VoronoiMeshMaker::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/VoronoiMeshMakerConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker
+)

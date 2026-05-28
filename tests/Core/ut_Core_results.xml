@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="8" failures="0" disabled="0" errors="0" time="0.032" timestamp="2026-05-15T10:53:31.680" name="AllTests">
+  <testsuite name="CoreErrors" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0.032" timestamp="2026-05-15T10:53:31.680">
+    <testcase name="EnumAndDomainSanity" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="53" status="run" result="completed" time="0." timestamp="2026-05-15T10:53:31.680" classname="CoreErrors" />
+    <testcase name="ErrorCodesAreUniqueAndShareDomainHighBits" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="64" status="run" result="completed" time="0." timestamp="2026-05-15T10:53:31.680" classname="CoreErrors" />
+    <testcase name="KeysAndMessagesExistAndAreReasonable" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="86" status="run" result="completed" time="0." timestamp="2026-05-15T10:53:31.681" classname="CoreErrors" />
+    <testcase name="DefaultSeverityIsValidForAll" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="112" status="run" result="completed" time="0." timestamp="2026-05-15T10:53:31.681" classname="CoreErrors" />
+    <testcase name="RenderInterpolatesPlaceholders" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="122" status="run" result="completed" time="0." timestamp="2026-05-15T10:53:31.681" classname="CoreErrors" />
+    <testcase name="Parallel_ReadTraitsAcrossThreads" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="139" status="run" result="completed" time="0.003" timestamp="2026-05-15T10:53:31.681" classname="CoreErrors" />
+    <testcase name="Parallel_StdPar_RenderAndCode" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="173" status="run" result="completed" time="0.012" timestamp="2026-05-15T10:53:31.684" classname="CoreErrors" />
+    <testcase name="Perf_Smoke_LookupAndRender" file="/home/jflavio/Programas/VoronoiMeshMaker/tests/Core/ut_CoreErrors.cpp" line="195" status="run" result="completed" time="0.016" timestamp="2026-05-15T10:53:31.697" classname="CoreErrors" />
+  </testsuite>
+</testsuites>

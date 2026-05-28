@@ -95,25 +95,26 @@ inline void VtkBoundaryWriter::write_legacy_ascii(const vmm::b2d::Boundary2DData
     ss << std::fixed << std::setprecision(opts.precision);
 
     for (const auto& p : data.vertices_view()) {
-        ss << p.x << " " << p.y << (opts.write_z ? " 0.0\n" : "\n");
+        ss << p.x << " " << p.y << " 0.0\n";
     }
     sink.write(ss.str());
 
     // 3. Secção de Topologia (Polilinhas)
     if (opts.topology == Topology::PolyLines) {
         const auto num_rings = data.ring_count();
-        // O formato VTK precisa do número de anéis e do tamanho total do buffer de índices.
-        const size_t total_indices = num_rings + data.vertex_count();
+        // Each closed polyline stores: count + n vertices + repeated first.
+        const size_t total_indices = num_rings + data.vertex_count() + num_rings;
 
         ss.str(""); // Limpa o stringstream
         ss << "LINES " << num_rings << " " << total_indices << "\n";
         
         vmm::b2d::Index current_offset = 0;
         for (const auto& ring_view : data.rings_view()) {
-            ss << ring_view.size(); // Número de pontos no anel
+            ss << (ring_view.size() + 1U);
             for (size_t i = 0; i < ring_view.size(); ++i) {
                 ss << " " << current_offset + i;
             }
+            ss << " " << current_offset;
             ss << "\n";
             current_offset += ring_view.size();
         }

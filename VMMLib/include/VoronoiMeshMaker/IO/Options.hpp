@@ -60,6 +60,12 @@ struct VtkOptions {
     bool     write_z      { false }; ///< Se true, emite uma coordenada z=0 para compatibilidade com software 3D.
     bool     cell_data    { true };  ///< Controla se dados associados às células (como RegionId) são escritos.
 
+    // --- Configuração de camadas geométricas para diagramas 2D completos ---
+    bool     write_boundary       { true }; ///< Escreve o contorno do domínio.
+    bool     write_sites          { true }; ///< Escreve os pontos geradores.
+    bool     write_delaunay_edges { true }; ///< Escreve as arestas da triangulação de Delaunay.
+    bool     write_voronoi_cells  { true }; ///< Escreve os volumes de Voronoi recortados.
+
     // --- Configuração da Execução ---
     bool     deterministic{ true };  ///< Garante que a saída seja sempre a mesma para a mesma entrada, essencial para testes.
     bool     parallel_prep{ false }; ///< Flag para otimizações futuras: permite paralelizar a preparação dos dados antes da escrita.

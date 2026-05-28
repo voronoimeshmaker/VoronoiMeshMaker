@@ -19,6 +19,8 @@
  * Root namespace: **vmm**.
  * Sub-namespaces:
  *  - **b2d**      : Boundary2D module
+ *  - **s2d**      : Site2D module
+ *  - **vd2d**     : Voronoi diagram 2D module
  *  - **gtp**      : GeoTypes (CGAL kernel/types)
  *  - **constants**: numerical constants
  *  - **error**    : error handling (exceptions, severities, catalogs)
@@ -26,6 +28,8 @@
  * Provided macros:
  *  - VORMAKER_NAMESPACE_OPEN / VORMAKER_NAMESPACE_CLOSE
  *  - BOUNDARY2D_NAMESPACE_OPEN / BOUNDARY2D_NAMESPACE_CLOSE
+ *  - SITE2D_NAMESPACE_OPEN / SITE2D_NAMESPACE_CLOSE
+ *  - VORONOI2D_NAMESPACE_OPEN / VORONOI2D_NAMESPACE_CLOSE
  *  - DETAIL_NAMESPACE_OPEN / DETAIL_NAMESPACE_CLOSE
  *  - BOUNDARY2D_NAMESPACE_DETAIL_OPEN / BOUNDARY2D_NAMESPACE_DETAIL_CLOSE
  *  - GEOTYPES_NAMESPACE_OPEN / GEOTYPES_NAMESPACE_CLOSE
@@ -51,6 +55,26 @@
 #endif
 #ifndef BOUNDARY2D_NAMESPACE_CLOSE
 #  define BOUNDARY2D_NAMESPACE_CLOSE } /* namespace b2d */
+#endif
+
+//------------------------------------------------------------------------------
+// Site2D: vmm::s2d
+//------------------------------------------------------------------------------
+#ifndef SITE2D_NAMESPACE_OPEN
+#  define SITE2D_NAMESPACE_OPEN  namespace s2d {
+#endif
+#ifndef SITE2D_NAMESPACE_CLOSE
+#  define SITE2D_NAMESPACE_CLOSE } /* namespace s2d */
+#endif
+
+//------------------------------------------------------------------------------
+// Voronoi2D: vmm::vd2d
+//------------------------------------------------------------------------------
+#ifndef VORONOI2D_NAMESPACE_OPEN
+#  define VORONOI2D_NAMESPACE_OPEN  namespace vd2d {
+#endif
+#ifndef VORONOI2D_NAMESPACE_CLOSE
+#  define VORONOI2D_NAMESPACE_CLOSE } /* namespace vd2d */
 #endif
 
 //------------------------------------------------------------------------------

@@ -4,3 +4,4 @@
 /documentation
 *.gcno
 /reports
+*.Identifier

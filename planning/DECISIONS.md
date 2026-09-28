@@ -23,6 +23,11 @@
 | 014 | Padrão C++23; nome VoronoiMeshMaker | APROVADA | requisitos (R12, R13) |
 | 015 | Independência do PETSc | APROVADA | requisitos (R8, R9) |
 | 016 | Subsistema de erros próprio | APROVADA | requisitos (R10, R11) |
+| 017 | Problemas-âncora A1, A2 e A3 | PROPOSTA | P04 |
+| 018 | Declaração de regiões por precedência | PROPOSTA | P04 |
+| 019 | Formatos de saída por versão | PROPOSTA | P04 |
+| 020 | Metas, determinismo e tolerâncias relativas | PROPOSTA | P04 |
+| 021 | Benchmark leve B1, B2 e B3 | PROPOSTA | P04 |
 
 ---
 
@@ -236,3 +241,65 @@
 - Justificativa: R3; diagnósticos úteis em malhas grandes exigem apontar a entidade com problema.
 - Consequências: P06 define a API do subsistema; P08 o implementa; IErrorLogger, ThreadLocalBufferLogger e
   VMMException da VMMLib não são migrados como estão.
+
+## DEC-017 — Problemas-âncora A1, A2 e A3
+- Data: 2026-09-28
+- Origem: P04 §2
+- Status: PROPOSTA
+- Decisão: Os casos de integração e da galeria são três problemas sintéticos, gerados por parâmetros:
+  A1 — seção transversal de rio 2D (canal trapezoidal, duas camadas de solo, variante com ar);
+  A2 — trecho de rio 2D em planta, com meandro e ilha; A3 — bloco 3D com canal de profundidade variável,
+  duas camadas de solo e ar. Dados reais ficam como variantes opcionais da galeria.
+- Justificativa: juntos cobrem não convexidade, buraco, múltiplos componentes, duas regiões do mesmo meio,
+  arestas vivas, junções triplas e forte variação de densidade, com resposta analítica para os invariantes.
+- Consequências: P06 usa A1 e A2 para validar a arquitetura da entrega (a); P09–P12 os transformam em testes de
+  integração; A3 é revisado depois do P15a.
+
+## DEC-018 — Declaração de regiões por precedência
+- Data: 2026-09-28
+- Origem: P04 §3
+- Status: PROPOSTA
+- Decisão: Na API, as regiões são declaradas por precedência (CSG por diferença, na ordem declarada).
+  Internamente, a declaração é convertida numa partição explícita, verificada por um validador que garante
+  cobertura sem vazios (salvo região de fundo), aponta regiões vazias ou fragmentadas pela ordem e aponta lascas
+  abaixo de uma fração da escala local.
+- Justificativa: é a forma mais simples para o usuário e cobre os três problemas-âncora; o validador neutraliza a
+  dependência de ordem e as sobreposições escondidas. Partição explícita pelo usuário é impraticável em 3D.
+- Consequências: P06 define a representação interna da partição; a função rótulo fica como consulta interna e
+  alternativa a avaliar no P15a para domínios STL.
+
+## DEC-019 — Formatos de saída por versão
+- Data: 2026-09-28
+- Origem: P04 §4
+- Status: PROPOSTA
+- Decisão: 0.1 — VTK XML, OpenFOAM polyMesh e um formato nativo do VMM (modelo de volumes finitos completo,
+  versionado, usado também nos golden files). 0.2 — MODFLOW 6 (DISV e DISU), PFLOTRAN (UNSTRUCTURED_EXPLICIT) e
+  TOUGH (MESH). CGNS opcional, sem prazo, atrás de opção de build. Gmsh fora. Todos são escritores fora do núcleo.
+- Justificativa: DEC-001, DEC-004 e DEC-015; os formatos de subsuperfície são listas de conexões com distâncias e
+  áreas, que o VMM já calcula; o Gmsh não representa células poliédricas gerais; o CGNS exige HDF5.
+- Consequências: P06 define o formato nativo; P12 implementa os escritores da 0.1; a ordem dos escritores da 0.2
+  depende do solver que o João usa.
+
+## DEC-020 — Metas, determinismo e tolerâncias relativas
+- Data: 2026-09-28
+- Origem: P04 §5
+- Status: PROPOSTA
+- Decisão: Metas iniciais — 2D: 10⁶ células em até 30 s e até 1 KB por célula; 3D: 10⁶ células em até 10 min e
+  até 4 KB por célula (Release, 1 thread); faces internas de Voronoi com não ortogonalidade abaixo de 10⁻⁸ rad.
+  Determinismo: bit a bit com mesma entrada, configuração, semente e build; mesma topologia e numeração entre
+  plataformas e entre ordens de inserção. Tolerâncias relativas à diagonal L da caixa envolvente: 10⁻¹² L para
+  pontos, 10⁻¹² de erro relativo para somas de medidas e golden files. As metas de tempo e memória podem ser
+  recalibradas uma única vez com a linha de base do P07.
+- Justificativa: dar critérios verificáveis às entregas; eliminar tolerâncias absolutas (P03 §9).
+- Consequências: P05 incorpora as metas na linha de base; P07 mede a linha de base e implanta as tolerâncias nos
+  verificadores de invariantes.
+
+## DEC-021 — Benchmark leve B1, B2 e B3
+- Data: 2026-09-28
+- Origem: P04 §6
+- Status: PROPOSTA
+- Decisão: B1 — quadrado unitário com 10⁶ sítios uniformes e semente fixa, comparável com a VMMLib; B2 — A1 sem ar,
+  cerca de 5·10⁴ células; B3 — A2, cerca de 5·10⁵ células. Mede-se tempo por fase, pico de memória, invariantes e
+  uma soma de verificação da topologia, em Release, a cada entrega.
+- Justificativa: DEC-013; B1 é o único caso com oráculo da VMMLib; B2 e B3 exercitam multirregião.
+- Consequências: P07 implanta o benchmark e registra a linha de base.

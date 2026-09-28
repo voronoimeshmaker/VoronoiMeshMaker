@@ -268,7 +268,9 @@ Em inglês, formato JOSS; revisar depois do P02 (licença) e do P04 (casos-ânco
 
 ---
 
-## 7. Entradas propostas para `planning/DECISIONS.md`
+## 7. Entradas propostas para `planning/DECISIONS.md` (histórico)
+
+> Aprovadas pelo João, com redação ajustada. O texto vigente está em `planning/DECISIONS.md`.
 
 ```
 ## DEC-001 — Nicho do VMM
@@ -314,7 +316,9 @@ Em inglês, formato JOSS; revisar depois do P02 (licença) e do P04 (casos-ânco
 - **Status (28/09):** N1, DEC-002 e sequência v3 **aprovados** pelo João (DEC-001 a DEC-003 em `planning/DECISIONS.md`).
 - Pontos não verificados: PolyMesher; API e suporte 2D do VoroCrust; multirregião no Geogram.
 
-## Decisões pendentes para o João
+## Decisões pendentes para o João (histórico)
+
+> Respondidas em 28/09: N1, DEC-002 e sequência v3 aprovados (DEC-001 a DEC-003).
 
 1. **Nicho:** N1 (recomendado), N2 ou N3?
 2. **DEC-002:** aprovar o backend 3D como policy, com avaliação CGAL × Geogram no P02?

@@ -69,12 +69,12 @@ O VMM **não é um solver de equações diferenciais** e não deve incorporar á
 | R5  | O domínio possui \(N \geq 1\) regiões, com fronteiras fixas e definidas. Existem dois níveis distintos: **meio**, por exemplo água, sólido ou gás, definido por mecanismo extensível; e **região**, que é uma instância espacial desse meio. Um mesmo meio pode possuir de zero a várias regiões.                                                                        |
 | R6  | Interfaces entre regiões devem ser conformes e identificadas pelo par de regiões que se encontram naquela interface, inclusive quando as duas regiões pertencem ao mesmo meio.                                                                                                                                                                                           |
 | R7  | A malha é estática. Fronteiras móveis, adaptação dinâmica e remalhamento durante a solução não fazem parte do escopo atual.                                                                                                                                                                                                                                              |
-| R8  | O VMM deve ser completamente independente do PETSc. Nenhum header, tipo, objeto ou chamada da API PETSc deverá aparecer no núcleo, backend geométrico ou interface pública do VMM.                                                                                                                                                                                       |
-| R9  | O VMM deverá expor conectividade e adjacência da malha usando tipos próprios ou tipos padrão do C++. Essas informações deverão ser suficientes para que um programa consumidor construa, por exemplo, matrizes esparsas, grafos, pré-alocação, reordenação ou particionamento em PETSc ou em qualquer outra biblioteca externa, sem reconstruir geometricamente a malha. |
-| R10 | O VMM possuirá seu próprio subsistema de tratamento de erros e exceções. Os tipos de erro e exceção serão próprios do VMM e não utilizarão herança nem funções virtuais. Implementações já existentes em outros projetos poderão servir como referência conceitual, mas não constituem automaticamente a implementação do VMM.                                           |
-| R11 | Falhas previsíveis e recuperáveis poderão ser representadas por mecanismos como `std::expected<T,E>`. Exceções próprias do VMM serão reservadas para condições que a arquitetura definir como excepcionais. A política detalhada será estabelecida na arquitetura do subsistema de erros.                                                                                |
-| R12 | O padrão oficial da biblioteca será **C++23**. Recursos de C++23 deverão ser utilizados quando trouxerem benefício concreto à arquitetura, com destaque para `std::expected`. A adoção de um recurso específico dependerá também de sua disponibilidade adequada nos compiladores suportados.                                                                            |
-| R13 | O nome do projeto e da biblioteca permanece **VoronoiMeshMaker**. O termo `VoronoiGridMaker` não deve ser utilizado como novo nome do projeto; refere-se apenas a uma estrutura histórica existente no repositório.                                                                                                                                                      |
+| R8 | O VMM deve ser completamente independente do PETSc. Nenhum header, tipo, objeto ou chamada da API PETSc deverá aparecer no núcleo, backend geométrico ou interface pública do VMM. (DEC-015) |
+| R9 | O VMM deverá expor conectividade e adjacência da malha usando tipos próprios ou tipos padrão do C++. Essas informações deverão ser suficientes para que um programa consumidor construa, por exemplo, matrizes esparsas, grafos, pré-alocação, reordenação ou particionamento em PETSc ou em qualquer outra biblioteca externa, sem reconstruir geometricamente a malha. (DEC-015) |
+| R10 | O VMM possuirá seu próprio subsistema de tratamento de erros e exceções. Os tipos de erro e exceção serão próprios do VMM e não utilizarão herança nem funções virtuais. Implementações já existentes em outros projetos poderão servir como referência conceitual, mas não constituem automaticamente a implementação do VMM. (DEC-016) |
+| R11 | Falhas previsíveis e recuperáveis poderão ser representadas por mecanismos como `std::expected<T,E>`. Exceções próprias do VMM serão reservadas para condições que a arquitetura definir como excepcionais. A política detalhada será estabelecida na arquitetura do subsistema de erros. (DEC-016) |
+| R12 | O padrão oficial da biblioteca será **C++23**. Recursos de C++23 deverão ser utilizados quando trouxerem benefício concreto à arquitetura, com destaque para `std::expected`. A adoção de um recurso específico dependerá também de sua disponibilidade adequada nos compiladores suportados. (DEC-014) |
+| R13 | O nome do projeto e da biblioteca permanece **VoronoiMeshMaker**. O termo `VoronoiGridMaker` não deve ser utilizado como novo nome do projeto; refere-se apenas a uma estrutura histórica existente no repositório. (DEC-014) |
 
 ---
 
@@ -133,6 +133,8 @@ A relação de dependências aceitas e opcionais é controlada por DEC-009.
 
 ### 4.3 PETSc
 
+Decisão formal: DEC-015.
+
 **PETSc não é dependência do VMM.**
 
 Programas que utilizam o VMM poderão utilizar PETSc normalmente.
@@ -170,11 +172,13 @@ Deverão ser distinguidos:
 2. **versões testadas**, mantidas pela infraestrutura de integração contínua;
 3. **versões efetivamente utilizadas**, registradas durante builds, testes e execuções relevantes.
 
-Essa política deverá ser consolidada em DEC-012.
+Essa política está consolidada em DEC-012.
 
 ---
 
 ## 5. Tratamento de erros
+
+Decisão formal: DEC-016.
 
 O VMM terá um subsistema próprio para representar, transportar e reportar erros.
 
@@ -309,13 +313,13 @@ As questões abaixo permanecem propostas e deverão ser decididas nas etapas ind
 | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Licença dos componentes dependentes do CGAL                                                                             | **Decidida.** Separação entre `vmm_core`, sem dependência direta do CGAL, e `vmm_backend_cgal`, sujeito às obrigações correspondentes às dependências utilizadas (DEC-008).                                                                    |
 | Base de código                                                                                                          | **Decidida.** Será criada uma estrutura nova para o VoronoiMeshMaker, com migração seletiva de componentes aproveitáveis da `VMMLib`. A `VMMLib` será utilizada como oráculo de regressão para comportamentos previamente validados (DEC-011). |
-| Uso de `VoronoiGridMaker/` como nova arquitetura                                                                        | **Descartado como requisito.** Essa árvore permanece como referência histórica e poderá fornecer ideias ou documentação aproveitável, mas a nova arquitetura não será obrigada a reproduzi-la.                                                 |
-| Nome do projeto                                                                                                         | **Decidido:** `VoronoiMeshMaker`.                                                                                                                                                                                                              |
-| Namespace público                                                                                                       | **Em aberto.** `vmm` é o candidato atual, mas ainda deve ser formalizado.                                                                                                                                                                      |
-| Padrão C++                                                                                                              | **Decidido:** C++23.                                                                                                                                                                                                                           |
-| Tratamento de erros                                                                                                     | **Decidido em princípio:** sistema próprio do VMM, sem herança e sem funções virtuais. `std::expected` poderá representar falhas recuperáveis; exceção própria será usada quando apropriado. A API detalhada ainda será projetada.             |
-| Dependência do PETSc                                                                                                    | **Decidido:** o VMM não depende de PETSc. Aplicações consumidoras podem utilizar PETSc.                                                                                                                                                        |
-| Informação para matrizes PETSc                                                                                          | **Decidido:** o VMM fornece topologia e adjacência próprias; a aplicação consumidora converte essas informações para estruturas PETSc.                                                                                                         |
+| Uso de `VoronoiGridMaker/` como nova arquitetura | **Descartado como requisito.** Essa árvore permanece como referência histórica e poderá fornecer ideias ou documentação aproveitável, mas a nova arquitetura não será obrigada a reproduzi-la. (DEC-011) |
+| Nome do projeto | **Decidido:** `VoronoiMeshMaker` (DEC-014). |
+| Namespace público | **Em aberto.** `vmm` é o candidato atual, mas ainda deve ser formalizado. (DEC-014) |
+| Padrão C++ | **Decidido:** C++23 (DEC-014). |
+| Tratamento de erros | **Decidido em princípio:** sistema próprio do VMM, sem herança e sem funções virtuais. `std::expected` poderá representar falhas recuperáveis; exceção própria será usada quando apropriado. A API detalhada ainda será projetada. (DEC-016) |
+| Dependência do PETSc | **Decidido:** o VMM não depende de PETSc. Aplicações consumidoras podem utilizar PETSc. (DEC-015) |
+| Informação para matrizes PETSc | **Decidido:** o VMM fornece topologia e adjacência próprias; a aplicação consumidora converte essas informações para estruturas PETSc. (DEC-015) |
 | Referência da API: uma página por função ou uma por classe                                                              | **Em aberto.** Será decidido no P13.                                                                                                                                                                                                           |
 | Critério de GTest “completo”                                                                                            | **Em aberto.** É necessário definir tratamento de classes triviais e critérios mínimos de cobertura.                                                                                                                                           |
 | Violações atuais de R3 na `VMMLib`, incluindo interfaces virtuais, hierarquias de exceções e formas de despacho fechado | **Diagnosticadas no P03.** Não serão reproduzidas automaticamente na nova arquitetura; serão tratadas durante a migração dos respectivos componentes.                                                                                          |

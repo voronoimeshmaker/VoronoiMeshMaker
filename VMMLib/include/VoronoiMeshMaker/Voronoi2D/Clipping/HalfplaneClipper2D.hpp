@@ -35,17 +35,21 @@ struct HalfplaneClipper2D {
                                              Point2 q,
                                              const Halfplane2D& halfplane)
     {
-        const Real fp = halfplane.evaluate(p);
-        const Real fq = halfplane.evaluate(q);
-        const Real denom = fp - fq;
-        if (std::abs(denom) <= ::vmm::constants::kEpsilon) {
+        const long double fp = evaluate(halfplane, p);
+        const long double fq = evaluate(halfplane, q);
+        const long double denom = fp - fq;
+        if (denom == 0.0L) {
             return p;
         }
 
-        const Real t = fp / denom;
+        // A crossing has opposite signs, however small the residuals are.
+        // An absolute denominator threshold would return an off-plane endpoint.
+        const long double t = fp / denom;
         return Point2{
-            p.x + t * (q.x - p.x),
-            p.y + t * (q.y - p.y)
+            static_cast<Real>(static_cast<long double>(p.x)
+                + t * (static_cast<long double>(q.x) - p.x)),
+            static_cast<Real>(static_cast<long double>(p.y)
+                + t * (static_cast<long double>(q.y) - p.y))
         };
     }
 
@@ -62,7 +66,7 @@ struct HalfplaneClipper2D {
         const Halfplane2D& halfplane,
         ClippingWorkspace2D& workspace)
     {
-        if (!halfplane.is_valid()) {
+        if (!halfplane.is_valid(Real{0})) {
             VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
                       {{"where", "HalfplaneClipper2D"},
                        {"reason", "invalid_halfplane"}});
@@ -73,10 +77,10 @@ struct HalfplaneClipper2D {
 
         workspace.output.reserve(polygon.size() + 1U);
         Point2 previous = polygon.back();
-        bool previous_inside = halfplane.contains(previous);
+        bool previous_inside = evaluate(halfplane, previous) <= 0.0L;
 
         for (const auto& current : polygon) {
-            const bool current_inside = halfplane.contains(current);
+            const bool current_inside = evaluate(halfplane, current) <= 0.0L;
             if (current_inside) {
                 if (!previous_inside) {
                     workspace.output.push_back(
@@ -111,6 +115,15 @@ struct HalfplaneClipper2D {
         }
 
         return workspace.input;
+    }
+
+private:
+    [[nodiscard]] static long double evaluate(
+        const Halfplane2D& halfplane, Point2 point) noexcept
+    {
+        // Use the same signed plane for classification and intersection.
+        return static_cast<long double>(halfplane.a) * point.x
+            + static_cast<long double>(halfplane.b) * point.y - halfplane.c;
     }
 };
 

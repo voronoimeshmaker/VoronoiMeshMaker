@@ -21,6 +21,8 @@
 VORMAKER_NAMESPACE_OPEN
 VORONOI2D_NAMESPACE_OPEN
 
+enum class AdjacencyGraph2D { FiniteVolumeStencil, Delaunay };
+
 /**
  * @brief Bandwidth information for the sparse matrix associated with a mesh.
  *
@@ -32,6 +34,9 @@ struct VoronoiBandwidth2D {
     std::size_t max_volume_id_distance{0};
     std::size_t matrix_bandwidth{0};
     std::size_t adjacency_count{0};
+    std::size_t fv_adjacency_count{0};
+    std::size_t delaunay_adjacency_count{0};
+    AdjacencyGraph2D graph{AdjacencyGraph2D::FiniteVolumeStencil};
 };
 
 /**
@@ -42,35 +47,44 @@ struct VoronoiBandwidth2D {
  * returned bandwidth, as expected for sparse matrix assembly.
  */
 [[nodiscard]] inline VoronoiBandwidth2D compute_voronoi_bandwidth(
-    const ClippedVoronoiDiagram2D& diagram)
+    const ClippedVoronoiDiagram2D& diagram,
+    AdjacencyGraph2D graph = AdjacencyGraph2D::FiniteVolumeStencil)
 {
     if (diagram.volume_count() == 0U) {
-        return {};
+        VoronoiBandwidth2D result;
+        result.graph = graph;
+        return result;
     }
 
     std::size_t max_distance = 0;
     std::size_t unique_adjacencies = 0;
+    std::size_t fv_count = 0;
+    std::size_t delaunay_count = 0;
 
     for (const auto& volume : diagram.all_volumes()) {
-        for (const auto neighbor_site_id : volume.neighbor_ids) {
+        const auto visit = [&](const auto neighbor_site_id, AdjacencyGraph2D kind) {
             const auto& neighbor = diagram.cell(neighbor_site_id);
 
             const auto a = volume.volume_id;
             const auto b = neighbor.volume_id;
 
             if (a < b) {
-                ++unique_adjacencies;
+                if (kind == AdjacencyGraph2D::FiniteVolumeStencil) ++fv_count;
+                else ++delaunay_count;
+                if (kind == graph) ++unique_adjacencies;
             }
 
             const auto distance = (a > b) ? (a - b) : (b - a);
-            max_distance = std::max(max_distance, distance);
-        }
+            if (kind == graph) max_distance = std::max(max_distance, distance);
+        };
+        for (const auto id : volume.face_neighbours()) visit(id, AdjacencyGraph2D::FiniteVolumeStencil);
+        for (const auto id : volume.delaunay_neighbours()) visit(id, AdjacencyGraph2D::Delaunay);
     }
 
     return VoronoiBandwidth2D{
         max_distance,
         max_distance + 1U,
-        unique_adjacencies
+        unique_adjacencies, fv_count, delaunay_count, graph
     };
 }
 

@@ -649,7 +649,11 @@ inline void append_raw_sites(
         const Real y = y_start + static_cast<Real>(row) * dy;
         if (y > box.max.y) break;
         const Real shift = (row % 2U == 0U) ? Real{0} : Real{0.5} * h;
-        for (Real x = x_start + shift; x <= box.max.x; x += h) {
+        const Real first_x = x_start + shift;
+        const auto n_cols = first_x > box.max.x ? std::size_t{0}
+            : static_cast<std::size_t>(std::floor((box.max.x - first_x) / h)) + 1U;
+        for (std::size_t column = 0; column < n_cols; ++column) {
+            const Real x = first_x + static_cast<Real>(column) * h;
             if (x >= box.min.x) {
                 sites.add(Point2{x, y}, region, weight);
             }

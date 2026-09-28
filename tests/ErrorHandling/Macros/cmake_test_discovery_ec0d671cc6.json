@@ -1,0 +1,32 @@
+{
+  "tests": 4,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Macros",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "Parallel_VMM_ERROR_NoThrow_And_PerThreadIsolation",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Macros\/ut_Macros.cpp",
+          "line": 59
+        },
+        {
+          "name": "Parallel_VMM_REQUIRE_MixedThrowAndPass",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Macros\/ut_Macros.cpp",
+          "line": 112
+        },
+        {
+          "name": "Parallel_VMM_ASSERT_Behavior",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Macros\/ut_Macros.cpp",
+          "line": 151
+        },
+        {
+          "name": "Parallel_MixedPressure_NoThrowAndConsistentLogging",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Macros\/ut_Macros.cpp",
+          "line": 190
+        }
+      ]
+    }
+  ]
+}

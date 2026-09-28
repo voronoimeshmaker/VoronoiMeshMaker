@@ -131,8 +131,8 @@ TEST(SiteValidation, ValidatesSiteSetsAndSpacingBetweenSites) {
 
     EXPECT_FALSE(report);
     EXPECT_EQ(report.error, SiteValidationError::TooCloseToAnotherSite);
-    EXPECT_EQ(report.index, 0U);
-    EXPECT_EQ(report.other_index, 1U);
+    EXPECT_EQ(report.index, 1U);
+    EXPECT_EQ(report.other_index, 0U);
 }
 
 TEST(SiteValidation, ThrowingValidationReportsInvalidSets) {

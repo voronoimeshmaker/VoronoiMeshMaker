@@ -1,0 +1,17 @@
+{
+  "tests": 1,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Site2DIO",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "WritesSitesAndBoundaryInTheSameVtkFile",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/IO\/ut_IO.cpp",
+          "line": 36
+        }
+      ]
+    }
+  ]
+}

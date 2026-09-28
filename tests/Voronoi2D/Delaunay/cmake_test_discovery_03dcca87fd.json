@@ -1,0 +1,76 @@
+{
+  "tests": 8,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "CgalKernelTraits2D",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "ConvertsBetweenVmmAndCgalPoints",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 55
+        }
+      ]
+    },
+    {
+      "name": "DelaunayBuilder2D",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "BuildsTwoDimensionalTriangulationWithSiteIds",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 65
+        },
+        {
+          "name": "RejectsDuplicatePoints",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 113
+        },
+        {
+          "name": "RejectsCollinearPointSetsByDefault",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 123
+        },
+        {
+          "name": "AllowsNonTwoDimensionalPointSetsWhenRequested",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 132
+        }
+      ]
+    },
+    {
+      "name": "DelaunaySiteIndex",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "MapsSequentialSiteIdsToVertexHandles",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 81
+        }
+      ]
+    },
+    {
+      "name": "DelaunayNeighborProvider2D",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "FindsDelaunayAdjacentSiteIds",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 96
+        }
+      ]
+    },
+    {
+      "name": "Delaunay2DIO",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "WritesBoundarySitesAndDelaunayInSameVtkFile",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/Delaunay\/ut_Delaunay.cpp",
+          "line": 150
+        }
+      ]
+    }
+  ]
+}

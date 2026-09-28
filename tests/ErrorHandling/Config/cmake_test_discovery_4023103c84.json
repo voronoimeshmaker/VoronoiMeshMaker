@@ -1,0 +1,97 @@
+{
+  "tests": 17,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "CoreErrors",
+      "tests": 17,
+      "testsuite": [
+        {
+          "name": "EnumValues",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 57
+        },
+        {
+          "name": "DomainInfo",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 68
+        },
+        {
+          "name": "DefaultSeverities",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 76
+        },
+        {
+          "name": "KeysAndMessages",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 94
+        },
+        {
+          "name": "DetailAccess",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 126
+        },
+        {
+          "name": "BoundsSafety",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 139
+        },
+        {
+          "name": "KeysAreUnique",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 152
+        },
+        {
+          "name": "TranslationsNonEmpty",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 164
+        },
+        {
+          "name": "ThreadSafeReaders",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 175
+        },
+        {
+          "name": "ParallelReaders_StdPar",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 204
+        },
+        {
+          "name": "ReadersStartTogether_Barrier",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 221
+        },
+        {
+          "name": "ParallelDeterminism_Smoke",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 253
+        },
+        {
+          "name": "NoLeaks_DynamicUse",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 275
+        },
+        {
+          "name": "StressStrings",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 289
+        },
+        {
+          "name": "Perf_Smoke",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 307
+        },
+        {
+          "name": "GMock_HandlerFlow",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 332
+        },
+        {
+          "name": "GMock_FilterFatal",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Config\/ut_Config.cpp",
+          "line": 350
+        }
+      ]
+    }
+  ]
+}

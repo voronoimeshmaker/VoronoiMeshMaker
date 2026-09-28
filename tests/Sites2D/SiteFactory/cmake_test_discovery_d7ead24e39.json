@@ -1,0 +1,112 @@
+{
+  "tests": 20,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "SiteFactory",
+      "tests": 20,
+      "testsuite": [
+        {
+          "name": "CartesianGridCreatesSequentialSitesInsideRectangle",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 13
+        },
+        {
+          "name": "CartesianGridRespectsMinimumBoundaryDistance",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 34
+        },
+        {
+          "name": "CartesianGridCanUseExplicitOrigin",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 56
+        },
+        {
+          "name": "CartesianGridEpsilonUsesPaperFormulaForThetaZero",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 69
+        },
+        {
+          "name": "CartesianGridRejectsInvalidEpsilon",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 92
+        },
+        {
+          "name": "CartesianGridCanBeCenteredInBoundingBox",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 105
+        },
+        {
+          "name": "CartesianGridCountUsesRequestedCandidateLayout",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 118
+        },
+        {
+          "name": "TriangularIIRawSitesFollowLegacyPatternAtZeroEpsilon",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 131
+        },
+        {
+          "name": "TriangularIIRawSitesUseEpsilon",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 147
+        },
+        {
+          "name": "TriangularIVRawSitesFollowLegacyPatternAtZeroEpsilon",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 166
+        },
+        {
+          "name": "TriangularIVRawSitesUseEpsilon",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 184
+        },
+        {
+          "name": "HexagonalRawSitesCreateStaggeredRows",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 203
+        },
+        {
+          "name": "StructuredPatternsAreClippedAndValidatedByBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 234
+        },
+        {
+          "name": "CartesianGridSkipsRingHole",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 250
+        },
+        {
+          "name": "CartesianGridRejectsInvalidPatternAndValidationOptions",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 271
+        },
+        {
+          "name": "UniformRandomIsReproducibleAndValidated",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 295
+        },
+        {
+          "name": "UniformRandomScalesBeyondTenThousandSites",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 316
+        },
+        {
+          "name": "CanAppendCartesianAndRandomLayersInSameBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 330
+        },
+        {
+          "name": "CanAppendAllStructuredPatternsInSameBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 353
+        },
+        {
+          "name": "CartesianGridFiltersCandidatesTooCloseToExistingSites",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteFactory\/ut_SiteFactory.cpp",
+          "line": 373
+        }
+      ]
+    }
+  ]
+}

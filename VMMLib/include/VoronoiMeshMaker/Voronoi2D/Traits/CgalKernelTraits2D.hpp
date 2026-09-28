@@ -16,12 +16,24 @@
  * triangulation storage needs to change later.
  */
 
+//==============================================================================
+// C++ standard library
+//==============================================================================
+#include <span>
+
+//==============================================================================
+// CGAL
+//==============================================================================
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_2.h>
 #include <CGAL/Triangulation_data_structure_2.h>
 #include <CGAL/Triangulation_face_base_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 
+//==============================================================================
+// VoronoiMeshMaker
+//==============================================================================
 #include <VoronoiMeshMaker/Core/namespace.h>
 #include <VoronoiMeshMaker/Sites2D/Site2D.hpp>
 
@@ -52,6 +64,13 @@ struct CgalKernelTraits2D {
     using VertexHandle = DelaunayTriangulation::Vertex_handle;
     using FaceHandle = DelaunayTriangulation::Face_handle;
     using Edge = DelaunayTriangulation::Edge;
+
+    [[nodiscard]] static bool is_simple_ccw_convex(std::span<const Point2> ring) {
+        CGAL::Polygon_2<Kernel> polygon;
+        for (const auto point : ring) polygon.push_back(to_cgal(point));
+        return polygon.size() >= 3U && polygon.is_simple()
+            && polygon.is_counterclockwise_oriented() && polygon.is_convex();
+    }
 
     [[nodiscard]] static CgalPoint2 to_cgal(Point2 point) {
         return CgalPoint2(point.x, point.y);

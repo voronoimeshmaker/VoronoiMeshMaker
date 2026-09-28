@@ -1,0 +1,4 @@
+# Arquivo de documentação. Foi criado para preservar conhecimento de alto nível sobre 'invariants'.
+
+- Escopo previsto: docs/architecture/invariants.md
+- Nesta fase o arquivo contém apenas comentários descritivos, sem código, para que a informação arquitectural não se perca.

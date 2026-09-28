@@ -27,6 +27,11 @@ option(VMM_BUILD_DOCS
     OFF
 )
 
+option(VMM_TEST_SANITIZERS
+    "Instrument the library and build-tree consumers with ASan/UBSan (diagnostic builds only)"
+    OFF
+)
+
 option(VMM_ENABLE_WARNINGS
     "Enable project warning flags"
     ON

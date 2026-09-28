@@ -1,6 +1,7 @@
 # Main library target
 
 include(CMakePackageConfigHelpers)
+find_package(ZLIB REQUIRED)
 
 file(GLOB_RECURSE VMM_SOURCES CONFIGURE_DEPENDS
     "${VMMLib_DIR}/src/*.cpp"
@@ -33,9 +34,20 @@ target_link_libraries(VoronoiMeshMaker
         CGAL::CGAL_Core
         TBB::tbb
     PRIVATE
+        ZLIB::ZLIB
         vmm_project_options
         vmm_project_warnings
 )
+
+if(VMM_TEST_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Every build-tree executable loading the instrumented library must link
+    # the sanitizer runtimes directly. Do not export diagnostic flags.
+    foreach(flag IN ITEMS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
+        target_compile_options(VoronoiMeshMaker PUBLIC "$<BUILD_INTERFACE:${flag}>")
+        target_link_options(VoronoiMeshMaker PUBLIC "$<BUILD_INTERFACE:${flag}>")
+    endforeach()
+    message(STATUS "Sanitizers enabled: use a separate non-instrumented build for installation")
+endif()
 
 install(TARGETS VoronoiMeshMaker
     EXPORT VoronoiMeshMakerTargets
@@ -71,6 +83,7 @@ write_basic_package_version_file(
 )
 
 install(FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyCGALHeaders.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker

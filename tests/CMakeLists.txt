@@ -4,7 +4,7 @@
 # - Parallel run (ctest -j)
 # - Coverage (gcovr) target
 # - Valgrind (memcheck + per-target runners)
-# - ASan + UBSan enabled automatically on GCC/Clang
+# - ASan + UBSan enabled explicitly for diagnostic builds
 # ==============================================================================
 
 cmake_minimum_required(VERSION 3.20)
@@ -42,7 +42,8 @@ endif()
 #   - TSan não é ativado por padrão (conflita com ASan).
 # ------------------------------------------------------------------------------
 set(_SAN_FLAGS "")
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+option(VMM_TEST_SANITIZERS "Instrument the library and tests with ASan/UBSan" OFF)
+if(VMM_TEST_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   list(APPEND _SAN_FLAGS -fsanitize=address -fsanitize=undefined)
   list(APPEND _SAN_FLAGS -fno-omit-frame-pointer)
 endif()
@@ -187,14 +188,16 @@ foreach(ut_file_rel IN LISTS _ALL_UT_CPP)
   endif()
 
   # Binário sai dentro da própria pasta do driver
+  set(test_output_dir "${CMAKE_CURRENT_BINARY_DIR}/${test_dir_rel}")
+  file(MAKE_DIRECTORY "${test_output_dir}")
   set_target_properties(${target_name} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${TESTS_ROOT}/${test_dir_rel}"
+    RUNTIME_OUTPUT_DIRECTORY "${test_output_dir}"
     OUTPUT_NAME              "${test_name_we}"
   )
 
   # Registro no CTest (descobre os TEST() dentro do driver)
   gtest_discover_tests(${target_name}
-    WORKING_DIRECTORY "${TESTS_ROOT}/${test_dir_rel}"
+    WORKING_DIRECTORY "${test_output_dir}"
     TEST_PREFIX "${folder_name}:"
     DISCOVERY_TIMEOUT 30
   )
@@ -206,7 +209,7 @@ foreach(ut_file_rel IN LISTS _ALL_UT_CPP)
   add_custom_target(${run_target_name}
     COMMAND $<TARGET_FILE:${target_name}> --gtest_output=xml:${target_name}_results.xml
     DEPENDS ${target_name}
-    WORKING_DIRECTORY "${TESTS_ROOT}/${test_dir_rel}"
+    WORKING_DIRECTORY "${test_output_dir}"
     COMMENT "Running ${folder_name} tests"
   )
   list(APPEND RUN_TEST_TARGETS ${run_target_name})
@@ -220,7 +223,7 @@ foreach(ut_file_rel IN LISTS _ALL_UT_CPP)
               --track-origins=yes --error-exitcode=1
               $<TARGET_FILE:${target_name}>
       DEPENDS ${target_name}
-      WORKING_DIRECTORY "${TESTS_ROOT}/${test_dir_rel}"
+      WORKING_DIRECTORY "${test_output_dir}"
       COMMENT "[Valgrind] ${folder_name}"
     )
     list(APPEND VALGRIND_RUN_TARGETS ${vtgt})

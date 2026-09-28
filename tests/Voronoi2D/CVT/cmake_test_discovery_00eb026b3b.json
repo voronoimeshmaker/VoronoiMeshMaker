@@ -1,0 +1,32 @@
+{
+  "tests": 4,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "CVT",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "LloydStepMovesGeneratorsToClippedCellCentroids",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/CVT\/ut_CVT.cpp",
+          "line": 25
+        },
+        {
+          "name": "LloydRelaxKeepsCartesianCentroidalMeshStationary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/CVT\/ut_CVT.cpp",
+          "line": 45
+        },
+        {
+          "name": "LloydRelaxReducesCvtEnergyForPerturbedSites",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/CVT\/ut_CVT.cpp",
+          "line": 73
+        },
+        {
+          "name": "LloydRelaxRejectsEmptySiteSet",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Voronoi2D\/CVT\/ut_CVT.cpp",
+          "line": 101
+        }
+      ]
+    }
+  ]
+}

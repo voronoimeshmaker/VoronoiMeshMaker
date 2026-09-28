@@ -1,0 +1,62 @@
+{
+  "tests": 10,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "SiteValidation",
+      "tests": 10,
+      "testsuite": [
+        {
+          "name": "AcceptsStrictlyInteriorSiteWithMinimumBoundaryDistance",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 25
+        },
+        {
+          "name": "RejectsSiteOnBoundaryEvenWhenMinimumDistanceIsZero",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 35
+        },
+        {
+          "name": "RejectsSiteTooCloseToBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 45
+        },
+        {
+          "name": "RejectsSiteInsideHole",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 56
+        },
+        {
+          "name": "RejectsSiteTooCloseToHoleBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 66
+        },
+        {
+          "name": "RejectsNonFiniteCoordinatesAndInvalidOptions",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 77
+        },
+        {
+          "name": "RejectsNonSequentialSiteIds",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 90
+        },
+        {
+          "name": "CanValidateGeometryBeforeFinalRenumbering",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 104
+        },
+        {
+          "name": "ValidatesSiteSetsAndSpacingBetweenSites",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 119
+        },
+        {
+          "name": "ThrowingValidationReportsInvalidSets",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/SiteValidation\/ut_SiteValidation.cpp",
+          "line": 138
+        }
+      ]
+    }
+  ]
+}

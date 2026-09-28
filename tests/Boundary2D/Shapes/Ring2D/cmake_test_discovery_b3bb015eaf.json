@@ -1,0 +1,43 @@
+{
+  "tests": 5,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Ring2DConstructors",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "RejectsInvalidRadiiAndSegments",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Ring2D\/ut_Ring2D.cpp",
+          "line": 39
+        }
+      ]
+    },
+    {
+      "name": "Ring2DGeometry",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "GeneratesOuterAndHoleWithExpectedOrientation",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Ring2D\/ut_Ring2D.cpp",
+          "line": 55
+        },
+        {
+          "name": "PolygonizeReturnsOuterRingForShapeConceptCompatibility",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Ring2D\/ut_Ring2D.cpp",
+          "line": 71
+        },
+        {
+          "name": "WritesIntoProvidedBuffers",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Ring2D\/ut_Ring2D.cpp",
+          "line": 81
+        },
+        {
+          "name": "BuildsBoundaryDataWithOuterAndHole",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Ring2D\/ut_Ring2D.cpp",
+          "line": 98
+        }
+      ]
+    }
+  ]
+}

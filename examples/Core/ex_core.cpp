@@ -48,10 +48,10 @@ int main() {
     std::cout << vmm::io::PrintLine() << "\n\n";
 
     std::cout << std::setprecision(15) << std::fixed;
-    std::cout << "PI       = " << static_cast<Real>(vmm::PI) << "\n";
+    std::cout << "PI       = " << vmm::constants::kPi << "\n";
     std::cout << std::setprecision(4) << std::scientific;
-    std::cout << "EPSILON  = " << static_cast<Real>(vmm::EPSILON) << "\n";
-    std::cout << "ZERO     = " << static_cast<Real>(vmm::ZERO) << "\n";
+    std::cout << "EPSILON  = " << vmm::constants::kEpsilon << "\n";
+    std::cout << "ZERO     = " << vmm::constants::kZeroTol << "\n";
 
 //==============================================================================
 //      Using CGAL types
@@ -65,7 +65,7 @@ int main() {
     const Real area = CGAL::to_double(tri.area());
     std::cout << "Triangle area = " << area << " (expect 0.5)\n";
 
-    if (std::abs(area) < static_cast<Real>(vmm::ZERO)) {
+    if (std::abs(area) < vmm::constants::kZeroTol) {
         std::cout << "Area is ~zero by ZERO tolerance\n";
     }
 

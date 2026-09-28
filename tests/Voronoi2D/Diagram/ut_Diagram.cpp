@@ -382,6 +382,66 @@ TEST(ClippedVoronoiDiagram2D, StoresBoundaryNormalProjectionForBoundaryVolumes) 
     }
 }
 
+TEST(ClippedVoronoiDiagram2D, StoresUnboundedBoundaryConditionPointPerFace) {
+    const auto boundary = make_boundary(
+        Rectangle(Point2{0.0, 0.0}, 4.0, 2.0));
+    const auto sites = make_sites(boundary, CartesianGridCount2D{4, 2});
+    const auto diagram = ClippedVoronoiBuilder2D::build(sites, boundary);
+
+    std::size_t checked = 0;
+    for (const auto& cell : diagram.boundary_volumes()) {
+        const auto generator = sites[static_cast<std::size_t>(cell.site_id.value)].point;
+        for (const auto& edge : cell.edges) {
+            if (!edge.is_boundary_edge) {
+                continue;
+            }
+            ++checked;
+            const auto& geometry = edge.boundary_condition_geometry();
+            ASSERT_TRUE(geometry.valid());
+            EXPECT_TRUE(geometry.normal_matches_face());
+            const double tx = edge.b.x - edge.a.x;
+            const double ty = edge.b.y - edge.a.y;
+            const auto point = geometry.point();
+            const auto normal = geometry.outward_normal();
+            const double rx = point.x - generator.x;
+            const double ry = point.y - generator.y;
+            EXPECT_NEAR(tx * rx + ty * ry, 0.0, 1.0e-12);
+            EXPECT_NEAR(
+                std::hypot(normal.x, normal.y),
+                1.0,
+                1.0e-12);
+            EXPECT_NEAR(
+                rx * normal.x + ry * normal.y,
+                geometry.perpendicular_distance(),
+                1.0e-12);
+        }
+    }
+    EXPECT_GT(checked, 0U);
+}
+
+TEST(ClippedVoronoiDiagram2D, PermitsBoundaryConditionPointOutsideFiniteFace) {
+    const auto boundary = make_boundary(
+        Rectangle(Point2{0.0, 0.0}, 3.0, 1.0));
+    const auto sites = make_sites(
+        boundary,
+        UniformRandom2D{500, 8675309U},
+        SiteValidationOptions{});
+    const auto diagram = ClippedVoronoiBuilder2D::build(sites, boundary);
+
+    std::size_t outside = 0;
+    for (const auto& cell : diagram.boundary_volumes()) {
+        for (const auto& edge : cell.edges) {
+            if (!edge.is_boundary_edge) {
+                continue;
+            }
+            const auto& geometry = edge.boundary_condition_geometry();
+            ASSERT_TRUE(geometry.valid());
+            outside += !geometry.point_inside_local_face();
+        }
+    }
+    EXPECT_GT(outside, 0U);
+}
+
 TEST(ClippedVoronoiDiagram2DTransform, RotatesClippedDiagramInPlace) {
     const auto boundary = make_boundary(Rectangle(Point2{0.0, 0.0}, 2.0, 2.0));
     const auto sites = make_five_sites_inside_square();
@@ -441,7 +501,8 @@ TEST(ClippedVoronoiDiagram2D, ComputesBandwidthFromVolumeAdjacency) {
     };
     diagram.rebuild_indices();
 
-    const auto bandwidth = compute_voronoi_bandwidth(diagram);
+    // This fixture supplies Delaunay links only, without polygon faces.
+    const auto bandwidth = compute_voronoi_bandwidth(diagram, AdjacencyGraph2D::Delaunay);
 
     EXPECT_EQ(bandwidth.max_volume_id_distance, 2U);
     EXPECT_EQ(bandwidth.matrix_bandwidth, 3U);

@@ -68,6 +68,10 @@ struct VolumeRenumbering2D {
     std::vector<std::size_t> new_to_old{}; ///< `new_to_old[new_id] == old_id`.
 };
 
+struct VolumeRenumberingOptions2D {
+    bool partition_boundary_last{false};
+};
+
 //==============================================================================
 //  InputVolumeOrdering2D — identity permutation
 //==============================================================================
@@ -377,10 +381,15 @@ template <class Ordering>
 VolumeRenumbering2D renumber_volumes(
     ClippedVoronoiDiagram2D& diagram,
     const Ordering& ordering,
-    VolumeNumberingMethod2D method = VolumeNumberingMethod2D::Custom)
+    VolumeNumberingMethod2D method = VolumeNumberingMethod2D::Custom,
+    VolumeRenumberingOptions2D options = {})
 {
     auto new_to_old = ordering(diagram);
     validate_volume_order_or_throw(new_to_old, diagram.cells.size());
+    if (options.partition_boundary_last) {
+        std::stable_partition(new_to_old.begin(), new_to_old.end(),
+            [&diagram](std::size_t i) { return !diagram.cells[i].is_boundary_cell; });
+    }
 
     VolumeRenumbering2D result;
     result.new_to_old = std::move(new_to_old);
@@ -399,7 +408,7 @@ VolumeRenumbering2D renumber_volumes(
     diagram.rebuild_indices();
     diagram.numbering = VolumeNumberingState2D{
         method,
-        method != VolumeNumberingMethod2D::Original
+        method != VolumeNumberingMethod2D::Original || options.partition_boundary_last
     };
     return result;
 }
@@ -414,9 +423,10 @@ VolumeRenumbering2D renumber_volumes(
  */
 inline VolumeRenumbering2D renumber_volumes(
     ClippedVoronoiDiagram2D& diagram,
-    const HilbertVolumeOrdering2D& ordering)
+    const HilbertVolumeOrdering2D& ordering,
+    VolumeRenumberingOptions2D options = {})
 {
-    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Hilbert);
+    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Hilbert, options);
 }
 
 /**
@@ -425,9 +435,10 @@ inline VolumeRenumbering2D renumber_volumes(
  */
 inline VolumeRenumbering2D renumber_volumes(
     ClippedVoronoiDiagram2D& diagram,
-    const LexicographicVolumeOrdering2D& ordering)
+    const LexicographicVolumeOrdering2D& ordering,
+    VolumeRenumberingOptions2D options = {})
 {
-    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Lexicographic);
+    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Lexicographic, options);
 }
 
 /**
@@ -436,9 +447,17 @@ inline VolumeRenumbering2D renumber_volumes(
  */
 inline VolumeRenumbering2D renumber_volumes(
     ClippedVoronoiDiagram2D& diagram,
-    const InputVolumeOrdering2D& ordering)
+    const InputVolumeOrdering2D& ordering,
+    VolumeRenumberingOptions2D options = {})
 {
-    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Original);
+    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Original, options);
+}
+
+template <class Ordering>
+VolumeRenumbering2D renumber_volumes(ClippedVoronoiDiagram2D& diagram,
+                                     const Ordering& ordering,
+                                     VolumeRenumberingOptions2D options) {
+    return renumber_volumes(diagram, ordering, VolumeNumberingMethod2D::Custom, options);
 }
 
 VORONOI2D_NAMESPACE_CLOSE

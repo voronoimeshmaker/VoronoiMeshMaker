@@ -1,4 +1,8 @@
 #pragma once
+// Legacy POLYDATA contains site VERTICES, boundary/Delaunay LINES, then cell
+// POLYGONS. Cell arrays pad the first two groups; Voronoi values form the tail.
+// Vertices are duplicated per polygon. For a connected volume mesh, prefer
+// write_clipped_voronoi_vtu in VTK_XML_ClippedVoronoi2D.hpp.
 //==============================================================================
 // Name        : VTK_Legacy_ClippedVoronoi2D.hpp
 // Project     : VoronoiMeshMaker (VMM)

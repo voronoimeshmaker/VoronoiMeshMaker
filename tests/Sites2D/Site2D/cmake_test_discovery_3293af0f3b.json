@@ -1,0 +1,28 @@
+{
+  "tests": 2,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Site2D",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "StoresPointIdRegionAndWeight",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/Site2D\/ut_Site2D.cpp",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "name": "SiteId",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "IsStrongComparableId",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Sites2D\/Site2D\/ut_Site2D.cpp",
+          "line": 17
+        }
+      ]
+    }
+  ]
+}

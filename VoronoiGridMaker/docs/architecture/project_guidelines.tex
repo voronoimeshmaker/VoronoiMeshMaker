@@ -1,0 +1,141 @@
+\section{Diretrizes do Projeto VoronoiGridMaker}
+\label{sec:vgm_project_guidelines}
+
+A biblioteca \texttt{VoronoiGridMaker} será desenvolvida em \textbf{C++23}, com foco na geração de malhas de Voronoi para o Método dos Volumes Finitos. A versão inicial terá escopo bidimensional, com preparação arquitectural para extensão futura a três dimensões.
+
+\subsection{Princípios arquitecturais}
+
+\begin{enumerate}
+    \item A arquitectura da biblioteca será baseada em \textbf{composição}, \textbf{Data-Oriented Design (DOD)}, \textbf{policy-based design}, \textbf{traits}, \textbf{concepts}, \textbf{processamento em pipeline} e \textbf{functional core / imperative shell}.
+    \item \textbf{SOLID clássico} não será adoptado como base arquitectural principal.
+    \item \textbf{Herança} e \textbf{polimorfismo dinâmico} não serão os mecanismos centrais de extensão da biblioteca.
+    \item A API pública deverá permanecer pequena, clara, estável e semanticamente consistente.
+    \item O backend geométrico deverá permanecer isolado por uma camada adaptadora própria da biblioteca.
+\end{enumerate}
+
+\subsection{Domínio geométrico e hipótese inicial}
+
+\begin{enumerate}
+    \item A V1 da biblioteca será dedicada a \textbf{domínios bidimensionais conexos}.
+    \item O domínio poderá ser \textbf{não convexo} e poderá possuir ângulos internos maiores que $180^\circ$.
+    \item Os pontos geradores estarão \textbf{estritamente no interior do domínio}; não haverá pontos geradores no contorno.
+    \item Os pontos geradores serão os \textbf{pontos de referência dos volumes finitos}.
+    \item A entidade computacional relevante da biblioteca será a \textbf{célula de Voronoi recortada pelo domínio físico}, e não a célula de Voronoi bruta.
+\end{enumerate}
+
+\subsection{Geometrias e fontes de sítios}
+
+\begin{enumerate}
+    \item A biblioteca deverá oferecer geometrias de fábrica para definição do domínio, incluindo \textbf{retângulos}, \textbf{elipses}, \textbf{triângulos} e \textbf{polígonos definidos por vértices}.
+    \item A biblioteca deverá oferecer fontes de sítios de fábrica, incluindo padrões \textbf{cartesiano}, \textbf{triangular A}, \textbf{triangular B}, \textbf{hexagonal}, \textbf{radial} e \textbf{aleatório}.
+    \item O utilizador deverá poder fornecer \textbf{sítios próprios} sem recorrer a herança, por meio de mechanisms baseados em \textbf{concepts}, \textbf{traits} e \textbf{adapters}.
+    \item Os pontos geradores deverão poder ser lidos de ficheiros externos.
+\end{enumerate}
+
+\subsection{Separações estruturais obrigatórias}
+
+\begin{enumerate}
+    \item A biblioteca deverá separar \textbf{identidade geométrica} de \textbf{identidade algébrica} dos volumes.
+    \item A biblioteca deverá separar \textbf{geometria}, \textbf{topologia} e \textbf{métricas de Volumes Finitos}.
+    \item A biblioteca deverá separar \textbf{dados base} de \textbf{dados derivados}.
+    \item A biblioteca deverá separar \textbf{exportação para visualização} de \textbf{serialização para persistência}.
+    \item A biblioteca deverá separar \textbf{geração da malha}, \textbf{avaliação de qualidade} e \textbf{optimização da malha}.
+\end{enumerate}
+
+\subsection{Clipping, validação e invariantes}
+
+\begin{enumerate}
+    \item O \textbf{clipping} será um módulo central da biblioteca.
+    \item A biblioteca deverá possuir \textbf{validação forte em todas as etapas do pipeline}: domínio, sítios, Voronoi bruto, clipping, conectividade e métricas finais.
+    \item As seguintes invariantes deverão ser preservadas em uma malha válida:
+    \begin{enumerate}
+        \item toda célula válida possui área positiva;
+        \item toda face interna conecta exactamente dois volumes;
+        \item toda face de contorno conecta exactamente um volume;
+        \item toda célula interna não toca o contorno;
+        \item toda célula de contorno toca o contorno ao menos uma vez;
+        \item conectividades devem ser bidireccionalmente consistentes.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Robustez geométrica e orientação}
+
+\begin{enumerate}
+    \item A política de degenerescências da biblioteca deverá seguir a filosofia geométrica do \textbf{CGAL}.
+    \item A biblioteca deverá adoptar a mesma \textbf{orientação positiva} considerada pelo CGAL.
+    \item Sempre que uma entidade orientável válida estiver orientada no sentido oposto, a biblioteca deverá \textbf{reorientá-la automaticamente} e de forma determinística.
+    \item A biblioteca deverá suportar \textbf{translação} e \textbf{rotação} aplicadas ao \texttt{Boundary}, aos sítios, ou a ambos conjuntamente.
+\end{enumerate}
+
+\subsection{Tipos, backend e dependências}
+
+\begin{enumerate}
+    \item A API pública da biblioteca deverá usar \textbf{tipos próprios da VoronoiGridMaker}.
+    \item O \textbf{CGAL} será usado apenas como backend geométrico, por meio de adaptadores.
+    \item \textbf{Nenhum tipo do CGAL} deverá fazer parte da API pública.
+    \item O tipo escalar público inicial poderá ser \texttt{Real = double}.
+    \item As dependências principais do projecto serão: \textbf{CGAL}, \textbf{GMP + MPFR}, \textbf{Boost} de forma selectiva, \textbf{GoogleTest}, \textbf{spdlog} e \textbf{yaml-cpp} opcional.
+    \item \textbf{Qt} não será adoptado no núcleo da biblioteca.
+    \item \textbf{Python} não será adoptado no núcleo da biblioteca; o seu uso futuro ficará restrito a bindings ou scripts auxiliares opcionais.
+\end{enumerate}
+
+\subsection{Conectividade, iteração e reordenação}
+
+\begin{enumerate}
+    \item A biblioteca deverá fornecer listas e views eficientes para \textbf{volumes internos}, \textbf{volumes de contorno}, \textbf{faces internas} e \textbf{faces de contorno}.
+    \item A biblioteca deverá fornecer informação suficiente para montagem de \textbf{matrizes de conectividade}.
+    \item A biblioteca deverá suportar \textbf{renumeração} dos volumes para redução de banda e melhoria de localidade espacial.
+    \item Permutação e permutação inversa deverão ser preservadas explicitamente.
+    \item A biblioteca deverá ser \textbf{determinística por padrão}. Mesma entrada, mesma configuração e mesma semente deverão produzir a mesma malha, a mesma conectividade, a mesma classificação e a mesma numeração.
+\end{enumerate}
+
+\subsection{Qualidade, logging e testes}
+
+\begin{enumerate}
+    \item A biblioteca deverá definir métricas próprias de \textbf{qualidade da malha} para uso em Volumes Finitos.
+    \item Os \textbf{critérios de aceitação} dessas métricas \textbf{não serão fixos}; deverão ser configuráveis.
+    \item O sistema de logging utilizará \textbf{spdlog} como backend, sempre encapsulado por uma fachada própria da biblioteca.
+    \item A biblioteca deverá possuir estratégia explícita de \textbf{testes de regressão}, incluindo casos de referência estáveis e, quando apropriado, \textit{golden files}.
+    \item Testes com casos patológicos deverão ser incluídos desde cedo.
+\end{enumerate}
+
+\subsection{Erros, mensagens e documentação}
+
+\begin{enumerate}
+    \item A biblioteca deverá possuir sistema próprio de \textbf{exceptions}, \textbf{erros} e \textbf{diagnósticos}.
+    \item Mensagens de erro e exceptions deverão suportar \textbf{português} e \textbf{inglês}.
+    \item O idioma padrão deverá ser definido por \textbf{configuração explícita}.
+    \item A lógica do erro deverá ser separada do texto da mensagem, com suporte a \textbf{códigos internos estáveis} e \textbf{catálogo de mensagens}.
+    \item A documentação do projecto será \textbf{bilíngue}.
+    \item No código-fonte, nomes, comentários técnicos e documentação Doxygen deverão permanecer em \textbf{inglês}.
+\end{enumerate}
+
+\subsection{Escopo da versão inicial (V1)}
+
+\begin{enumerate}
+    \item \textbf{V1} significa a primeira versão funcional, estável e utilizável da biblioteca.
+    \item A \textbf{V1} deverá concentrar-se em resolver de forma robusta o problema central do projecto, em vez de antecipar cedo demais funcionalidades mais avançadas.
+    \item O escopo da V1 deverá incluir:
+    \begin{enumerate}
+        \item definição do \texttt{Boundary} 2D;
+        \item geração, leitura ou fornecimento de sítios interiores;
+        \item construção da triangulação e do Voronoi bruto;
+        \item clipping pelo domínio físico;
+        \item classificação de células e faces;
+        \item conectividade;
+        \item métricas de Volumes Finitos;
+        \item reordenação;
+        \item exportação;
+        \item validação forte do pipeline.
+    \end{enumerate}
+    \item O escopo da V1 \textbf{não deverá incluir}, salvo necessidade técnica excepcional e explicitamente justificada:
+    \begin{enumerate}
+        \item múltiplos materiais;
+        \item interfaces internas explícitas;
+        \item Constrained Delaunay como infraestrutura central;
+        \item suporte tridimensional;
+        \item GUI;
+        \item bindings em Python;
+        \item outras extensões avançadas fora do núcleo 2D inicial.
+    \end{enumerate}
+\end{enumerate}

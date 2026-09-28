@@ -1,0 +1,42 @@
+{
+  "tests": 6,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Boundary2DTransform",
+      "tests": 6,
+      "testsuite": [
+        {
+          "name": "AppliesAffineTransformToPoint",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 38
+        },
+        {
+          "name": "TranslatesBoundaryInPlacePreservingTopology",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 46
+        },
+        {
+          "name": "RotatesBoundaryAroundOrigin",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 62
+        },
+        {
+          "name": "RotatesBoundaryAroundArbitraryCenter",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 74
+        },
+        {
+          "name": "CopyReturningTransformLeavesInputUnchanged",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 86
+        },
+        {
+          "name": "ParallelPolicyOverloadTransformsPointSpan",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Transforms\/ut_Boundary2DTransform.cpp",
+          "line": 95
+        }
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@
 
 #include <VoronoiMeshMaker/Boundary2D/Transforms/Boundary2DTransform.hpp>
 #include <VoronoiMeshMaker/Sites2D/Transforms/Site2DTransform.hpp>
+#include <VoronoiMeshMaker/Voronoi2D/Cells/BoundaryConditionPoint2D.hpp>
 #include <VoronoiMeshMaker/Voronoi2D/Diagram/ClippedVoronoiDiagram2D.hpp>
 
 VORMAKER_NAMESPACE_OPEN
@@ -61,9 +62,26 @@ inline void transform_in_place(ClippedVoronoiDiagram2D& diagram,
 
             edge.length = distance_between(edge.a, edge.b);
 
-            if (edge.representative_valid && have_site) {
+            if (have_site && edge.is_boundary_edge
+                && edge.boundary_ring_index >= 0
+                && edge.boundary_ring_index < diagram.boundary.ring_count()) {
+                const auto ring = diagram.boundary.ring(edge.boundary_ring_index);
+                if (!ring.empty() && edge.boundary_edge_index < ring.size()) {
+                    edge.define_boundary_condition_geometry(
+                        site_point,
+                        ring[edge.boundary_edge_index],
+                        ring[(edge.boundary_edge_index + 1U) % ring.size()]);
+                }
+            }
+
+            if (have_site && (edge.representative_valid || !edge.is_boundary_edge)) {
                 edge.representative_distance =
                     distance_between(site_point, edge.representative_point);
+                if (!edge.is_boundary_edge && edge.neighbour_site_id != ::vmm::s2d::kInvalidSiteId) {
+                    edge.face_distance = edge.representative_distance;
+                    edge.generator_distance = distance_between(site_point,
+                        diagram.sites[static_cast<std::size_t>(edge.neighbour_site_id.value)].point);
+                }
             }
         }
 

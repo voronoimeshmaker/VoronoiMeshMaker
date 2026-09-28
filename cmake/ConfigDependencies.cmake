@@ -6,6 +6,8 @@ endif()
 set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 
 find_package(CGAL REQUIRED COMPONENTS Core)
+include("${CMAKE_CURRENT_LIST_DIR}/VerifyCGALHeaders.cmake")
+vmm_verify_cgal_headers()
 
 find_package(TBB REQUIRED)
 

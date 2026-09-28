@@ -4,7 +4,7 @@
 // Author      : Joao Flavio Vieira de Vasconcellos
 // Version     : 0.4.0
 // Description : Canonical polygon-with-holes (SoA/CSR) container for
-//               Boundary2D. Fast path (noexcept) + safe APIs (throw/try_..)
+//               Boundary2D. Fast path + safe APIs (throw/try_..)
 //               wired into the project's ErrorHandling.
 // License     : GNU GPL v3
 //==============================================================================
@@ -20,7 +20,7 @@
  *  - regions[]    : RegionId per ring (outers meaningful). Size == ring_count.
  *
  * Design:
- *  - Hot paths are noexcept and guarded by VMM_ASSERT (debug-only throw).
+ *  - Hot paths are guarded by VMM_ASSERT (debug-only throw).
  *  - Public safe APIs throw VMMException (ErrorHandling) or offer try_*.
  *  - No CGAL types here; adapters handle interop.
  */
@@ -60,10 +60,10 @@ struct Boundary2DData {
     }
 
     /**
-     * @brief View of ring i as a contiguous span of points (noexcept).
+     * @brief View of ring i as a contiguous span of points.
      * @note  VMM_ASSERT (debug) guards; invalid 'i' is UB in Release.
      */
-    [[nodiscard]] std::span<const Point2> ring(Index i) const noexcept {
+    [[nodiscard]] std::span<const Point2> ring(Index i) const {
         VMM_ASSERT(i >= 0 &&
                    static_cast<std::size_t>(i + 1) < ring_off.size());
         const auto b = static_cast<std::size_t>(
@@ -73,7 +73,7 @@ struct Boundary2DData {
         return std::span<const Point2>(points.data() + b, e - b);
     }
 
-    [[nodiscard]] std::span<Point2> ring(Index i) noexcept {
+    [[nodiscard]] std::span<Point2> ring(Index i) {
         VMM_ASSERT(i >= 0 &&
                    static_cast<std::size_t>(i + 1) < ring_off.size());
         const auto b = static_cast<std::size_t>(

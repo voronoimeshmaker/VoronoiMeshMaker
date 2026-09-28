@@ -1,0 +1,57 @@
+{
+  "tests": 9,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "VMMException",
+      "tests": 9,
+      "testsuite": [
+        {
+          "name": "CarriesCodeSeverityMessageAndLocation",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 63
+        },
+        {
+          "name": "WorksForDifferentErrorKinds",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 88
+        },
+        {
+          "name": "WhatIsEnglishMessageIsLocalized",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 105
+        },
+        {
+          "name": "CopyAndMoveKeepStableTexts",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 125
+        },
+        {
+          "name": "ThrowsAndCatchesAsStdException",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 148
+        },
+        {
+          "name": "Parallel_Threads_CreateAndInspect",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 161
+        },
+        {
+          "name": "Parallel_StdPar_BatchCreate",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 197
+        },
+        {
+          "name": "Perf_Smoke_CreateAndWhat",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 220
+        },
+        {
+          "name": "PlaceholdersAreInterpolated",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/Exception\/ut_Exception.cpp",
+          "line": 236
+        }
+      ]
+    }
+  ]
+}

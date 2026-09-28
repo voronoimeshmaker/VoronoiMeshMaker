@@ -122,6 +122,30 @@ struct VolumeNumberingState2D {
  * @ingroup voronoi2d_diagram
  */
 struct ClippedVoronoiDiagram2D {
+    bool boundary_partitioned{false};
+
+    void require_boundary_partition() const {
+        if (!boundary_partitioned) {
+            VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
+                      {{"reason", "boundary_partition_required"}});
+        }
+    }
+    [[nodiscard]] std::span<VoronoiCell2D> internal_span() {
+        require_boundary_partition();
+        return std::span(cells).first(internal_indices.size());
+    }
+    [[nodiscard]] std::span<const VoronoiCell2D> internal_span() const {
+        require_boundary_partition();
+        return std::span(cells).first(internal_indices.size());
+    }
+    [[nodiscard]] std::span<VoronoiCell2D> boundary_span() {
+        require_boundary_partition();
+        return std::span(cells).subspan(internal_indices.size());
+    }
+    [[nodiscard]] std::span<const VoronoiCell2D> boundary_span() const {
+        require_boundary_partition();
+        return std::span(cells).subspan(internal_indices.size());
+    }
     using Real   = ::vmm::s2d::Real;
     using SiteId = ::vmm::s2d::SiteId;
 
@@ -270,9 +294,9 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `VoronoiCell2D&`.
      */
     [[nodiscard]] auto internal_volumes() noexcept {
-        return cells | std::views::filter(
-            [](const VoronoiCell2D& c) noexcept {
-                return !c.is_boundary_cell;
+        return internal_indices | std::views::transform(
+            [this](std::size_t i) -> VoronoiCell2D& {
+                return cells[i];
             });
     }
 
@@ -284,9 +308,9 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `const VoronoiCell2D&`.
      */
     [[nodiscard]] auto internal_volumes() const noexcept {
-        return cells | std::views::filter(
-            [](const VoronoiCell2D& c) noexcept {
-                return !c.is_boundary_cell;
+        return internal_indices | std::views::transform(
+            [this](std::size_t i) -> const VoronoiCell2D& {
+                return cells[i];
             });
     }
 
@@ -296,9 +320,9 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `VoronoiCell2D&`.
      */
     [[nodiscard]] auto boundary_volumes() noexcept {
-        return cells | std::views::filter(
-            [](const VoronoiCell2D& c) noexcept {
-                return c.is_boundary_cell;
+        return boundary_indices | std::views::transform(
+            [this](std::size_t i) -> VoronoiCell2D& {
+                return cells[i];
             });
     }
 
@@ -310,11 +334,33 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `const VoronoiCell2D&`.
      */
     [[nodiscard]] auto boundary_volumes() const noexcept {
-        return cells | std::views::filter(
-            [](const VoronoiCell2D& c) noexcept {
-                return c.is_boundary_cell;
+        return boundary_indices | std::views::transform(
+            [this](std::size_t i) -> const VoronoiCell2D& {
+                return cells[i];
             });
     }
+
+    /** @brief Read-only points in current volume order, then local face order.
+     * @note This is a lazy range, not a contiguous array. Reacquire it after
+     * renumbering or changing geometry. No duplicate coordinate storage exists.
+     */
+    [[nodiscard]] auto boundary_condition_points() const & noexcept {
+        return cells | std::views::transform([](const auto& cell)
+            -> const std::vector<VoronoiCellEdge2D>& { return cell.edges; })
+            | std::views::join
+            | std::views::filter([](const auto& edge) { return edge.is_boundary_edge; })
+            | std::views::transform([](const auto& edge) -> const ::vmm::s2d::Point2& {
+                return edge.boundary_condition_geometry().point();
+            });
+    }
+    void boundary_condition_points() const && = delete;
+
+    /** @brief Lazy traversal of constant pointers to boundary coordinates. */
+    [[nodiscard]] auto boundary_condition_point_pointers() const & noexcept {
+        return boundary_condition_points() | std::views::transform(
+            [](const auto& point) { return &point; });
+    }
+    void boundary_condition_point_pointers() const && = delete;
 
     //--------------------------------------------------------------------------
     // Backward-compatible pointer range views, lazy and allocation-free
@@ -359,11 +405,7 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `VoronoiCell2D*`.
      */
     [[nodiscard]] auto internal_volume_pointers() noexcept {
-        return cells
-            | std::views::filter(
-                [](const VoronoiCell2D& c) noexcept {
-                    return !c.is_boundary_cell;
-                })
+        return internal_volumes()
             | std::views::transform(
                 [](VoronoiCell2D& c) noexcept {
                     return &c;
@@ -378,11 +420,7 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `const VoronoiCell2D*`.
      */
     [[nodiscard]] auto internal_volume_pointers() const noexcept {
-        return cells
-            | std::views::filter(
-                [](const VoronoiCell2D& c) noexcept {
-                    return !c.is_boundary_cell;
-                })
+        return internal_volumes()
             | std::views::transform(
                 [](const VoronoiCell2D& c) noexcept {
                     return &c;
@@ -399,11 +437,7 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `VoronoiCell2D*`.
      */
     [[nodiscard]] auto boundary_volume_pointers() noexcept {
-        return cells
-            | std::views::filter(
-                [](const VoronoiCell2D& c) noexcept {
-                    return c.is_boundary_cell;
-                })
+        return boundary_volumes()
             | std::views::transform(
                 [](VoronoiCell2D& c) noexcept {
                     return &c;
@@ -418,11 +452,7 @@ struct ClippedVoronoiDiagram2D {
      * @return Range yielding `const VoronoiCell2D*`.
      */
     [[nodiscard]] auto boundary_volume_pointers() const noexcept {
-        return cells
-            | std::views::filter(
-                [](const VoronoiCell2D& c) noexcept {
-                    return c.is_boundary_cell;
-                })
+        return boundary_volumes()
             | std::views::transform(
                 [](const VoronoiCell2D& c) noexcept {
                     return &c;
@@ -471,6 +501,8 @@ struct ClippedVoronoiDiagram2D {
      * The method is O(n) in the number of cells.
      */
     void rebuild_indices() {
+        boundary_partitioned = std::is_partitioned(cells.begin(), cells.end(),
+            [](const auto& cell) { return !cell.is_boundary_cell; });
         all_indices.clear();
         internal_indices.clear();
         boundary_indices.clear();

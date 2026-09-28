@@ -1,0 +1,42 @@
+{
+  "tests": 6,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Boundary2DValidation",
+      "tests": 6,
+      "testsuite": [
+        {
+          "name": "ComputesSignedAndAbsoluteRingArea",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 55
+        },
+        {
+          "name": "DetectsRingOrientation",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 70
+        },
+        {
+          "name": "ComputesBoundaryAreaWithHoles",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 80
+        },
+        {
+          "name": "ComputesBoundingBox",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 86
+        },
+        {
+          "name": "ValidatesMinimalPolygonWithHole",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 98
+        },
+        {
+          "name": "RejectsUnexpectedOuterOrientation",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Validation\/ut_Boundary2DValidation.cpp",
+          "line": 105
+        }
+      ]
+    }
+  ]
+}

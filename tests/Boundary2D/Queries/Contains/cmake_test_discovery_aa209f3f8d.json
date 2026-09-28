@@ -1,0 +1,42 @@
+{
+  "tests": 6,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Boundary2DContains",
+      "tests": 6,
+      "testsuite": [
+        {
+          "name": "DetectsPointOnSegment",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 40
+        },
+        {
+          "name": "DetectsPointOnRing",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 52
+        },
+        {
+          "name": "StrictRingQueryExcludesBoundary",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 66
+        },
+        {
+          "name": "HandlesPolygonWithHole",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 82
+        },
+        {
+          "name": "HonorsBoundaryInclusionFlag",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 90
+        },
+        {
+          "name": "RejectsInvalidBoundaryData",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Queries\/Contains\/ut_Boundary2DContains.cpp",
+          "line": 100
+        }
+      ]
+    }
+  ]
+}

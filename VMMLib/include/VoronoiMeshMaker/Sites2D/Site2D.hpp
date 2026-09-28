@@ -96,6 +96,8 @@ struct SiteId {
     friend constexpr auto operator<=>(SiteId a, SiteId b) noexcept = default;
 };
 
+inline constexpr SiteId kInvalidSiteId{::vmm::b2d::kInvalid};
+
 static_assert(std::is_trivially_copyable_v<SiteId>,
               "SiteId must be trivially copyable for use in CGAL vertex info.");
 

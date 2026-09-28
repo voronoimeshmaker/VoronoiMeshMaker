@@ -29,6 +29,8 @@
 //==============================================================================
 #include <cmath>
 #include <cstddef>
+#include <ranges>
+#include <span>
 #include <vector>
 
 //==============================================================================
@@ -37,6 +39,7 @@
 #include <VoronoiMeshMaker/Boundary2D/Boundary2DTypes.hpp>
 #include <VoronoiMeshMaker/Core/constants.h>
 #include <VoronoiMeshMaker/Sites2D/Site2D.hpp>
+#include <VoronoiMeshMaker/Voronoi2D/Cells/BoundaryConditionPoint2D.hpp>
 
 VORMAKER_NAMESPACE_OPEN
 VORONOI2D_NAMESPACE_OPEN
@@ -63,17 +66,30 @@ struct AreaCentroid2D {
  * @brief Metadata for one edge of a clipped Voronoi cell.
  *
  * The endpoints `a` and `b` are the actual clipped-cell edge. For non-boundary
- * edges, the representative point is the midpoint. For boundary edges, the
+ * edges, the representative point is the generator-line crossing. For boundary edges, the
  * representative point is intended to be a point on Boundary2D associated with
  * the numerical boundary treatment, not necessarily the midpoint of the local
  * clipped edge.
  *
  * @ingroup voronoi2d_cells
  */
-struct VoronoiCellEdge2D {
+class VoronoiCellEdge2D {
+public:
     using Point2 = ::vmm::s2d::Point2;
     using Real   = ::vmm::s2d::Real;
     using Index  = ::vmm::b2d::Index;
+
+    VoronoiCellEdge2D() = default;
+    VoronoiCellEdge2D(Point2 a_in,
+                      Point2 b_in,
+                      Point2 midpoint_in,
+                      Real length_in,
+                      bool is_boundary_edge_in) noexcept
+        : a(a_in),
+          b(b_in),
+          midpoint(midpoint_in),
+          length(length_in),
+          is_boundary_edge(is_boundary_edge_in) {}
 
     Point2 a{};
     Point2 b{};
@@ -92,6 +108,29 @@ struct VoronoiCellEdge2D {
     Real        boundary_segment_parameter{0};
 
     bool representative_inside_local_edge{false};
+
+    ::vmm::s2d::SiteId neighbour_site_id{::vmm::s2d::kInvalidSiteId};
+    Real crossing_parameter{0}; ///< Parameter along a + t (b - a), not clamped.
+    Real generator_distance{0}; ///< Internal generator-to-generator distance.
+    Real face_distance{0}; ///< Internal owner-to-crossing distance.
+
+    void define_boundary_condition_geometry(
+        Point2 generator,
+        Point2 support_a,
+        Point2 support_b) noexcept
+    {
+        boundary_condition_geometry_ = BoundaryConditionPoint2D::from_support_line(
+            generator, a, b, support_a, support_b);
+    }
+
+    [[nodiscard]] const BoundaryConditionPoint2D&
+    boundary_condition_geometry() const noexcept
+    {
+        return boundary_condition_geometry_;
+    }
+
+private:
+    BoundaryConditionPoint2D boundary_condition_geometry_{};
 };
 
 //==============================================================================
@@ -118,6 +157,8 @@ struct VoronoiCell2D {
     using SiteId  = ::vmm::s2d::SiteId;
 
     SiteId               site_id{};
+    // Deprecated spelling: this is the Delaunay graph, NOT the FV stencil.
+    // Retained as the sole storage for source and aggregate compatibility.
     std::vector<SiteId>  neighbor_ids{};
     std::vector<Point2>  polygon{};
 
@@ -131,6 +172,30 @@ struct VoronoiCell2D {
     std::size_t          volume_id{0};
 
     std::vector<VoronoiCellEdge2D> edges{};
+
+    [[nodiscard]] std::span<const SiteId> delaunay_neighbours() const noexcept {
+        return neighbor_ids;
+    }
+
+    [[nodiscard]] auto face_neighbours() const noexcept {
+        return edges | std::views::filter([](const auto& edge) {
+            return !edge.is_boundary_edge;
+        }) | std::views::transform([](const auto& edge) {
+            return edge.neighbour_site_id;
+        });
+    }
+
+    /** @brief Read-only, allocation-free view of boundary application points.
+     * @note References are invalidated by changes to the edge storage.
+     */
+    [[nodiscard]] auto boundary_condition_points() const & noexcept {
+        return edges | std::views::filter([](const auto& edge) {
+            return edge.is_boundary_edge;
+        }) | std::views::transform([](const auto& edge) -> const Point2& {
+            return edge.boundary_condition_geometry().point();
+        });
+    }
+    void boundary_condition_points() const && = delete;
 
     // -------------------------------------------------------------------------
     // Basic queries

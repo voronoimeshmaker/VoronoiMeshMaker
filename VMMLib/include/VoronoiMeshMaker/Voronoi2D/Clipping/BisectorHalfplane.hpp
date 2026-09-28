@@ -45,8 +45,11 @@ struct BisectorHalfplane {
         return Halfplane2D{
             Real{2} * dx,
             Real{2} * dy,
-            neighbor.x * neighbor.x + neighbor.y * neighbor.y
-                - owner.x * owner.x - owner.y * owner.y
+            // Factor the difference of squares before rounding to Real.
+            static_cast<Real>(static_cast<long double>(dx)
+                    * (static_cast<long double>(neighbor.x) + owner.x)
+                + static_cast<long double>(dy)
+                    * (static_cast<long double>(neighbor.y) + owner.y))
         };
     }
 };

@@ -52,7 +52,15 @@ if(VMM_ENABLE_WARNINGS)
     )
 endif()
 
-if(VMM_ENABLE_LTO)
+if(VMM_TEST_SANITIZERS)
+    # Keep diagnostic translation units separate. GCC LTO can internalise CGAL
+    # header globals differently in the executable and the shared library,
+    # resulting in duplicate ASan global registrations.
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO OFF)
+    message(STATUS "ASan/UBSan diagnostic build: LTO/IPO disabled")
+elseif(VMM_ENABLE_LTO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error)
 

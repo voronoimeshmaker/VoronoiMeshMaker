@@ -1,0 +1,22 @@
+{
+  "tests": 2,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "MessageCatalog",
+      "tests": 2,
+      "testsuite": [
+        {
+          "name": "Parallel_Render_ExplicitLocale_NoGlobalState",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/MessageCatalog\/ut_MessageCatalog.cpp",
+          "line": 62
+        },
+        {
+          "name": "Parallel_Render_ConfigDriven_WithLanguageToggling",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/ErrorHandling\/MessageCatalog\/ut_MessageCatalog.cpp",
+          "line": 100
+        }
+      ]
+    }
+  ]
+}

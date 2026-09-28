@@ -1,0 +1,37 @@
+{
+  "tests": 5,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "Boundary2DBuilder",
+      "tests": 5,
+      "testsuite": [
+        {
+          "name": "BuildsBoundaryFromSingleOuterRing",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Builders\/ut_Boundary2DBuilder.cpp",
+          "line": 37
+        },
+        {
+          "name": "BuildsBoundaryFromOuterAndHoles",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Builders\/ut_Boundary2DBuilder.cpp",
+          "line": 51
+        },
+        {
+          "name": "RejectsRingsWithTooFewVertices",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Builders\/ut_Boundary2DBuilder.cpp",
+          "line": 71
+        },
+        {
+          "name": "UsesPolygonizeForSimpleShapes",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Builders\/ut_Boundary2DBuilder.cpp",
+          "line": 83
+        },
+        {
+          "name": "PreservesHolesWhenShapeProvidesBoundaryData",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Builders\/ut_Boundary2DBuilder.cpp",
+          "line": 95
+        }
+      ]
+    }
+  ]
+}

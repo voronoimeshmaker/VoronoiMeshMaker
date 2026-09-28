@@ -22,6 +22,7 @@
 #include <VoronoiMeshMaker/ErrorHandling/Macros.h>
 #include <VoronoiMeshMaker/Voronoi2D/Cells/VoronoiCell2D.hpp>
 #include <VoronoiMeshMaker/Voronoi2D/Diagram/ClippedVoronoiDiagram2D.hpp>
+#include <VoronoiMeshMaker/Voronoi2D/Metrics/VoronoiBandwidth2D.hpp>
 
 VORMAKER_NAMESPACE_OPEN
 VORONOI2D_NAMESPACE_OPEN
@@ -53,6 +54,9 @@ struct VoronoiEdgeLengthDiagnostics2D {
     std::size_t edge_count{0};
     std::size_t short_edge_count{0};
     std::vector<ShortVoronoiEdge2D> short_edges{};
+    AdjacencyGraph2D graph{AdjacencyGraph2D::FiniteVolumeStencil};
+    std::size_t fv_adjacency_count{0};
+    std::size_t delaunay_adjacency_count{0};
 
     [[nodiscard]] bool has_short_edges() const noexcept {
         return short_edge_count > 0U;
@@ -78,7 +82,8 @@ struct VoronoiEdgeLengthDiagnostics2D {
  */
 [[nodiscard]] inline VoronoiEdgeLengthDiagnostics2D
 diagnose_voronoi_edge_lengths(const ClippedVoronoiDiagram2D& diagram,
-                              ::vmm::s2d::Real min_edge_length)
+                              ::vmm::s2d::Real min_edge_length,
+                              AdjacencyGraph2D graph = AdjacencyGraph2D::FiniteVolumeStencil)
 {
     using Real = ::vmm::s2d::Real;
 
@@ -91,6 +96,15 @@ diagnose_voronoi_edge_lengths(const ClippedVoronoiDiagram2D& diagram,
 
     VoronoiEdgeLengthDiagnostics2D report;
     report.requested_min_edge_length = min_edge_length;
+    report.graph = graph;
+    // Length-only diagnostics also accept manually supplied polygon records.
+    // Count known links without requiring a complete site-to-cell index.
+    for (const auto& cell : diagram.cells) {
+        for (const auto id : cell.face_neighbours())
+            if (id != ::vmm::s2d::kInvalidSiteId && cell.site_id < id) ++report.fv_adjacency_count;
+        for (const auto id : cell.delaunay_neighbours())
+            if (cell.site_id < id) ++report.delaunay_adjacency_count;
+    }
 
     Real observed_min = std::numeric_limits<Real>::infinity();
 
@@ -119,6 +133,17 @@ diagnose_voronoi_edge_lengths(const ClippedVoronoiDiagram2D& diagram,
     };
 
     for (const auto& volume : diagram.all_volumes()) {
+        // Delaunay mode measures generator segments, not polygon faces.
+        // FV mode preserves the per-cell polygon-edge diagnostic, including boundary.
+        if (graph == AdjacencyGraph2D::Delaunay) {
+            const auto a = diagram.sites[static_cast<std::size_t>(volume.site_id.value)].point;
+            std::size_t i = 0;
+            for (const auto id : volume.delaunay_neighbours()) {
+                const auto b = diagram.sites[static_cast<std::size_t>(id.value)].point;
+                record_edge(volume, i++, voronoi_edge_length(a, b), false, a, b);
+            }
+            continue;
+        }
         if (!volume.edges.empty()) {
             for (std::size_t i = 0; i < volume.edges.size(); ++i) {
                 const auto& edge = volume.edges[i];

@@ -29,6 +29,9 @@
 //==============================================================================
 //  C++ standard library
 //==============================================================================
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <span>
 #include <string>
 #include <utility>
@@ -67,8 +70,8 @@ struct VoronoiCellBuildOptions2D {
      * @brief Reject boundaries that contain holes.
      *
      * The current implementation clips only against the outer ring.
-     * Polygon-with-holes clipping will be handled at the diagram level once
-     * cells can return multiple polygon components.
+     * Retained for source compatibility. Holes cannot be enabled with this
+     * flag: the single convex polygon representation cannot represent them.
      */
     bool reject_boundaries_with_holes{true};
 };
@@ -103,6 +106,33 @@ struct VoronoiCellBuilder2D {
     using Point2 = ::vmm::s2d::Point2;
     using SiteId = ::vmm::s2d::SiteId;
     using Index  = ::vmm::s2d::Index;
+
+    /** @brief Validate the single convex outer ring supported by this builder. */
+    static void validate_domain(const ::vmm::b2d::Boundary2DData& boundary) {
+        if (!boundary.invariant_ok() || boundary.ring_count() == 0) {
+            VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
+                      {{"name", "invalid boundary storage"}});
+        }
+        if (boundary.ring_count() != 1 ||
+            boundary.kinds.front() != ::vmm::b2d::LoopKind::Outer) {
+            VMM_THROW(::vmm::error::CoreErr::NotImplemented,
+                      {{"reason", "multiple rings and holes require multi-component cells"}});
+        }
+        const auto ring = boundary.ring(0);
+        for (std::size_t i = 0; i < ring.size(); ++i) {
+            const auto a = ring[i];
+            const auto b = ring[(i + 1U) % ring.size()];
+            if (!std::isfinite(a.x) || !std::isfinite(a.y) ||
+                (a.x == b.x && a.y == b.y)) {
+                VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
+                          {{"name", "non-finite or repeated boundary vertex"}});
+            }
+        }
+        if (!CgalKernelTraits2D::is_simple_ccw_convex(ring)) {
+            VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
+                      {{"name", "boundary must be simple, counter-clockwise and convex"}});
+        }
+    }
 
     //--------------------------------------------------------------------------
     // Public API — performs full validation
@@ -266,7 +296,7 @@ private:
         const ::vmm::s2d::SiteSet&        sites,
         const ::vmm::b2d::Boundary2DData& boundary,
         SiteId                            site_id,
-        const VoronoiCellBuildOptions2D&  options)
+        const VoronoiCellBuildOptions2D&  /*options*/)
     {
         if (!sites.ids_are_sequential()) {
             VMM_THROW(::vmm::error::CoreErr::InvalidArgument,
@@ -283,16 +313,7 @@ private:
                       {{"where",  "VoronoiCellBuilder2D"},
                        {"reason", "invalid_boundary"}});
         }
-        if (options.reject_boundaries_with_holes) {
-            for (Index i = 0; i < boundary.ring_count(); ++i) {
-                if (boundary.kinds[static_cast<std::size_t>(i)] ==
-                    ::vmm::b2d::LoopKind::Hole) {
-                    VMM_THROW(::vmm::error::CoreErr::NotImplemented,
-                              {{"where",  "VoronoiCellBuilder2D"},
-                               {"reason", "boundary_holes_not_yet_supported"}});
-                }
-            }
-        }
+        validate_domain(boundary);
     }
 
     //--------------------------------------------------------------------------
@@ -306,36 +327,23 @@ private:
             return;
         }
 
-        std::vector<Point2> cleaned;
-        cleaned.reserve(polygon.size());
-        constexpr auto eps2 =
-            ::vmm::constants::kEpsilon * ::vmm::constants::kEpsilon;
-
-        for (const auto& point : polygon) {
-            if (cleaned.empty()) {
-                cleaned.push_back(point);
-                continue;
-            }
-
-            const auto& previous = cleaned.back();
-            const auto dx = point.x - previous.x;
-            const auto dy = point.y - previous.y;
-            if ((dx * dx + dy * dy) > eps2) {
-                cleaned.push_back(point);
+        using Real = ::vmm::s2d::Real;
+        // Remove numerical duplicates, not genuine short Voronoi faces. An
+        // absolute mesh-scale threshold changes the neighbouring bisectors.
+        const auto duplicate = [](Point2 p, Point2 q) noexcept {
+            const Real scale = std::max({Real{1}, std::abs(p.x), std::abs(p.y),
+                                        std::abs(q.x), std::abs(q.y)});
+            const Real tolerance = Real{8} * std::numeric_limits<Real>::epsilon() * scale;
+            return std::hypot(p.x - q.x, p.y - q.y) <= tolerance;
+        };
+        std::size_t count = 1U;
+        for (std::size_t i = 1U; i < polygon.size(); ++i) {
+            if (!duplicate(polygon[count - 1U], polygon[i])) {
+                polygon[count++] = polygon[i];
             }
         }
-
-        if (cleaned.size() > 1U) {
-            const auto& first = cleaned.front();
-            const auto& last = cleaned.back();
-            const auto dx = first.x - last.x;
-            const auto dy = first.y - last.y;
-            if ((dx * dx + dy * dy) <= eps2) {
-                cleaned.pop_back();
-            }
-        }
-
-        polygon = std::move(cleaned);
+        if (count > 1U && duplicate(polygon.front(), polygon[count - 1U])) --count;
+        polygon.resize(count);
     }
 
     /**

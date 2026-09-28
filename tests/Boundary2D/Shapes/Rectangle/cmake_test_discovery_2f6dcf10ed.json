@@ -1,0 +1,43 @@
+{
+  "tests": 5,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "RectangleConstructors",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "ThrowsOnNonPositiveDimensions",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Rectangle\/ut_Rectangle.cpp",
+          "line": 42
+        },
+        {
+          "name": "DefaultAnchoredAtOrigin",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Rectangle\/ut_Rectangle.cpp",
+          "line": 64
+        },
+        {
+          "name": "UserDefinedAnchor",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Rectangle\/ut_Rectangle.cpp",
+          "line": 77
+        },
+        {
+          "name": "CenteredAtOrigin",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Rectangle\/ut_Rectangle.cpp",
+          "line": 89
+        }
+      ]
+    },
+    {
+      "name": "RectangleMethods",
+      "tests": 1,
+      "testsuite": [
+        {
+          "name": "PolygonizeInto",
+          "file": "\/home\/jflavio\/Programas\/VMM\/tests\/Boundary2D\/Shapes\/Rectangle\/ut_Rectangle.cpp",
+          "line": 104
+        }
+      ]
+    }
+  ]
+}

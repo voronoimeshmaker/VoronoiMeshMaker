@@ -20,6 +20,7 @@
 #include <VoronoiMeshMaker/IO/PathUtils.hpp>
 #include <VoronoiMeshMaker/IO/Sinks.hpp>
 #include <VoronoiMeshMaker/IO/Voronoi2D/Writers/VTK_Legacy_ClippedVoronoi2D.hpp>
+#include <VoronoiMeshMaker/IO/Voronoi2D/Writers/VTK_XML_ClippedVoronoi2D.hpp>
 #include <VoronoiMeshMaker/Voronoi2D/Diagram/ClippedVoronoiDiagram2D.hpp>
 
 VORMAKER_NAMESPACE_OPEN

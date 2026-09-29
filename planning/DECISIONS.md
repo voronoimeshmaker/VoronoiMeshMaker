@@ -23,11 +23,16 @@
 | 014 | Padrão C++23; nome VoronoiMeshMaker | APROVADA | requisitos (R12, R13) |
 | 015 | Independência do PETSc | APROVADA | requisitos (R8, R9) |
 | 016 | Subsistema de erros próprio | APROVADA | requisitos (R10, R11) |
-| 017 | Problemas-âncora A1, A2 e A3 | PROPOSTA | P04 |
-| 018 | Declaração de regiões por precedência | PROPOSTA | P04 |
-| 019 | Formatos de saída por versão | PROPOSTA | P04 |
-| 020 | Metas, determinismo e tolerâncias relativas | PROPOSTA | P04 |
-| 021 | Benchmark leve B1, B2 e B3 | PROPOSTA | P04 |
+| 017 | Problemas-âncora A1, A2 e A3 | APROVADA | P04 |
+| 018 | Declaração de regiões por precedência | APROVADA | P04 |
+| 019 | Formatos de saída por versão | APROVADA | P04 |
+| 020 | Metas, determinismo e tolerâncias relativas | APROVADA | P04 |
+| 021 | Benchmark leve B1, B2 e B3 | APROVADA | P04 |
+| 022 | Compiladores mínimos e namespace público | PROPOSTA | P05 |
+| 023 | Classe trivial e cobertura mínima | PROPOSTA | P05 |
+| 024 | Enums de dado × enums de despacho | PROPOSTA | P05 |
+| 025 | Roteiro de versões | PROPOSTA | P05 |
+| 026 | Documento de diretrizes vigente em planning/ | PROPOSTA | P05 |
 
 ---
 
@@ -245,7 +250,7 @@
 ## DEC-017 — Problemas-âncora A1, A2 e A3
 - Data: 2026-09-28
 - Origem: P04 §2
-- Status: PROPOSTA
+- Status: APROVADA (28/09, respostas do João ao P04)
 - Decisão: Os casos de integração e da galeria são três problemas sintéticos, gerados por parâmetros:
   A1 — seção transversal de rio 2D (canal trapezoidal, duas camadas de solo, variante com ar);
   A2 — trecho de rio 2D em planta, com meandro e ilha; A3 — bloco 3D com canal de profundidade variável,
@@ -258,7 +263,7 @@
 ## DEC-018 — Declaração de regiões por precedência
 - Data: 2026-09-28
 - Origem: P04 §3
-- Status: PROPOSTA
+- Status: APROVADA (28/09, respostas do João ao P04)
 - Decisão: Na API, as regiões são declaradas por precedência (CSG por diferença, na ordem declarada).
   Internamente, a declaração é convertida numa partição explícita, verificada por um validador que garante
   cobertura sem vazios (salvo região de fundo), aponta regiões vazias ou fragmentadas pela ordem e aponta lascas
@@ -271,7 +276,7 @@
 ## DEC-019 — Formatos de saída por versão
 - Data: 2026-09-28
 - Origem: P04 §4
-- Status: PROPOSTA
+- Status: APROVADA (28/09, respostas do João ao P04)
 - Decisão: 0.1 — VTK XML, OpenFOAM polyMesh e um formato nativo do VMM (modelo de volumes finitos completo,
   versionado, usado também nos golden files). 0.2 — MODFLOW 6 (DISV e DISU), PFLOTRAN (UNSTRUCTURED_EXPLICIT) e
   TOUGH (MESH). CGNS opcional, sem prazo, atrás de opção de build. Gmsh fora. Todos são escritores fora do núcleo.
@@ -283,7 +288,7 @@
 ## DEC-020 — Metas, determinismo e tolerâncias relativas
 - Data: 2026-09-28
 - Origem: P04 §5
-- Status: PROPOSTA
+- Status: APROVADA (28/09, respostas do João ao P04)
 - Decisão: Metas iniciais — 2D: 10⁶ células em até 30 s e até 1 KB por célula; 3D: 10⁶ células em até 10 min e
   até 4 KB por célula (Release, 1 thread); faces internas de Voronoi com não ortogonalidade abaixo de 10⁻⁸ rad.
   Determinismo: bit a bit com mesma entrada, configuração, semente e build; mesma topologia e numeração entre
@@ -297,9 +302,64 @@
 ## DEC-021 — Benchmark leve B1, B2 e B3
 - Data: 2026-09-28
 - Origem: P04 §6
-- Status: PROPOSTA
+- Status: APROVADA (28/09, respostas do João ao P04)
 - Decisão: B1 — quadrado unitário com 10⁶ sítios uniformes e semente fixa, comparável com a VMMLib; B2 — A1 sem ar,
   cerca de 5·10⁴ células; B3 — A2, cerca de 5·10⁵ células. Mede-se tempo por fase, pico de memória, invariantes e
   uma soma de verificação da topologia, em Release, a cada entrega.
 - Justificativa: DEC-013; B1 é o único caso com oráculo da VMMLib; B2 e B3 exercitam multirregião.
 - Consequências: P07 implanta o benchmark e registra a linha de base.
+
+## DEC-022 — Compiladores mínimos e namespace público
+- Data: 2026-09-28
+- Origem: P05 §2 (R12, R13)
+- Status: PROPOSTA
+- Decisão: Compiladores mínimos GCC 14 e Clang 18; a CI testa as versões mínimas e as mais recentes. Recursos de
+  C++23 sem suporte completo nesses compiladores (por exemplo, std::mdspan) não são usados. Namespace público: vmm.
+- Justificativa: std::expected existe desde a libstdc++ 12 e a libc++ 16; "deducing this" desde o GCC 14 e o
+  Clang 18/19; std::mdspan só a partir da libstdc++ 16 (tabela de suporte a C++23 do cppreference). vmm já é o
+  namespace da VMMLib e o candidato citado nos requisitos.
+- Consequências: P07 configura a matriz de compiladores da CI; P06 organiza os sub-namespaces.
+
+## DEC-023 — Classe trivial e cobertura mínima
+- Data: 2026-09-28
+- Origem: P05 §2 (R1, R25)
+- Status: PROPOSTA
+- Decisão: Classe trivial é um agregado sem invariantes nem comportamento (tag, opção sem validação, registro de
+  dados); só as classes não triviais exigem ut_<Classe>.cpp próprio, e a lista de triviais é declarada e revisada.
+  O código novo tem pelo menos 90% das linhas e 80% dos ramos cobertos por arquivo, medidos na CI; exceções por
+  arquivo exigem justificativa.
+- Justificativa: torna o R1 verificável; os limites ficam próximos do que a VMMLib já atinge (94,9% das linhas e
+  81,9% dos ramos, P03 v2.2) e evitam testes vazios só para cumprir número.
+- Consequências: P06 declara a lista inicial de classes triviais; P07 implanta o limite na CI.
+
+## DEC-024 — Enums de dado × enums de despacho
+- Data: 2026-09-28
+- Origem: P05 §3
+- Status: PROPOSTA
+- Decisão: Enum de dado (descreve estado ou categoria, sem escolher implementação) é permitido. Enum de despacho
+  (valor que, num switch ou cadeia de if, escolhe entre implementações alternativas) é proibido; a escolha é feita
+  por policy em tempo de compilação ou por registro aberto de callables em tempo de execução.
+- Justificativa: interpreta o AGENTS.md ("no enums or equivalent closed feature dispatch") de forma verificável e
+  alinhada ao R3; o P03 separou os enums da VMMLib exatamente por esse critério.
+- Consequências: P08 revê os enums de despacho da VMMLib na migração; o prompt REV verifica cada enum novo.
+
+## DEC-025 — Roteiro de versões
+- Data: 2026-09-28
+- Origem: P05 §4
+- Status: PROPOSTA
+- Decisão: 0.1 — entrega (a), 2D multirregião, com formato nativo, VTK XML e OpenFOAM; 0.2 — escritores MODFLOW 6,
+  PFLOTRAN e TOUGH; 0.3 — entrega (b), 3D com uma região e domínio analítico; 0.4 — entrega (c), 3D com domínio
+  STL; 0.5 — entrega (d), 3D multirregião; 1.0 — congelamento da API pública. Submissão ao JOSS a partir da 0.1.
+- Justificativa: entregas verticais e publicáveis; o 3D só começa depois do P15a (DEC-010).
+- Consequências: P14 prepara a 0.1; a sequência ganha um prompt próprio para os escritores da 0.2.
+
+## DEC-026 — Documento de diretrizes vigente em planning/
+- Data: 2026-09-28
+- Origem: P05 §1
+- Status: PROPOSTA
+- Decisão: A versão vigente das diretrizes é planning/project_guidelines.tex, reescrita no P05 como regras
+  verificáveis. VoronoiGridMaker/docs/architecture/project_guidelines.tex fica como histórico até o P06 decidir o
+  destino da árvore VoronoiGridMaker/. O P13 move a versão vigente para a documentação definitiva.
+- Justificativa: o único project_guidelines.tex do repositório está na árvore histórica (DEC-011) e não é
+  referenciado por nenhum outro arquivo; planning/ é a fonte única (DEC-013).
+- Consequências: P06 e P13 atualizam os caminhos.

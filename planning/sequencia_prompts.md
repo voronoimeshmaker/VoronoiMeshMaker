@@ -1,6 +1,6 @@
 # Sequência de prompts — conclusão do VMM
 
-Versão 5.1 — 28/09/2026. A sequência pode ser alterada a qualquer momento (veja "Versionamento").
+Versão 5.2 — 28/09/2026. A sequência pode ser alterada a qualquer momento (veja "Versionamento").
 
 ## Como usar
 
@@ -88,8 +88,8 @@ planning/P05_BASELINE.md, planning/DECISIONS.md.
 
 TAREFAS
 1. Conformidade: a iteração faz o que o plano de iterações previa, e nada além disso?
-   Viola algum requisito, alguma decisão APROVADA, o AGENTS.md ou o R3 (virtual, herança,
-   enum de despacho fechado)?
+   Viola algum requisito (planning/P05_BASELINE.md), alguma decisão APROVADA, o AGENTS.md ou o R3
+   (virtual, herança, enum de despacho — DEC-024)?
 2. Correção: erros lógicos e geométricos, casos de borda sem tratamento, robustez numérica,
    determinismo.
 3. Testes: cada classe nova ou modificada tem GTest atualizado (R1/R2)? Os testes verificam
@@ -346,8 +346,8 @@ TAREFAS
 5. Relatório: o que funcionou, o que falhou, o que muda no P06.
 
 LIMITES
-Código em prototypes/P05a/, fora da biblioteca e sem compromisso de API. Prazo: o João o fixa ao
-aprovar o plano de iterações. Nada daqui entra no código de produção sem passar pelo P06.
+Código em prototypes/P05a/, fora da biblioteca e sem compromisso de API (DEC-027). Prazo: o João o
+fixa ao aprovar o plano de iterações. Nada daqui entra no código de produção sem passar pelo P06.
 
 ENTREGÁVEL
 planning/P05a_provas_conceito.md + prototypes/P05a/
@@ -386,6 +386,9 @@ TAREFAS
 7. Estruturas de adjacência e views para a aplicação consumidora (DEC-015) e API do subsistema de
    erros (DEC-016).
 8. Incorporar o que o P05a ensinou.
+9. Formato nativo (DEC-019); representação interna da partição de regiões (DEC-018); política de
+   índices (largura dos IDs); lista inicial de classes triviais (DEC-023).
+10. Localização definitiva das diretrizes (DEC-026), junto com o item 4.
 
 ENTREGÁVEL
 planning/P06_arquitetura_a.md (+ diagramas)
@@ -419,7 +422,11 @@ TAREFAS
 7. Padrão C++23 (DEC-014).
 8. Gerar os golden files do oráculo (DEC-011) num build sem -ffast-math e sem NATIVE_ARCH, com
    compilador, flags e versões no cabeçalho de cada arquivo.
-9. Benchmark leve: tempo e memória de 2 ou 3 casos fixos, como linha de base.
+9. Benchmark leve: casos B1, B2 e B3 (DEC-021), como linha de base; recalibração única das metas
+   (DEC-020).
+10. Verificadores de CI dos requisitos R1, R2, R3, R4, R8, R19, R21, R23 e R25 (P05_BASELINE §2);
+    matriz de compiladores com GCC 14 e Clang 18 como mínimos (DEC-022); limite de cobertura
+    (DEC-023).
 
 ENTREGÁVEL
 Alterações de build/CI + planning/P07_infra.md (comandos, evidências)
@@ -462,11 +469,11 @@ Implementar a definição do domínio 2D por meios e regiões (R5).
 
 TAREFAS
 1. Registro aberto de Medium e Region; número variável de regiões por meio.
-2. Composição por precedência (diferença na ordem declarada), sobre as formas 2D existentes
-   (Rectangle, Polygon, Ellipse, Ring etc.).
+2. Declaração por precedência convertida em partição explícita (DEC-018), sobre as formas 2D
+   existentes (Rectangle, Polygon, Ellipse, Ring etc.).
 3. Rótulos de patch por trecho do contorno externo.
-4. Validação: sobreposição ambígua, vazios não intencionais, componentes desconexas por
-   região, orientação.
+4. Validador (DEC-018): vazios (salvo região de fundo), regiões anuladas pela ordem, lascas
+   abaixo de uma fração da escala local, componentes desconexas por região, orientação.
 5. GTest por classe + testes de propriedade (a soma das áreas das regiões é igual à área
    da união).
 
@@ -538,8 +545,9 @@ OBJETIVO
 Exportar a malha e validar a entrega (a) de ponta a ponta.
 
 TAREFAS
-1. Escritores: VTK (.vtu/.vtp) com regiões, patches e métricas como campos; os formatos
-   de solver escolhidos na P04 (por exemplo, OpenFOAM polyMesh com patches e zonas por região).
+1. Escritores da 0.1 (DEC-019), nesta ordem: formato nativo do VMM (com leitura, para ida e volta);
+   VTK XML (.vtu) com regiões, patches e métricas como campos; OpenFOAM polyMesh com patches e zonas
+   por região. Os escritores da 0.2 ficam para o P14a.
 2. Separação entre visualização e persistência (conforme as diretrizes).
 3. Testes de integração com os problemas-âncora 2D da P04; golden files.
 4. Medir as metas de desempenho da P04 e registrar os resultados.
@@ -574,6 +582,7 @@ TAREFAS
 6. Workflow de CI: build da documentação → GitHub Pages. Um exemplo que falha quebra o build.
 7. Gate do AGENTS.md: só entram na galeria exemplos de classes cujos testes de classe e de
    integração passam.
+8. Mover planning/project_guidelines.tex para a documentação definitiva (DEC-026).
 
 ENTREGÁVEL
 docs + workflow + planning/P13_relatorio.md
@@ -604,6 +613,12 @@ planning/P14_release_0_1.md
 CRITÉRIO DE CONCLUSÃO
 O João aprova a publicação.
 ```
+
+## P14a — Escritores da 0.2 (esboço)
+
+Prompt completo escrito depois da P14. Escritores MODFLOW 6 (DISV e DISU), PFLOTRAN
+(UNSTRUCTURED_EXPLICIT) e TOUGH (MESH), fora do núcleo, com teste de ida e volta ou validação pelo
+leitor oficial quando disponível (DEC-019, DEC-025).
 
 ---
 
@@ -644,3 +659,4 @@ Os prompts completos desta fase serão escritos depois da P14, com o que for apr
 | 4 | 2026-09-28 | P15a com CGAL, VoroCrust só como referência, bateria de testes da hipótese do backend 3D | DEC-010 |
 | 5 | 2026-09-28 | Revisões pelo João (REV opcional); planning/ como fonte única; ambiente e versões declarados; entrega arquivo a arquivo; P05a (provas de conceito 2D e 3D); P15a com critérios, prazo e contingência; limite de tentativas; iterações de movimentação separadas; DEC-012 no P07; golden files e benchmark a partir do P07; Fase 2 segue a DEC-011 | DEC-011 a DEC-016 |
 | 5.1 | 2026-09-28 | P04 detalhado: contexto das decisões da fase 1, declaração de regiões, invariantes por caso, lista mínima de formatos, tolerâncias, casos do benchmark leve e ordem das seções do entregável | DEC-011, DEC-013, DEC-015 |
+| 5.2 | 2026-09-28 | Ajustes do P05 §6: P06 (formato nativo, partição, índices, classes triviais, diretrizes); P07 (verificadores de CI, compiladores, B1–B3, cobertura); P09 (DEC-018); P12 (escritores da 0.1 e ordem); P13 (diretrizes); P14a (escritores da 0.2); REV (DEC-024); P05a com DEC-027 | DEC-018 a DEC-027 |

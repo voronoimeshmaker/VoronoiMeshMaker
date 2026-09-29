@@ -28,11 +28,12 @@
 | 019 | Formatos de saída por versão | APROVADA | P04 |
 | 020 | Metas, determinismo e tolerâncias relativas | APROVADA | P04 |
 | 021 | Benchmark leve B1, B2 e B3 | APROVADA | P04 |
-| 022 | Compiladores mínimos e namespace público | PROPOSTA | P05 |
-| 023 | Classe trivial e cobertura mínima | PROPOSTA | P05 |
-| 024 | Enums de dado × enums de despacho | PROPOSTA | P05 |
-| 025 | Roteiro de versões | PROPOSTA | P05 |
-| 026 | Documento de diretrizes vigente em planning/ | PROPOSTA | P05 |
+| 022 | Compiladores mínimos e namespace público | APROVADA | P05 |
+| 023 | Classe trivial e cobertura mínima | APROVADA | P05 |
+| 024 | Enums de dado × enums de despacho | APROVADA | P05 |
+| 025 | Roteiro de versões | APROVADA | P05 |
+| 026 | Documento de diretrizes vigente em planning/ | APROVADA | P05 |
+| 027 | Regras para protótipos em prototypes/ | PROPOSTA | P05a |
 
 ---
 
@@ -312,7 +313,7 @@
 ## DEC-022 — Compiladores mínimos e namespace público
 - Data: 2026-09-28
 - Origem: P05 §2 (R12, R13)
-- Status: PROPOSTA
+- Status: APROVADA (28/09, aprovação do P05)
 - Decisão: Compiladores mínimos GCC 14 e Clang 18; a CI testa as versões mínimas e as mais recentes. Recursos de
   C++23 sem suporte completo nesses compiladores (por exemplo, std::mdspan) não são usados. Namespace público: vmm.
 - Justificativa: std::expected existe desde a libstdc++ 12 e a libc++ 16; "deducing this" desde o GCC 14 e o
@@ -323,7 +324,7 @@
 ## DEC-023 — Classe trivial e cobertura mínima
 - Data: 2026-09-28
 - Origem: P05 §2 (R1, R25)
-- Status: PROPOSTA
+- Status: APROVADA (28/09, aprovação do P05)
 - Decisão: Classe trivial é um agregado sem invariantes nem comportamento (tag, opção sem validação, registro de
   dados); só as classes não triviais exigem ut_<Classe>.cpp próprio, e a lista de triviais é declarada e revisada.
   O código novo tem pelo menos 90% das linhas e 80% dos ramos cobertos por arquivo, medidos na CI; exceções por
@@ -335,7 +336,7 @@
 ## DEC-024 — Enums de dado × enums de despacho
 - Data: 2026-09-28
 - Origem: P05 §3
-- Status: PROPOSTA
+- Status: APROVADA (28/09, aprovação do P05)
 - Decisão: Enum de dado (descreve estado ou categoria, sem escolher implementação) é permitido. Enum de despacho
   (valor que, num switch ou cadeia de if, escolhe entre implementações alternativas) é proibido; a escolha é feita
   por policy em tempo de compilação ou por registro aberto de callables em tempo de execução.
@@ -346,7 +347,7 @@
 ## DEC-025 — Roteiro de versões
 - Data: 2026-09-28
 - Origem: P05 §4
-- Status: PROPOSTA
+- Status: APROVADA (28/09, aprovação do P05)
 - Decisão: 0.1 — entrega (a), 2D multirregião, com formato nativo, VTK XML e OpenFOAM; 0.2 — escritores MODFLOW 6,
   PFLOTRAN e TOUGH; 0.3 — entrega (b), 3D com uma região e domínio analítico; 0.4 — entrega (c), 3D com domínio
   STL; 0.5 — entrega (d), 3D multirregião; 1.0 — congelamento da API pública. Submissão ao JOSS a partir da 0.1.
@@ -356,10 +357,24 @@
 ## DEC-026 — Documento de diretrizes vigente em planning/
 - Data: 2026-09-28
 - Origem: P05 §1
-- Status: PROPOSTA
+- Status: APROVADA (28/09, aprovação do P05)
 - Decisão: A versão vigente das diretrizes é planning/project_guidelines.tex, reescrita no P05 como regras
   verificáveis. VoronoiGridMaker/docs/architecture/project_guidelines.tex fica como histórico até o P06 decidir o
   destino da árvore VoronoiGridMaker/. O P13 move a versão vigente para a documentação definitiva.
 - Justificativa: o único project_guidelines.tex do repositório está na árvore histórica (DEC-011) e não é
   referenciado por nenhum outro arquivo; planning/ é a fonte única (DEC-013).
 - Consequências: P06 e P13 atualizam os caminhos.
+
+## DEC-027 — Regras para protótipos em prototypes/
+- Data: 2026-09-28
+- Origem: P05a, plano de iterações
+- Status: PROPOSTA
+- Decisão: Código de prova de conceito fica em prototypes/<prompt>/, com CMake próprio, fora do build principal e
+  sem API estável. Está isento de teste por classe, árvore espelhada e cobertura mínima (R1, R2, R25), mas respeita
+  o R3 (sem virtual, sem herança, sem enum de despacho) e usa tolerâncias relativas (R17). Cada protótipo termina
+  num executável que verifica os invariantes e sai com código diferente de zero se algum falhar. Nada de
+  prototypes/ entra no código de produção sem passar pela arquitetura (P06) e pelas regras completas.
+- Justificativa: provas de conceito precisam ser rápidas, mas não podem validar formas que a arquitetura teria de
+  proibir.
+- Consequências: P05a e P15a seguem esta regra; P07 exclui prototypes/ da CI de cobertura e dos verificadores de
+  R1 e R2.

@@ -33,7 +33,7 @@ jobs:
             libgtest-dev libgmock-dev libtbb-dev zlib1g-dev python3
       - name: CGAL ${{ env.CGAL_VERSION }} (release tarball; the distribution package is older)
         run: |
-          curl -fsSL -o cgal.tar.xz \
+          curl -fsSL --retry 5 --retry-delay 15 --retry-all-errors -o cgal.tar.xz \
             https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}.tar.xz
           tar xf cgal.tar.xz
           cmake -S CGAL-${CGAL_VERSION} -B cgal-build -DCMAKE_INSTALL_PREFIX=$HOME/cgal
@@ -87,7 +87,7 @@ jobs:
           pip install --user gcovr
       - name: CGAL
         run: |
-          curl -fsSL -o cgal.tar.xz \
+          curl -fsSL --retry 5 --retry-delay 15 --retry-all-errors -o cgal.tar.xz \
             https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}.tar.xz
           tar xf cgal.tar.xz && cmake -S CGAL-${CGAL_VERSION} -B cgal-build -DCMAKE_INSTALL_PREFIX=$HOME/cgal
           cmake --install cgal-build

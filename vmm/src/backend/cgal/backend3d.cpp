@@ -3,7 +3,9 @@
 // Description: CGAL implementation of Backend3D (P16): partition checks,
 //              Delaunay 3D (Epick), exact circumcentres and the exact
 //              labelled clipping of a convex cell by a region (Epeck,
-//              Polygon Mesh Processing corefinement, P15a).
+//              Polygon Mesh Processing corefinement, P15a): against the
+//              region triangles near the cell (P17), or against the whole
+//              region when the local result is not certain.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // ============================================================================
 
@@ -17,6 +19,7 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <memory>
@@ -43,6 +46,7 @@
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/self_intersections.h>
+#include <CGAL/Side_of_triangle_mesh.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Triangulation_data_structure_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
@@ -51,6 +55,7 @@
 //  VoronoiMeshMaker
 //==============================================================================
 #include "backend_cgal.hpp"
+
 
 namespace vmm::cgal_detail {
 namespace {
@@ -70,8 +75,9 @@ constexpr const char* kLabelProperty = "f:vmm_label";
 /// Exact structures of one region (PreparedDomain3::state).
 struct State3 {
     EMesh domain;     ///< faces labelled kDomainFace | partition triangle
-    IMesh domain_i;   ///< the same surface for the AABB tree
+    IMesh domain_i;   ///< the same surface for the AABB tree (same face order)
     Tree tree;
+    std::unique_ptr<CGAL::Side_of_triangle_mesh<EMesh, Epeck>> inside;  ///< exact point-in-region test
 };
 
 Vec3 to_vec(const Epeck::Point_3& p) {
@@ -176,6 +182,93 @@ struct Piece {
     std::vector<Vec3> loop;
 };
 
+std::array<Epeck::Point_3, 3> face_points(const EMesh& m, EMesh::Face_index f) {
+    std::array<Epeck::Point_3, 3> p;
+    std::size_t k = 0;
+    for (const auto v : CGAL::vertices_around_face(m.halfedge(f), m)) p[k++] = m.point(v);
+    return p;
+}
+
+/// Local clipping (P17): corefines the cell with the region triangles that meet its box and
+/// keeps the cell pieces inside the region and the region pieces inside the cell, every test
+/// exact. Returns false when the result is not certain (a piece lying on the other surface,
+/// a result that is not closed): the caller then clips against the whole region.
+bool clip_local(const EMesh& cell, const State3& state, const Box3& box, EMesh& out, LabelMap& out_label) {
+    std::vector<IMesh::Face_index> near;
+    state.tree.all_intersected_primitives(
+        Epick::Iso_cuboid_3(box.lo()[0], box.lo()[1], box.lo()[2], box.hi()[0], box.hi()[1], box.hi()[2]),
+        std::back_inserter(near));
+    if (near.empty()) return false;
+    EMesh cm = cell;  // the copy carries the label property
+    LabelMap cm_label = cm.property_map<EMesh::Face_index, FaceLabel>(kLabelProperty).value();
+    const LabelMap domain_label = state.domain.property_map<EMesh::Face_index, FaceLabel>(kLabelProperty).value();
+    EMesh lm;
+    LabelMap lm_label = lm.add_property_map<EMesh::Face_index, FaceLabel>(kLabelProperty, kUnlabelled).first;
+    std::unordered_map<std::size_t, EMesh::Vertex_index> local;
+    for (const auto fi : near) {
+        const EMesh::Face_index f(static_cast<EMesh::size_type>(static_cast<std::size_t>(fi)));
+        std::array<EMesh::Vertex_index, 3> v;
+        std::size_t k = 0;
+        for (const auto x : CGAL::vertices_around_face(state.domain.halfedge(f), state.domain)) {
+            auto [it, added] = local.emplace(static_cast<std::size_t>(x), EMesh::Vertex_index{});
+            if (added) it->second = lm.add_vertex(state.domain.point(x));
+            v[k++] = it->second;
+        }
+        const auto nf = lm.add_face(v[0], v[1], v[2]);
+        if (nf == EMesh::null_face()) return false;
+        lm_label[nf] = domain_label[f];
+    }
+    LabelVisitor::Maps maps;
+    maps.mesh = {&cm, &lm, nullptr};
+    maps.label = {cm_label, lm_label, LabelMap{}};
+    auto cm_cut = cm.add_property_map<EMesh::Edge_index, bool>("e:vmm_cut", false).first;
+    auto lm_cut = lm.add_property_map<EMesh::Edge_index, bool>("e:vmm_cut", false).first;
+    try {
+        PMP::corefine(cm, lm, CGAL::parameters::visitor(LabelVisitor(&maps)).edge_is_constrained_map(cm_cut),
+                      CGAL::parameters::edge_is_constrained_map(lm_cut));
+    } catch (const std::exception&) {
+        return false;
+    }
+    const CGAL::Side_of_triangle_mesh<EMesh, Epeck> in_cell(cell);
+    std::map<Epeck::Point_3, EMesh::Vertex_index> shared;
+    const auto vertex = [&](const Epeck::Point_3& p) {
+        auto it = shared.find(p);
+        if (it == shared.end()) it = shared.emplace(p, out.add_vertex(p)).first;
+        return it->second;
+    };
+    // The intersection edges cut each mesh into patches that lie wholly inside or
+    // wholly outside the other surface: one exact query per patch.
+    const auto copy = [&](const EMesh& m, const LabelMap& label, const auto& cut, const auto& side) {
+        std::vector<std::size_t> parent(m.number_of_faces());
+        std::iota(parent.begin(), parent.end(), std::size_t{0});
+        const auto find = [&](std::size_t x) {
+            while (parent[x] != x) x = parent[x] = parent[parent[x]];
+            return x;
+        };
+        for (const auto e : m.edges()) {
+            if (cut[e] || m.is_border(e)) continue;
+            const auto h = m.halfedge(e);
+            parent[find(static_cast<std::size_t>(m.face(h)))] = find(static_cast<std::size_t>(m.face(m.opposite(h))));
+        }
+        std::unordered_map<std::size_t, CGAL::Bounded_side> where;
+        for (const auto f : m.faces()) {
+            const std::size_t g = find(static_cast<std::size_t>(f));
+            auto it = where.find(g);
+            const auto p = face_points(m, f);
+            if (it == where.end()) it = where.emplace(g, side(CGAL::centroid(p[0], p[1], p[2]))).first;
+            if (it->second == CGAL::ON_BOUNDARY) return false;
+            if (it->second != CGAL::ON_BOUNDED_SIDE) continue;
+            const auto nf = out.add_face(vertex(p[0]), vertex(p[1]), vertex(p[2]));
+            if (nf == EMesh::null_face()) return false;
+            out_label[nf] = label[f];
+        }
+        return true;
+    };
+    if (!copy(cm, cm_label, cm_cut, *state.inside)) return false;
+    if (!copy(lm, lm_label, lm_cut, in_cell)) return false;
+    return out.number_of_faces() > 0 && CGAL::is_closed(out);
+}
+
 }  // namespace
 
 Result<Partition3D> build_partition_3d(const Declaration3D& declaration) {
@@ -233,6 +326,7 @@ Result<PreparedDomain3> prepare_3d(const Partition3D& partition, RegionId region
         return fail(ErrorCode::InvalidSurface, "region surface is not closed");
     }
     state->tree.rebuild(faces(state->domain_i).first, faces(state->domain_i).second, state->domain_i);
+    state->inside = std::make_unique<CGAL::Side_of_triangle_mesh<EMesh, Epeck>>(state->domain);
     return PreparedDomain3{std::shared_ptr<const void>(std::move(state))};
 }
 
@@ -316,21 +410,26 @@ CellClip3 clip_cell_3d(const LabelledPolyhedron3& cell, const PreparedDomain3& d
         r.error = "cell is open or self-intersecting";
         return r;
     }
-    // A fresh copy of the region per cell: sharing it (do_not_modify) was 22-142x slower (P15 §6).
-    EMesh dm = state->domain;
     EMesh out;
     LabelMap out_label = out.add_property_map<EMesh::Face_index, FaceLabel>(kLabelProperty, kUnlabelled).first;
-    LabelVisitor::Maps maps;
-    maps.mesh = {&cm, &dm, &out};
-    maps.label = {cell_label, dm.property_map<EMesh::Face_index, FaceLabel>(kLabelProperty).value(), out_label};
-    try {
-        if (!PMP::corefine_and_compute_intersection(cm, dm, out, CGAL::parameters::visitor(LabelVisitor(&maps)))) {
-            r.error = "corefinement failed";
+    r.local = clip_local(cm, *state, Box3::of(cell.points), out, out_label);
+    if (!r.local) {
+        // Whole region, a fresh copy per cell: sharing it (do_not_modify) was 22-142x slower (P15 §6).
+        out.clear();
+        out_label = out.add_property_map<EMesh::Face_index, FaceLabel>(kLabelProperty, kUnlabelled).first;
+        EMesh dm = state->domain;
+        LabelVisitor::Maps maps;
+        maps.mesh = {&cm, &dm, &out};
+        maps.label = {cell_label, dm.property_map<EMesh::Face_index, FaceLabel>(kLabelProperty).value(), out_label};
+        try {
+            if (!PMP::corefine_and_compute_intersection(cm, dm, out, CGAL::parameters::visitor(LabelVisitor(&maps)))) {
+                r.error = "corefinement failed";
+                return r;
+            }
+        } catch (const std::exception& e) {
+            r.error = std::format("corefinement threw: {}", e.what());
             return r;
         }
-    } catch (const std::exception& e) {
-        r.error = std::format("corefinement threw: {}", e.what());
-        return r;
     }
     r.volume = CGAL::to_double(PMP::volume(out));
     auto fcc = out.add_property_map<EMesh::Face_index, std::size_t>("f:vmm_cc", 0).first;

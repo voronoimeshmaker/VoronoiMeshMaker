@@ -435,6 +435,7 @@ Result<Build3D> build_mesh_3d(const Partition3D& partition, const SiteSet3D& sit
             CellClip3 c = backend.clip_cell(lp, *prepared);
             if (!c.error.empty()) return fail(ErrorCode::BackendFailure, c.error, CellId{i});
             ++st.clipped_cells;
+            if (c.local) ++st.local_clips;
             if (c.components > 1) {
                 ++st.fragmented_cells;
                 log(Error(ErrorCode::InvariantViolated, "cell made of several pieces (kept whole)", CellId{i}, Severity::Warning));

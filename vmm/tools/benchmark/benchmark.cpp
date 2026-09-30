@@ -2,9 +2,11 @@
 // File: benchmark.cpp
 // Description: Light benchmark (DEC-021): B1 unit square with random sites,
 //              B2 anchor A1, B3 anchor A2; in 3D (P16) B4 unit cube and B5
-//              sphere (320 * 4 triangles) with random sites. Reports time per
+//              sphere (320 * 4 triangles) with random sites; P17: B6 terrain block
+//              (STL-like surface of 4 n^2 + 8 n triangles). Reports time per
 //              phase, peak RSS, invariants and a topology checksum. Usage:
-//                vmm_benchmark [B1|B2|B3|all|B4|B5|3d] [B1 cells] [B4 cells] [B5 cells]
+//                vmm_benchmark [B1|B2|B3|all|B4|B5|B6|3d] [B1 cells] [B4 cells] [B5 cells]
+//                              [B6 grid n] [B6 cells]
 //              Peak RSS is per process: run one case per call to measure memory.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
@@ -149,10 +151,10 @@ int run3d(const std::string& name, const vmm::Declaration3D& declaration, std::s
     const double n = static_cast<double>(b->mesh.cell_count());
     const auto& s = b->stats;
     std::println("{}: cells {} faces {} | partition {:.3f} s | sites {:.3f} s | build {:.3f} s (delaunay {:.3f}, cells {:.3f}, "
-                 "clip {:.3f}, assembly {:.3f}; fast {} clipped {} fragmented {}) | invariants {:.3f} s {} | max "
+                 "clip {:.3f}, assembly {:.3f}; fast {} clipped {} (local {}) fragmented {}) | invariants {:.3f} s {} | max "
                  "non-orthogonality (rounding) {:.1e} rad | peak RSS {:.0f} MB ({:.0f} B/cell) | checksum {:016x}",
                  name, b->mesh.cell_count(), b->mesh.face_count(), t_partition, t_sites, t_build, s.seconds_delaunay,
-                 s.seconds_cells, s.seconds_clip, s.seconds_assembly, s.fast_cells, s.clipped_cells, s.fragmented_cells,
+                 s.seconds_cells, s.seconds_clip, s.seconds_assembly, s.fast_cells, s.clipped_cells, s.local_clips, s.fragmented_cells,
                  t_check, inv.passed(ref) ? "PASS" : "FAIL", inv.max_nonortho_internal,
                  static_cast<double>(peak_rss_kb()) / 1024, 1024.0 * static_cast<double>(peak_rss_kb()) / n,
                  topology_checksum(b->mesh));
@@ -163,6 +165,12 @@ int run3d(const std::string& name, const vmm::Declaration3D& declaration, std::s
 vmm::Declaration3D b4() {
     vmm::Declaration3D d;
     (void)d.add_region("cube", *d.media().add("m"), vmm::Cuboid({0, 0, 0}, {1, 1, 1}));
+    return d;
+}
+
+vmm::Declaration3D b6(int n) {
+    vmm::Declaration3D d;
+    (void)d.add_region_surface("soil", *d.media().add("m"), vmm::anchors::terrain_block(n));
     return d;
 }
 
@@ -186,5 +194,11 @@ int main(int argc, char** argv) {
     if (which == "B3" || which == "all") status |= run("B3 (A2)", vmm::anchors::a2(0.5));
     if (which == "B4" || which == "3d") status |= run3d(std::format("B4 (cube, {} sites)", count4), b4(), count4);
     if (which == "B5" || which == "3d") status |= run3d(std::format("B5 (sphere, {} sites)", count5), b5(), count5);
+    const int grid6 = argc > 5 ? std::atoi(argv[5]) : 70;
+    const std::size_t count6 = argc > 6 ? std::strtoull(argv[6], nullptr, 10) : 20000;
+    if (which == "B6" || which == "3d") {
+        status |= run3d(std::format("B6 (terrain block, {} triangles, {} sites)", 4 * grid6 * grid6 + 8 * grid6, count6),
+                        b6(grid6), count6);
+    }
     return status;
 }

@@ -325,3 +325,17 @@ msgstr "Usage"
 
 msgid "A saída é o mesmo ``Mesh<3>`` genérico: faces internas, faces de contorno por patch, owner/neighbour, vetores de área, métricas, adjacência e reordenação funcionam como no 2D. ``write_vtu`` grava células ``VTK_POLYHEDRON``; ``write_native`` grava o formato ``.vmesh``."
 msgstr "The output is the same generic ``Mesh<3>``: internal faces, boundary faces per patch, owner/neighbour, area vectors, metrics, adjacency and reordering work as in 2D. ``write_vtu`` writes ``VTK_POLYHEDRON`` cells; ``write_native`` writes the ``.vmesh`` format."
+
+# guide/mesh3d.rst, STL (P17)
+
+msgid "Domínio de um arquivo STL (versão 0.4)"
+msgstr "Domain from an STL file (version 0.4)"
+
+msgid "``read_stl_surface`` lê um STL ASCII ou binário e o repara numa superfície fechada: solda pontos a menos de 10⁻⁹ da diagonal da caixa, remove triângulos colapsados e repetidos e orienta cada componente de forma consistente. Buracos e arestas com mais de dois triângulos são erros (``InvalidSurface``), nunca preenchidos às cegas."
+msgstr "``read_stl_surface`` reads an ASCII or binary STL file and repairs it into a closed surface: it welds points closer than 10⁻⁹ of the box diagonal, removes collapsed and repeated triangles and orients every component consistently. Holes and edges with more than two triangles are errors (``InvalidSurface``), never filled blindly."
+
+msgid "Num STL ASCII, cada bloco ``solid nome`` vira um patch; um STL binário tem um patch só. ``write_stl`` grava uma superfície nos dois formatos."
+msgstr "In an ASCII STL file every ``solid name`` block becomes a patch; a binary STL file has one patch. ``write_stl`` writes a surface in both formats."
+
+msgid "A superfície entra na declaração com ``SurfaceShape``. Cada célula de contorno é recortada só contra os triângulos próximos dela, em aritmética exata; o custo por célula não cresce com o tamanho do arquivo."
+msgstr "The surface enters the declaration through ``SurfaceShape``. Every boundary cell is clipped only against the triangles near it, in exact arithmetic; the cost per cell does not grow with the size of the file."

@@ -38,6 +38,7 @@ struct BuildStats3D {
     std::size_t cells = 0;
     std::size_t fast_cells = 0;           ///< cells built without the exact clipping
     std::size_t clipped_cells = 0;
+    std::size_t local_clips = 0;          ///< clipped cells that used only the region triangles near them
     std::size_t fragmented_cells = 0;     ///< cells made of several pieces (kept whole, DEC-035)
     std::size_t unsnapped_vertices = 0;   ///< vertex on three bisectors whose four sites are coplanar
     std::size_t merged_vertices = 0;      ///< vertices moved by the merge within the tolerance

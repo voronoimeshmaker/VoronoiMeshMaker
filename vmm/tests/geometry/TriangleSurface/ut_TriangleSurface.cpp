@@ -9,6 +9,7 @@
 //==============================================================================
 //  C++ standard library
 //==============================================================================
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -68,6 +69,43 @@ TEST(TriangleSurface, ContainsAndDistance) {
     EXPECT_FALSE(s.contains(Vec3{0, 0, 0}));  // on a vertex
     EXPECT_NEAR(s.distance(Vec3{0.1, 0.2, 0.3}), 0.1, 1e-15);
     EXPECT_NEAR(s.distance(Vec3{-1, 0, 0}), 1.0, 1e-15);
+}
+
+TEST(TriangleSurface, ContainsNearVerticesEdgesAndCavities) {
+    const auto s = *tet();
+    // Closest point on a vertex, on an edge and on a face, from inside and outside.
+    EXPECT_FALSE(s.contains(Vec3{-0.1, -0.1, -0.1}));   // vertex (0,0,0), outside
+    EXPECT_FALSE(s.contains(Vec3{0.5, -0.1, -0.1}));    // edge x axis, outside
+    EXPECT_TRUE(s.contains(Vec3{0.2, 0.01, 0.01}));     // near the edge, inside
+    EXPECT_FALSE(s.contains(Vec3{0.6, 0.6, 0.6}));      // beyond the slanted face
+    EXPECT_FALSE(s.contains(Vec3{0.5, 0.0, 0.0}));      // on the surface
+    // A cube with a cubic cavity (inner surface facing into the cavity).
+    std::vector<Vec3> pts;
+    std::vector<Triangle> tris;
+    const auto add_box = [&](Vec3 lo, Vec3 hi, bool inward) {
+        const auto base = static_cast<std::uint32_t>(pts.size());
+        for (int k = 0; k < 8; ++k) pts.push_back({(k & 1) ? hi[0] : lo[0], (k & 2) ? hi[1] : lo[1], (k & 4) ? hi[2] : lo[2]});
+        const std::array<std::array<std::uint32_t, 4>, 6> q{{{0, 4, 6, 2}, {1, 3, 7, 5}, {0, 1, 5, 4}, {2, 6, 7, 3}, {0, 2, 3, 1}, {4, 5, 7, 6}}};
+        for (const auto& f : q) {
+            if (inward) {
+                tris.push_back({base + f[0], base + f[2], base + f[1]});
+                tris.push_back({base + f[0], base + f[3], base + f[2]});
+            } else {
+                tris.push_back({base + f[0], base + f[1], base + f[2]});
+                tris.push_back({base + f[0], base + f[2], base + f[3]});
+            }
+        }
+    };
+    add_box({0, 0, 0}, {3, 3, 3}, false);
+    add_box({1, 1, 1}, {2, 2, 2}, true);
+    const auto hollow = TriangleSurface::make(pts, tris, std::vector<std::uint32_t>(24, 0), {"p"});
+    ASSERT_TRUE(hollow) << hollow.error().message();
+    EXPECT_DOUBLE_EQ(hollow->volume(), 26.0);
+    EXPECT_TRUE(hollow->contains(Vec3{0.5, 0.5, 0.5}));
+    EXPECT_FALSE(hollow->contains(Vec3{1.5, 1.5, 1.5}));
+    EXPECT_NEAR(hollow->distance(Vec3{1.5, 1.5, 1.5}), 0.5, 1e-15);
+    EXPECT_FALSE(TriangleSurface{}.contains(Vec3{0, 0, 0}));
+    EXPECT_TRUE(std::isinf(TriangleSurface{}.distance(Vec3{0, 0, 0})));
 }
 
 TEST(TriangleSurface, TwoComponents) {

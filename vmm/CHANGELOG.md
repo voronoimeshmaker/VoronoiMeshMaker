@@ -1,5 +1,18 @@
 # Changelog
 
+## Não publicado — domínio STL (entrega c, planejada como 0.4 na DEC-025)
+
+### Novo
+- `read_stl` / `write_stl` (ASCII com um patch por `solid`, e binário) e `read_stl_surface`.
+- `repair_surface`: solda de pontos, remoção de triângulos colapsados e repetidos,
+  orientação consistente por componente; buracos e arestas não manifold são erros.
+- Recorte local: cada célula de contorno é recortada só contra os triângulos do domínio
+  próximos dela (corefinement e classificação exata por pedaço), com o recorte contra o
+  domínio inteiro como reserva; `BuildStats3D::local_clips`, `CellClip3::local`.
+- `TriangleSurface` com hierarquia de caixas: `contains` (pseudonormais) e `distance` em
+  O(log n).
+- Terreno sintético `anchors::terrain_block`, benchmark B6 e exemplo `ex_stl_domain`.
+
 ## Não publicado — 3D com uma região (entrega b, planejada como 0.3 na DEC-025)
 
 ### Novo

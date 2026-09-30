@@ -40,3 +40,20 @@ A saída é o mesmo ``Mesh<3>`` genérico: faces internas, faces de contorno por
    const auto result = vmm::generate_mesh_3d(request);
    if (!result) return 1;              // result.error().message() explica o motivo
    return vmm::write_vtu(result->mesh, "tanque.vtu") ? 0 : 1;
+
+Domínio de um arquivo STL (versão 0.4)
+--------------------------------------
+
+- ``read_stl_surface`` lê um STL ASCII ou binário e o repara numa superfície fechada: solda pontos a menos de 10⁻⁹ da diagonal da caixa, remove triângulos colapsados e repetidos e orienta cada componente de forma consistente. Buracos e arestas com mais de dois triângulos são erros (``InvalidSurface``), nunca preenchidos às cegas.
+- Num STL ASCII, cada bloco ``solid nome`` vira um patch; um STL binário tem um patch só. ``write_stl`` grava uma superfície nos dois formatos.
+- A superfície entra na declaração com ``SurfaceShape``. Cada célula de contorno é recortada só contra os triângulos próximos dela, em aritmética exata; o custo por célula não cresce com o tamanho do arquivo.
+
+.. code-block:: cpp
+
+   const auto surface = vmm::read_stl_surface("terreno.stl");
+   if (!surface) return 1;             // surface.error().message() explica o motivo
+   vmm::MeshRequest3D request;
+   const auto soil = *request.declaration.media().add("soil");
+   const auto ground = *request.declaration.add_region("ground", soil, vmm::SurfaceShape(*surface));
+   request.sources = {vmm::sites_for_3d(ground, vmm::UniformRandomSource3D(0.05))};
+   const auto result = vmm::generate_mesh_3d(request);

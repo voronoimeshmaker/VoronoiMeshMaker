@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Figure palette (requirements §6.4): media colours and interface colour.
-MEDIUM_COLOURS = {"water": "#0072B2", "solid": "#A0703A", "rock": "#A0703A", "air": "#D6E4EC", "gas": "#D6E4EC"}
+MEDIUM_COLOURS = {"water": "#0072B2", "solid": "#A0703A", "rock": "#A0703A", "soil": "#A0703A", "air": "#D6E4EC", "gas": "#D6E4EC"}
 REGION_FALLBACK = ["#0072B2", "#A0703A", "#009E73", "#E69F00", "#CC79A7", "#56B4E9"]
 
 

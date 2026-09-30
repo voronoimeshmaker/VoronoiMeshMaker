@@ -40,7 +40,10 @@ add_library(vmm_settings INTERFACE)
 target_compile_features(vmm_settings INTERFACE cxx_std_23)
 target_compile_options(vmm_settings INTERFACE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion>
-    $<$<AND:$<BOOL:${VMM_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang>>:-Werror>)
+    $<$<AND:$<BOOL:${VMM_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang>>:-Werror>
+    # DEC-037: no fused multiply-add contraction; with -march=native GCC would otherwise
+    # change the sign of exactly-zero geometric tests (collinear points) between builds.
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-ffp-contract=off>)
 if(VMM_COVERAGE)
     target_compile_options(vmm_settings INTERFACE --coverage -O0 -g)
     target_link_options(vmm_settings INTERFACE --coverage)

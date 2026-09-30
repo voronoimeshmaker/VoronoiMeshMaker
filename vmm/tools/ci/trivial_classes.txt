@@ -52,3 +52,8 @@ SiteGenerationOptions3D
 BuildOptions3D      # options without validation
 BuildStats3D        # counters
 Build3D             # mesh, statistics, volumes
+TriangleSoup        # points, triangles, patches as read
+SurfaceRepairOptions
+SurfaceRepairReport # counters
+StlReadOptions
+StlWriteOptions

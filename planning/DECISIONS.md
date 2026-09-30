@@ -42,7 +42,8 @@
 | 033 | Retirada da VMMLib e do VoronoiGridMaker | APROVADA | João |
 | 034 | Build padrão rápido | APROVADA | João |
 | 035 | Célula partida pelo domínio fica inteira | APROVADA | P15a |
-| 036 | Domínio 3D por superfícies trianguladas fechadas | PROPOSTA | P15 |
+| 036 | Domínio 3D por superfícies trianguladas fechadas | APROVADA | P15 |
+| 037 | Sem contração FMA | APROVADA | P16 |
 
 ---
 
@@ -508,7 +509,7 @@
 ## DEC-036 — Domínio 3D por superfícies trianguladas fechadas
 - Data: 2026-09-30
 - Origem: P15a; P15 §3–§4
-- Status: PROPOSTA
+- Status: APROVADA (30/09, João)
 - Decisão: o domínio 3D (e cada região, na multirregião) é uma superfície triangulada fechada, orientada para fora,
   sem auto-interseção, possivelmente com vários componentes, com um rótulo de patch por triângulo. Formas analíticas
   (caixa, esfera, cilindro, extrusão de forma 2D) são poligonizadas para essa representação, como as curvas no 2D;
@@ -517,3 +518,16 @@
   representação para formas analíticas e STL.
 - Consequências: P16 implementa TriangleSurface, as formas 3D e o validador; as superfícies curvas ficam aproximadas
   por triângulos, com o volume exato da superfície poligonizada como referência dos invariantes.
+
+## DEC-037 — Sem contração FMA
+- Data: 2026-09-30
+- Origem: P16 (falha só em Release: ear clipping do prisma em L na escala 10⁻³)
+- Status: APROVADA (30/09, João)
+- Decisão: os alvos do vmm/ compilam com -ffp-contract=off (GCC e Clang). Complementa a DEC-034: o
+  -march=native continua ligado, mas o compilador não funde a*b + c em FMA.
+- Justificativa: em C++ o GCC contrai por padrão; com as instruções FMA do -march=native, testes geométricos em
+  double que valem exatamente zero (pontos colineares, vértice sobre uma aresta) mudaram de sinal entre o build
+  Debug e o Release, e a triangulação do contorno de uma extrusão falhou. É o mesmo tipo de efeito que levou a
+  DEC-012 a proibir -ffast-math. As decisões de topologia exatas ficam no CGAL; as poucas em double (formas,
+  geração de sítios) precisam dar o mesmo resultado em qualquer build.
+- Consequências: resultados iguais entre Debug e Release na mesma máquina; perda de velocidade medida no P16.

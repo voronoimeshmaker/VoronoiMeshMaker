@@ -137,6 +137,7 @@ TEST(Cgal3D, ClipCellAgainstTheCube) {
     // Half of the cell sticks out through x = 1.
     const auto c = b.clip_cell(box_cell({0.5, 0.25, 0.25}, {1.5, 0.75, 0.75}), d);
     ASSERT_TRUE(c.error.empty()) << c.error;
+    EXPECT_TRUE(c.local);  // only the cube triangles near the cell were used
     EXPECT_DOUBLE_EQ(c.volume, 0.5 * 0.5 * 0.5);
     EXPECT_EQ(c.components, 1u);
     std::set<FaceLabel> labels(c.cell.labels.begin(), c.cell.labels.end());
@@ -151,6 +152,18 @@ TEST(Cgal3D, ClipCellAgainstTheCube) {
         const auto row = c.cell.faces.row(f);
         for (const auto v : row) EXPECT_LE(c.cell.points[row[0]], c.cell.points[v]);
     }
+}
+
+TEST(Cgal3D, CoplanarFacesFallBackToTheWholeRegion) {
+    const auto b = vmm::cgal_backend_3d();
+    const auto p = *b.build_partition(cube_declaration());
+    const auto d = *b.prepare(p, RegionId::from_index(0));
+    // The x+ face of the cell lies on the cube face x = 1: the local result is not certain.
+    const auto c = b.clip_cell(box_cell({0.5, 0.25, 0.25}, {1.0, 0.75, 0.75}), d);
+    ASSERT_TRUE(c.error.empty()) << c.error;
+    EXPECT_FALSE(c.local);
+    EXPECT_DOUBLE_EQ(c.volume, 0.5 * 0.5 * 0.5);
+    EXPECT_EQ(c.components, 1u);
 }
 
 TEST(Cgal3D, ClipCellErrors) {

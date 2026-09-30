@@ -15,6 +15,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <span>
 #include <string>
 #include <vector>
@@ -54,6 +55,10 @@ private:
 
 using Triangle = std::array<std::uint32_t, 3>;
 
+namespace detail {
+struct SurfaceIndex;  // bounding-volume hierarchy and pseudo-normals (surface.cpp)
+}
+
 /// Closed triangle surface, possibly with several components, oriented
 /// outward; triangle t carries patch triangle_patch()[t] (an index into
 /// patches()).
@@ -90,10 +95,11 @@ public:
     [[nodiscard]] Box3 bounding_box() const noexcept { return Box3::of(points_); }
     /// Number of connected components (triangles linked through shared vertices).
     [[nodiscard]] std::size_t component_count() const;
-    /// Generalized winding number above 1/2. Double precision: for site
-    /// generation only, never for the topology of the mesh.
+    /// Strictly inside: the closest surface point seen along its angle-weighted pseudo-normal
+    /// (Baerentzen and Aanaes). Double precision, O(log n) with the hierarchy built by make:
+    /// for site generation only, never for the topology of the mesh.
     [[nodiscard]] bool contains(const Vec3& p) const noexcept;
-    /// Distance from p to the surface.
+    /// Distance from p to the surface, O(log n).
     [[nodiscard]] Real distance(const Vec3& p) const noexcept;
 
 private:
@@ -101,6 +107,7 @@ private:
     std::vector<Triangle> triangles_;
     std::vector<std::uint32_t> triangle_patch_;
     std::vector<std::string> patches_;
+    std::shared_ptr<const detail::SurfaceIndex> index_;  ///< immutable, shared by copies
 };
 
 /// Distance from p to the triangle (a, b, c).

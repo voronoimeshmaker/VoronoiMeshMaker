@@ -59,6 +59,7 @@ struct CellClip3 {
     LabelledPolyhedron3 cell;
     Real volume = 0;              ///< exact volume, rounded
     std::size_t components = 0;   ///< > 1: cell split by the domain (kept whole, DEC-035)
+    bool local = false;           ///< clipped against the region triangles near the cell (P17)
     std::string error;            ///< invalid input or backend failure (empty on success)
 };
 

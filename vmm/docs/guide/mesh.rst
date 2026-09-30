@@ -1,7 +1,7 @@
 Malha, iteradores e adjacência
 ==============================
 
-``Mesh2D`` é imutável depois de construída (R7):
+``Mesh2D`` e ``Mesh3D`` (o mesmo ``Mesh<D>``) são imutáveis depois de construídas (R7), e tudo o que segue vale nas duas dimensões:
 
 * faces ``[0, internal_face_count())`` são internas, com ``owner < neighbour`` e
   o vetor de área apontando do owner para o neighbour, em ordem triangular

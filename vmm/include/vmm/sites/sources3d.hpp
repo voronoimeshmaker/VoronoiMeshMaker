@@ -76,6 +76,25 @@ private:
     std::size_t failure_limit_ = 3000;
 };
 
+/// Local spacing h(x) of the sites in 3D.
+using SpacingField3D = std::function<Real(const Vec3&)>;
+
+/// Variable spacing h(x) by an adaptive octree: cubes are split until their
+/// side is at most h(center); each leaf gets one site at its centre moved by up
+/// to jitter * side in each direction. O(N) and deterministic.
+class AdaptiveOctreeSource3D {
+public:
+    AdaptiveOctreeSource3D(SpacingField3D spacing, Real min_spacing, Real jitter = 0.3, Real margin_fraction = 0.25)
+        : spacing_(std::move(spacing)), min_spacing_(min_spacing), jitter_(jitter), margin_(margin_fraction) {}
+    [[nodiscard]] Result<std::vector<Vec3>> generate(const TriangleSurface& region, Random& rng) const;
+
+private:
+    SpacingField3D spacing_;
+    Real min_spacing_;
+    Real jitter_;
+    Real margin_;
+};
+
 /// Exactly `count` uniformly distributed points inside (no minimum distance);
 /// points closer than `margin` to the surface are redrawn.
 class RandomCountSource3D {

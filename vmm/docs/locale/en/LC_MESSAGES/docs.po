@@ -104,8 +104,8 @@ msgstr "``InterfacePairs`` (optional, DEC-028) places mirrored pairs along the i
 msgid "Malha, iteradores e adjacência"
 msgstr "Mesh, iterators and adjacency"
 
-msgid "``Mesh2D`` é imutável depois de construída (R7):"
-msgstr "``Mesh2D`` is immutable once built (R7):"
+msgid "``Mesh2D`` e ``Mesh3D`` (o mesmo ``Mesh<D>``) são imutáveis depois de construídas (R7), e tudo o que segue vale nas duas dimensões:"
+msgstr "``Mesh2D`` and ``Mesh3D`` (the same ``Mesh<D>``) are immutable once built (R7), and everything below holds in both dimensions:"
 
 msgid "faces ``[0, internal_face_count())`` são internas, com ``owner < neighbour`` e o vetor de área apontando do owner para o neighbour, em ordem triangular superior; as demais são de contorno, agrupadas em faixas contíguas por patch (DEC-029);"
 msgstr "faces ``[0, internal_face_count())`` are internal, with ``owner < neighbour`` and the area vector pointing from owner to neighbour, in upper-triangular order; the others are boundary faces, grouped in contiguous ranges by patch (DEC-029);"
@@ -128,8 +128,8 @@ msgstr "Files"
 msgid "**Formato nativo** (``write_native`` / ``read_native``): texto versionado, com ida e volta exata (17 algarismos significativos). É o formato de persistência e o dos golden files."
 msgstr "**Native format** (``write_native`` / ``read_native``): versioned text with an exact round trip (17 significant digits). It is the persistence format and the format of the golden files."
 
-msgid "**VTK XML** (``write_vtu``): visualização no ParaView, com região, meio, sítio de entrada, área, razão de aspecto e não ortogonalidade por célula."
-msgstr "**VTK XML** (``write_vtu``): visualisation in ParaView, with region, medium, input site, area, aspect ratio and non-orthogonality per cell."
+msgid "**VTK XML** (``write_vtu``): visualização no ParaView (polígonos em 2D, poliedros em 3D), com região, meio, sítio de entrada, área ou volume, razão de aspecto e não ortogonalidade por célula."
+msgstr "**VTK XML** (``write_vtu``): visualisation in ParaView (polygons in 2D, polyhedra in 3D), with region, medium, input site, area or volume, aspect ratio and non-orthogonality per cell."
 
 msgid "Não há escritor OpenFOAM (DEC-030)."
 msgstr "There is no OpenFOAM writer (DEC-030)."
@@ -305,8 +305,8 @@ msgid "Formas prontas: ``Cuboid``, ``Sphere`` (icosaedro subdividido), ``Cylinde
 msgstr "Ready-made shapes: ``Cuboid``, ``Sphere`` (subdivided icosahedron), ``Cylinder``, ``Extrusion`` of a 2D outline (tagged edges become wall patches) and ``SurfaceShape`` for a given surface. ``ShapeRegistry3D`` builds shapes by name."
 
 
-msgid "Fontes 3D: ``UniformRandomSource3D`` (espaçamento mínimo), ``RandomCountSource3D``, ``CartesianGridSource3D`` e ``ExplicitSites3D``. A mesma semente gera os mesmos sítios em qualquer plataforma."
-msgstr "3D sources: ``UniformRandomSource3D`` (minimum spacing), ``RandomCountSource3D``, ``CartesianGridSource3D`` and ``ExplicitSites3D``. The same seed gives the same sites on every platform."
+msgid "Fontes 3D: ``UniformRandomSource3D`` (espaçamento mínimo), ``AdaptiveOctreeSource3D`` (espaçamento variável h(x), por octree), ``RandomCountSource3D``, ``CartesianGridSource3D`` e ``ExplicitSites3D``. A mesma semente gera os mesmos sítios em qualquer plataforma."
+msgstr "3D sources: ``UniformRandomSource3D`` (minimum spacing), ``AdaptiveOctreeSource3D`` (variable spacing h(x), by octree), ``RandomCountSource3D``, ``CartesianGridSource3D`` and ``ExplicitSites3D``. The same seed gives the same sites on every platform."
 
 msgid "Construção"
 msgstr "Construction"
@@ -353,3 +353,6 @@ msgstr "Every region has its own Voronoi diagram (DEC-028). On an interface, the
 
 msgid "As faces de interface não são faces de Voronoi e podem ser bem não ortogonais. ``SiteGenerationOptions3D::interface_pairs`` (``InterfacePairs3D``) põe pares de sítios espelhados através de cada interface: a face entre os dois sítios de um par fica ortogonal, e a não ortogonalidade média nas interfaces cai de cerca de 0,5 rad para menos de 0,05 rad."
 msgstr "Interface faces are not Voronoi faces and can be far from orthogonal. ``SiteGenerationOptions3D::interface_pairs`` (``InterfacePairs3D``) puts mirrored site pairs across every interface: the face between the two sites of a pair is orthogonal, and the mean non-orthogonality on the interfaces drops from about 0.5 rad to below 0.05 rad."
+
+msgid "**STL** (``read_stl``, ``read_stl_surface``, ``write_stl``): superfícies de domínio 3D, ASCII (um patch por ``solid``) ou binário."
+msgstr "**STL** (``read_stl``, ``read_stl_surface``, ``write_stl``): 3D domain surfaces, ASCII (one patch per ``solid``) or binary."

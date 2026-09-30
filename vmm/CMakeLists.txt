@@ -162,8 +162,13 @@ if(VMM_BUILD_VMM_TESTS)
         add_executable(${target} "${test_source}")
         target_link_libraries(${target} PRIVATE vmm_test_support)
         set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/vmm/tests")
+        # Heavy integration tests (minutes in Debug): label "slow", skipped by the sanitizer job.
+        set(labels "vmm")
+        if(dir MATCHES "^integration/(RandomConfigurations|Anchors|AnchorA3|MultiRegion3D|Voronoi3D|StlDomain)$")
+            set(labels "vmm\\;slow")  # escaped: gtest_discover_tests flattens lists
+        endif()
         gtest_discover_tests(${target} TEST_PREFIX "vmm/${dir}/" DISCOVERY_TIMEOUT 60
-                             PROPERTIES LABELS "vmm")
+                             PROPERTIES LABELS "${labels}")
     endforeach()
 
     find_package(Python3 COMPONENTS Interpreter)

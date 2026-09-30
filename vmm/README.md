@@ -1,21 +1,25 @@
-# VoronoiMeshMaker 0.1 (`vmm/`)
+# VoronoiMeshMaker (`vmm/`)
 
-Malhas de volumes finitos de Voronoi em 2D, multirregião, com interfaces
-conformes, prontas para um solver; em 3D, por enquanto, com uma região
-(`generate_mesh_3d`, entrega b). Esta é a biblioteca nova (arquitetura do
+Malhas de volumes finitos de Voronoi em 2D e 3D, com várias regiões, buracos e
+interfaces conformes, prontas para um solver (`generate_mesh_2d`,
+`generate_mesh_3d`). Esta é a biblioteca nova (arquitetura do
 `planning/P06_arquitetura_a.md`), que substituiu a VMMLib legada (DEC-011).
 As malhas da VMMLib nos casos O1–O4 ficam congeladas como arquivos de
 referência em `tests/data/golden/`.
 
 - **Domínio por precedência** (regiões e buracos, formas com rótulos de patch),
-  convertido numa partição exata e validada.
+  convertido numa partição exata e validada; em 3D, formas analíticas (caixa,
+  esfera, cilindro, extrusão) ou arquivos STL reparados.
 - **Sítios por região**, determinísticos e portáveis; espaçamento variável.
-- **Malha conforme**: topologia por rótulos, vértices canônicos, invariantes da
-  DEC-011 verificados em cada malha.
+- **Malha conforme**: topologia por rótulos, vértices canônicos, recorte exato
+  das células de contorno, refinamento comum nas interfaces, invariantes da
+  DEC-011 verificados em cada malha; pares de sítios espelhados opcionais para
+  faces de interface ortogonais.
 - **Pronta para volumes finitos**: owner/neighbour, vetores de área, distâncias,
   não ortogonalidade, skewness, intervalos de faces internas e de contorno,
   volumes internos e de contorno, adjacência CSR e padrão esparso, RCM.
-- **Arquivos**: formato nativo com ida e volta exata e VTK XML.
+- **Arquivos**: formato nativo com ida e volta exata, VTK XML (polígonos e
+  poliedros) e STL (domínios 3D).
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release

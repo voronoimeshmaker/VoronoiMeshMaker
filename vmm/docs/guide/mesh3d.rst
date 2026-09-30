@@ -15,7 +15,7 @@ Domínio
 Sítios
 ------
 
-- Fontes 3D: ``UniformRandomSource3D`` (espaçamento mínimo), ``RandomCountSource3D``, ``CartesianGridSource3D`` e ``ExplicitSites3D``. A mesma semente gera os mesmos sítios em qualquer plataforma.
+- Fontes 3D: ``UniformRandomSource3D`` (espaçamento mínimo), ``AdaptiveOctreeSource3D`` (espaçamento variável h(x), por octree), ``RandomCountSource3D``, ``CartesianGridSource3D`` e ``ExplicitSites3D``. A mesma semente gera os mesmos sítios em qualquer plataforma.
 
 Construção
 ----------

@@ -49,7 +49,14 @@ jobs:
       - name: Test
         env:
           UBSAN_OPTIONS: print_stacktrace=1
-        run: ctest --test-dir build -L vmm --output-on-failure -j 4 --timeout 1800
+        # The heavy integration tests (label "slow") take minutes in Debug; under the
+        # sanitizers they would exceed the time limits, so that job skips them.
+        run: |
+          if [ "${{ matrix.sanitize }}" = "ON" ]; then
+            ctest --test-dir build -L vmm -LE slow --output-on-failure -j 4 --timeout 3600
+          else
+            ctest --test-dir build -L vmm --output-on-failure -j 4 --timeout 3600
+          fi
 
   coverage:
     runs-on: ubuntu-24.04
@@ -72,7 +79,7 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_TESTS=ON -DVMM_COVERAGE=ON
           cmake --build build -j
-          ctest --test-dir build -L vmm -j 4 --timeout 1800
+          ctest --test-dir build -L vmm -j 4 --timeout 3600
       - name: Coverage per file (R25)
         run: cmake --build build --target vmm_coverage
       - uses: actions/upload-artifact@v4

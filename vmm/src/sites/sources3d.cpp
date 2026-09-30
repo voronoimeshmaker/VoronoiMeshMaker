@@ -127,6 +127,40 @@ Result<std::vector<Vec3>> UniformRandomSource3D::generate(const TriangleSurface&
     return out;
 }
 
+Result<std::vector<Vec3>> AdaptiveOctreeSource3D::generate(const TriangleSurface& region, Random& rng) const {
+    if (auto s = positive(min_spacing_, "min_spacing"); !s) return std::unexpected(s.error());
+    if (!spacing_) return fail(ErrorCode::InvalidSpacing, "no spacing field");
+    const Box3 box = region.bounding_box();
+    const Vec3 extent = box.hi() - box.lo();
+    const Real side0 = std::max({extent[0], extent[1], extent[2]});
+    struct Cube {
+        Vec3 lo;
+        Real side;
+    };
+    std::vector<Cube> stack{{box.lo(), side0}};
+    std::vector<Vec3> out;
+    while (!stack.empty()) {
+        const Cube c = stack.back();
+        stack.pop_back();
+        if (c.lo[0] > box.hi()[0] || c.lo[1] > box.hi()[1] || c.lo[2] > box.hi()[2]) continue;  // outside the box
+        const Vec3 centre = c.lo + Vec3{0.5 * c.side, 0.5 * c.side, 0.5 * c.side};
+        const Real h = spacing_(centre);
+        if (!(h > 0) || !std::isfinite(h)) return fail(ErrorCode::InvalidSpacing, std::format("h = {}", h));
+        if (c.side > h && c.side > min_spacing_) {
+            const Real half = 0.5 * c.side;
+            // Pushed in reverse so that the children are visited in a fixed order.
+            for (int k = 7; k >= 0; --k) {
+                stack.push_back({c.lo + Vec3{(k & 1) ? half : 0, (k & 2) ? half : 0, (k & 4) ? half : 0}, half});
+            }
+            continue;
+        }
+        Vec3 p = centre;
+        for (std::size_t a = 0; a < 3; ++a) p[a] += jitter_ * c.side * (2 * rng.uniform() - 1);
+        if (keeps(region, p, margin_ * c.side)) out.push_back(p);
+    }
+    return out;
+}
+
 Result<std::vector<Vec3>> RandomCountSource3D::generate(const TriangleSurface& region, Random& rng) const {
     if (!(margin_ >= 0) || !std::isfinite(margin_)) return fail(ErrorCode::InvalidSpacing, std::format("margin = {}", margin_));
     const Box3 box = region.bounding_box();

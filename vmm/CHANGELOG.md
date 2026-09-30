@@ -9,6 +9,7 @@
 - `build_mesh_3d` com várias regiões: um diagrama de Voronoi por região (DEC-028) e o
   refinamento comum dos pedaços sobre cada triângulo de interface; `BuildStats3D` com
   `interface_faces` e `interface_slivers`.
+- `AdaptiveOctreeSource3D`: sítios 3D com espaçamento variável h(x), por octree.
 - `InterfacePairs3D` (pares espelhados através das interfaces, E2) em
   `SiteGenerationOptions3D::interface_pairs`.
 - Âncora A3 (`anchors::a3`, `anchors::heightfield_block`), benchmark B7, exemplo

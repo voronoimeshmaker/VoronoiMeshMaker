@@ -1,8 +1,8 @@
 // ============================================================================
 // File: partition3d.hpp
 // Description: Explicit 3D partition (P15 §3): triangles with the region on
-//              each side, a patch on the boundary triangles. Version 0.3 has
-//              one region (every triangle is boundary); interfaces are P18.
+//              each side, a patch on the boundary triangles; triangles
+//              between two regions are interfaces (P18).
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
 

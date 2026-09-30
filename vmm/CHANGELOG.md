@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.0.0 — 2026-09-30
+
+API estável (DEC-041) e facilidade de uso (DEC-040).
+
+### Novo
+- `vmm::value_or_throw`: devolve o valor de um `Result` ou lança `vmm::Exception` com o
+  mesmo erro, para quem prefere exceções a testar cada resultado.
+- Arquivos de configuração e o executável `vmm-mesh` (instalado em `bin/`): uma malha 2D ou 3D
+  a partir de um arquivo `chave = valor`, sem escrever C++. No C++: `MeshConfig`,
+  `make_request_2d/3d`, `run_config`, `ConfigRegistries` e os registros abertos de fontes de
+  sítios `SiteSourceRegistry2D/3D`. Formas extras dos arquivos 3D: `stl` e `extrusion`.
+- `vmm/core/version.hpp` (`version_string`, `version_major`...).
+- Galeria: exemplos `value_or_throw`, `soil2d` e `layers3d` (os dois últimos executados pelo
+  `vmm-mesh`).
+
+### Mudou
+- Versionamento semântico: o pacote aceita qualquer 1.x em `find_package(VoronoiMeshMaker 1.0)`
+  (`SameMajorVersion`).
+- Interno, sem garantia de estabilidade: os membros do backend (exceto `build_partition`), os
+  tipos de rótulo e de recorte, `vmm::detail` e os contadores de `BuildStats2D/3D`. A referência
+  da API lista o que é estável.
+
+### Corrigido
+- Um teste 3D usava uma referência a um temporário num `for` por intervalo, que o GCC 14
+  destrói antes do laço (o GCC 15 prolonga a vida do temporário; P2718). A CI com GCC 14
+  falhava na compilação por `-Werror=dangling-reference`.
+- CMake sem varredura de módulos C++ (`CMAKE_CXX_SCAN_FOR_MODULES OFF`): o projeto não usa
+  módulos, e o Clang precisaria de `clang-scan-deps`.
+
 ## 0.2.0 — 2026-09-30
 
 Malhas 3D: entregas (b), (c) e (d) numa só versão (DEC-038).

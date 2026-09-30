@@ -18,6 +18,8 @@ option(VMM_BUILD_TESTS
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+# The project uses no C++ modules: no dependency scanning (clang would also need clang-scan-deps).
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 # DEC-034: Release is the default, for single- and multi-config generators.
 if(CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_DEFAULT_BUILD_TYPE)

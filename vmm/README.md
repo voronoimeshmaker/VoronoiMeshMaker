@@ -20,6 +20,12 @@ referência em `tests/data/golden/`.
   volumes internos e de contorno, adjacência CSR e padrão esparso, RCM.
 - **Arquivos**: formato nativo com ida e volta exata, VTK XML (polígonos e
   poliedros) e STL (domínios 3D).
+- **Sem escrever C++**: o executável `vmm-mesh` gera a malha a partir de um
+  arquivo de configuração (`vmm-mesh bloco.cfg`); no C++, `vmm::value_or_throw`
+  troca a verificação de cada `Result` por exceções.
+
+Versão 1.0: API estável com versionamento semântico (DEC-041); a referência da
+API na documentação diz o que é interno.
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release

@@ -47,7 +47,14 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_EXAMPLES=ON \
             -DVMM_BUILD_TESTS=ON
-          cmake --build build -j
+          set +e
+          cmake --build build -j 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            # Public annotations: the job log needs a login, the annotations do not.
+            grep -E "error:|Error |Killed|No such file|not found" build.log | head -20 | sed 's/^/::error::/'
+          fi
+          exit $status
       - name: Documentation (test gate, Doxygen, Sphinx pt and en, gallery)
         run: vmm/docs/build_docs.sh build $HOME/docs-venv
       - uses: actions/upload-pages-artifact@v3

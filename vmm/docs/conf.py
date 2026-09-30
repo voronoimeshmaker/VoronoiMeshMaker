@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent / "_ext"))
 project = "VoronoiMeshMaker"
 author = "VoronoiMeshMaker Team"
 copyright = "2026, VoronoiMeshMaker Team"
-release = "0.2.0"
+release = "1.0.0"
 language = "pt_BR"
 
 extensions = ["breathe", "myst_parser", "sphinx_design", "sphinx.ext.mathjax", "vmm_gallery"]
@@ -23,7 +23,7 @@ exclude_patterns = ["_build", "gallery_src"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_css_files = ["estuario.css"]
-html_title = "VoronoiMeshMaker 0.2"
+html_title = "VoronoiMeshMaker 1.0"
 html_theme_options = {
     "icon_links": [
         {"name": "GitHub", "url": "https://github.com/voronoimeshmaker/voronoimeshmaker", "icon": "fa-brands fa-github"},
@@ -41,3 +41,4 @@ gettext_compact = "docs"  # one catalogue for every page (docs.po)
 
 vmm_examples_source = os.environ.get("VMM_EXAMPLES_SOURCE", str(Path(__file__).parent.parent / "examples"))
 vmm_examples_bin = os.environ.get("VMM_EXAMPLES_BIN", "")
+vmm_mesh_exe = os.environ.get("VMM_MESH_EXE", "")

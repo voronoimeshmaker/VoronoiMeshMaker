@@ -57,3 +57,5 @@ SurfaceRepairOptions
 SurfaceRepairReport # counters
 StlReadOptions
 StlWriteOptions
+ConfigEntry         # key, value, line
+ConfigRunReport     # counts, invariants, files written

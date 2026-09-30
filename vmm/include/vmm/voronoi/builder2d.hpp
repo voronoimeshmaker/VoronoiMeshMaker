@@ -34,6 +34,7 @@ struct BuildOptions2D {
     bool fast_path = true;
 };
 
+/// Diagnostic counters of a build; not stable API (DEC-041): fields may change in minor versions.
 struct BuildStats2D {
     std::size_t cells = 0;
     std::size_t fast_cells = 0;              ///< cells built without the backend clipping

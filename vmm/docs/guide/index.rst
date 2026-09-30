@@ -9,4 +9,5 @@ Guia
    mesh
    io
    mesh3d
+   config
    errors

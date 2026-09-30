@@ -5,7 +5,9 @@ For every vmm/examples/<name>/ex_<name>.cpp the extension reads the header
 (Title/Description), runs the compiled example (VMM_EXAMPLES_BIN), renders
 every .vtu it writes with the "Estuário" figure palette (3D meshes as a
 cutaway below the mid-height plane) and generates a page
-with text, figure, output, source and download. A failing example stops the
+with text, figure, output, source and download. The configuration files
+vmm/examples/config/<name>.cfg (DEC-040) get the same page, run by the
+vmm-mesh executable (VMM_MESH_EXE). A failing example stops the
 documentation build.
 """
 import re
@@ -15,22 +17,22 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Figure palette (requirements §6.4): media colours and interface colour.
-MEDIUM_COLOURS = {"water": "#0072B2", "solid": "#A0703A", "rock": "#A0703A", "soil": "#A0703A", "air": "#D6E4EC", "gas": "#D6E4EC"}
+MEDIUM_COLOURS = {"water": "#0072B2", "solid": "#A0703A", "rock": "#A0703A", "soil": "#A0703A", "air": "#D6E4EC", "gas": "#D6E4EC",
+                  "sand": "#E69F00", "clay": "#CC79A7"}
 REGION_FALLBACK = ["#0072B2", "#A0703A", "#009E73", "#E69F00", "#CC79A7", "#56B4E9"]
 
 
-def _header(source):
+def _header(source, comment="//"):
     text = Path(source).read_text()
-    title = re.search(r"^// Title:\s*(.+)$", text, re.M)
-    desc = re.findall(r"^// (?:Description:)?\s{0,14}(.+)$", text.split("// SPDX")[0], re.M)
+    title = re.search(rf"^{comment} Title:\s*(.+)$", text, re.M)
     description = []
     capture = False
     for line in text.splitlines():
-        if line.startswith("// Description:"):
+        if line.startswith(f"{comment} Description:"):
             capture = True
             description.append(line.split(":", 1)[1].strip())
-        elif capture and line.startswith("//  ") and not line.startswith("// SPDX"):
-            description.append(line[2:].strip())
+        elif capture and line.startswith(f"{comment}  ") and "SPDX" not in line:
+            description.append(line[len(comment):].strip())
         elif capture:
             break
     return (title.group(1).strip() if title else Path(source).stem), " ".join(description)
@@ -213,6 +215,33 @@ def _render(vtu, png):
     plt.close(fig)
 
 
+def _page(out, name, source, command, language, comment):
+    """Runs `command` (None: not run) in gallery/<name>/ next to a copy of `source` and writes <name>.rst."""
+    title, description = _header(source, comment)
+    work = out / name
+    work.mkdir()
+    shutil.copy(source, work / source.name)
+    output = "(exemplo não executado: VMM_EXAMPLES_BIN não definido)"
+    figures = []
+    if command is not None:
+        result = subprocess.run(command, cwd=work, capture_output=True, text=True, timeout=1800)
+        if result.returncode != 0:
+            raise RuntimeError(f"example {name} failed:\n{result.stdout}\n{result.stderr}")
+        output = result.stdout.replace(str(work) + "/", "")
+        for vtu in sorted(work.glob("*.vtu")):
+            png = vtu.with_suffix(".png")
+            _render(vtu, png)
+            figures.append(png.name)
+    page = [title, "=" * len(title), "", description, ""]
+    for fig in figures:
+        page += [f".. image:: {name}/{fig}", "   :class: vmm-gallery", "   :width: 100%", ""]
+    page += ["Saída", "-----", "", ".. code-block:: text", ""]
+    page += ["   " + line for line in output.splitlines()] + [""]
+    page += ["Código", "------", "", f":download:`Baixar {source.name} <{name}/{source.name}>`", "",
+             f".. literalinclude:: {name}/{source.name}", f"   :language: {language}", ""]
+    (out / f"{name}.rst").write_text("\n".join(page))
+
+
 def _build_gallery(app):
     source_dir = Path(app.config.vmm_examples_source)
     bin_dir = Path(app.config.vmm_examples_bin) if app.config.vmm_examples_bin else None
@@ -226,30 +255,14 @@ def _build_gallery(app):
         source = example / f"ex_{name}.cpp"
         if not source.exists():
             continue
-        title, description = _header(source)
-        work = out / name
-        work.mkdir()
-        shutil.copy(source, work / source.name)
-        output = "(exemplo não executado: VMM_EXAMPLES_BIN não definido)"
-        figures = []
-        if bin_dir is not None:
-            exe = bin_dir / f"vmm_ex_{name}"
-            result = subprocess.run([str(exe)], cwd=work, capture_output=True, text=True, timeout=1800)
-            if result.returncode != 0:
-                raise RuntimeError(f"example {name} failed:\n{result.stdout}\n{result.stderr}")
-            output = result.stdout
-            for vtu in sorted(work.glob("*.vtu")):
-                png = vtu.with_suffix(".png")
-                _render(vtu, png)
-                figures.append(png.name)
-        page = [title, "=" * len(title), "", description, ""]
-        for fig in figures:
-            page += [f".. image:: {name}/{fig}", "   :class: vmm-gallery", "   :width: 100%", ""]
-        page += ["Saída", "-----", "", ".. code-block:: text", ""]
-        page += ["   " + line for line in output.splitlines()] + [""]
-        page += ["Código", "------", "", f":download:`Baixar ex_{name}.cpp <{name}/ex_{name}.cpp>`", "",
-                 f".. literalinclude:: {name}/ex_{name}.cpp", "   :language: cpp", ""]
-        (out / f"{name}.rst").write_text("\n".join(page))
+        exe = [str(bin_dir / f"vmm_ex_{name}")] if bin_dir is not None else None
+        _page(out, name, source, exe, "cpp", "//")
+        index.append(f"   {name}")
+    mesh_exe = app.config.vmm_mesh_exe
+    for config in sorted((source_dir / "config").glob("*.cfg")):
+        name = config.stem
+        command = [mesh_exe, "--language", "en", config.name] if mesh_exe else None
+        _page(out, name, config, command, "ini", "#")
         index.append(f"   {name}")
     (out / "index.rst").write_text("\n".join(index) + "\n")
 
@@ -257,5 +270,6 @@ def _build_gallery(app):
 def setup(app):
     app.add_config_value("vmm_examples_source", "", "env")
     app.add_config_value("vmm_examples_bin", "", "env")
+    app.add_config_value("vmm_mesh_exe", "", "env")
     app.connect("builder-inited", _build_gallery)
-    return {"version": "0.2", "parallel_read_safe": True}
+    return {"version": "0.3", "parallel_read_safe": True}

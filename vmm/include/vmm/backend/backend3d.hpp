@@ -3,6 +3,8 @@
 // Description: 3D geometric backend seen from the core (P15 §4, DEC-007): a
 //              struct of callables using only VMM and standard types. The
 //              CGAL implementation lives in vmm_backend_cgal.
+//              Internal (DEC-041): only cgal_backend_3d(), build_partition
+//              and passing the backend to build_mesh_3d are stable API.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
 

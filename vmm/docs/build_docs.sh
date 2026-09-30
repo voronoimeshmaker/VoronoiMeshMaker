@@ -15,6 +15,7 @@ mkdir -p "$out/doxygen"
     echo "OUTPUT_DIRECTORY = $out/doxygen" >> "$out/Doxyfile" && doxygen "$out/Doxyfile")
 export VMM_DOXYGEN_XML="$out/doxygen/xml"
 export VMM_EXAMPLES_BIN="$build/vmm/examples"
+export VMM_MESH_EXE="$build/bin/vmm-mesh"
 export VMM_EXAMPLES_SOURCE="$here/../examples"
 # Sphinx runs on a copy: the gallery pages it generates stay out of the source tree (R24).
 rm -rf "$out/src" && cp -r "$here" "$out/src"

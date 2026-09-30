@@ -1,6 +1,6 @@
 # ============================================================================
 # vmm/ - VoronoiMeshMaker library (architecture P06).
-# Targets: vmm_core (no CGAL), vmm_backend_cgal, vmm_io, vmm (facade).
+# Targets: vmm_core (no CGAL), vmm_backend_cgal, vmm_io, vmm (facade and configuration files).
 # SPDX-License-Identifier: BSD-3-Clause
 # ============================================================================
 cmake_minimum_required(VERSION 3.28)
@@ -113,7 +113,7 @@ if(vmm_io_sources)
     target_link_libraries(vmm_io PUBLIC vmm_core)
     list(APPEND vmm_targets vmm_io)
 endif()
-vmm_module_sources(vmm_facade_sources facade)
+vmm_module_sources(vmm_facade_sources facade app)
 if(vmm_facade_sources)
     vmm_add_library(vmm_facade vmm ${vmm_facade_sources})
     target_link_libraries(vmm_facade PUBLIC vmm_core vmm_backend_cgal vmm_io)
@@ -153,7 +153,8 @@ if(VMM_BUILD_VMM_TESTS)
     add_library(vmm_test_support INTERFACE)
     target_include_directories(vmm_test_support INTERFACE "${VMM_ROOT}/tests/support" "${VMM_ROOT}/tools")
     target_link_libraries(vmm_test_support INTERFACE ${vmm_targets} GTest::gtest GTest::gtest_main vmm_settings)
-    target_compile_definitions(vmm_test_support INTERFACE VMM_TEST_DATA_DIR="${VMM_ROOT}/tests/data")
+    target_compile_definitions(vmm_test_support INTERFACE VMM_TEST_DATA_DIR="${VMM_ROOT}/tests/data"
+                                                          VMM_PROJECT_VERSION="${PROJECT_VERSION}")
     file(GLOB_RECURSE vmm_unit_tests CONFIGURE_DEPENDS "${VMM_ROOT}/tests/ut_*.cpp")
     foreach(test_source IN LISTS vmm_unit_tests)
         file(RELATIVE_PATH rel "${VMM_ROOT}/tests" "${test_source}")
@@ -217,8 +218,9 @@ install(EXPORT VoronoiMeshMakerTargets NAMESPACE VoronoiMeshMaker::
 configure_package_config_file("${VMM_ROOT}/cmake/VoronoiMeshMakerConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfig.cmake"
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker)
+# DEC-041: semantic versioning; any 1.x satisfies find_package(VoronoiMeshMaker 1.0).
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfigVersion.cmake"
-    VERSION 0.2.0 COMPATIBILITY SameMinorVersion)
+    VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfig.cmake"
               "${CMAKE_CURRENT_BINARY_DIR}/VoronoiMeshMakerConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VoronoiMeshMaker)

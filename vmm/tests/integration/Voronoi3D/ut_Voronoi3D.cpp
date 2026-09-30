@@ -181,7 +181,9 @@ TEST(Voronoi3D, InputOrderGivesTheSameMeshBitForBit) {
 
 TEST(Voronoi3D, ScaleDoesNotChangeTheTopology) {
     std::vector<Vec3> sites;
-    for (const auto& p : run(extrusion(l_shape(), 0, 1), {}, 300, 11).build.mesh.sites()) sites.push_back(p);
+    // Named: the range-for lifetime extension of temporaries (P2718) is GCC 15+.
+    const auto seed_run = run(extrusion(l_shape(), 0, 1), {}, 300, 11);
+    for (const auto& p : seed_run.build.mesh.sites()) sites.push_back(p);
     const auto topology = [](const vmm::Mesh3D& m) {
         return std::pair(std::vector(m.owners().begin(), m.owners().end()),
                          std::vector(m.neighbours().begin(), m.neighbours().end()));

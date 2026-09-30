@@ -30,6 +30,8 @@ ALLOWED_DEPS = {
     "reorder": {"core", "error", "mesh"},
     "io": {"core", "error", "geometry", "mesh"},
     "facade": {"core", "error", "geometry", "domain", "sites", "backend", "mesh", "voronoi", "reorder", "io"},
+    # DEC-040: configuration files and the vmm-mesh executable, on top of the facade.
+    "app": {"core", "error", "geometry", "domain", "sites", "mesh", "voronoi", "io"},
 }
 ALLOWED_PACKAGES = {"CGAL", "Boost", "GTest", "Python3", "Threads", "GMP", "MPFR", "TBB"}
 STD_HEADERS = set("""algorithm any array atomic bit bitset cassert cctype charconv chrono cmath compare concepts

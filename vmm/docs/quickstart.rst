@@ -26,7 +26,7 @@ Usar num projeto CMake
 
 .. code-block:: cmake
 
-   find_package(VoronoiMeshMaker 0.2 REQUIRED)
+   find_package(VoronoiMeshMaker 1.0 REQUIRED)
    target_link_libraries(meu_solver PRIVATE VoronoiMeshMaker::vmm VoronoiMeshMaker::vmm_io)
 
 Primeira malha
@@ -53,3 +53,24 @@ Primeira malha
 As regiões são declaradas por precedência: ``inner`` pinta por cima de ``outer``.
 A malha resultante tem interfaces conformes entre as duas regiões e passa por
 todos os invariantes da DEC-011 antes de ser devolvida.
+
+Sem escrever C++
+----------------
+
+O executável ``vmm-mesh``, instalado com a biblioteca, gera a malha a partir de
+um arquivo de configuração (veja :doc:`guide/config`):
+
+.. code-block:: bash
+
+   vmm-mesh bloco.cfg        # grava bloco.vmesh e bloco.vtu
+
+.. code-block:: ini
+
+   dimension = 2
+
+   [region bloco]
+   shape = rectangle
+   lo = 0 0
+   hi = 1 1
+   sites = uniform
+   sites.spacing = 0.05

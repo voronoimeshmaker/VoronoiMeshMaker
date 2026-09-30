@@ -648,6 +648,7 @@ Os prompts completos desta fase serão escritos depois da P14, com o que for apr
 - **P17 — Domínio STL/CAD:** leitura, reparo e validação da superfície, rótulos de patch, clipping contra superfície triangulada. Entrega (c).
 - **P18 — 3D multirregião conforme:** espelhamento e corte, junções triplas, arestas vivas. Entrega (d). Revisitar o VoroCrust e a literatura antes de implementar.
 - **P19 — Documentação e release 3D.**
+- **P20 — Facilidade de uso e API 1.0:** `value_or_throw`, arquivos de configuração e o executável `vmm-mesh` (DEC-040); congelamento da API e versionamento semântico (DEC-041). Relatório `P20_usabilidade_1_0.md`. A paralelização fica para depois, por decisão do João.
 
 ---
 
@@ -662,3 +663,4 @@ Os prompts completos desta fase serão escritos depois da P14, com o que for apr
 | 5 | 2026-09-28 | Revisões pelo João (REV opcional); planning/ como fonte única; ambiente e versões declarados; entrega arquivo a arquivo; P05a (provas de conceito 2D e 3D); P15a com critérios, prazo e contingência; limite de tentativas; iterações de movimentação separadas; DEC-012 no P07; golden files e benchmark a partir do P07; Fase 2 segue a DEC-011 | DEC-011 a DEC-016 |
 | 5.1 | 2026-09-28 | P04 detalhado: contexto das decisões da fase 1, declaração de regiões, invariantes por caso, lista mínima de formatos, tolerâncias, casos do benchmark leve e ordem das seções do entregável | DEC-011, DEC-013, DEC-015 |
 | 5.2 | 2026-09-28 | Ajustes do P05 §6: P06 (formato nativo, partição, índices, classes triviais, diretrizes); P07 (verificadores de CI, compiladores, B1–B3, cobertura); P09 (DEC-018); P12 (escritores da 0.1 e ordem); P13 (diretrizes); P14a (escritores da 0.2); REV (DEC-024); P05a com DEC-027 | DEC-018 a DEC-027 |
+| 5.3 | 2026-09-30 | P20 (facilidade de uso e API 1.0) depois do P19; P14a cancelado | DEC-039 a DEC-041 |

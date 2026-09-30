@@ -1,8 +1,8 @@
 VoronoiMeshMaker
 ================
 
-Malhas de volumes finitos de Voronoi em 2D, com várias regiões e interfaces
-conformes, prontas para o seu solver. A biblioteca entrega células, faces,
+Malhas de volumes finitos de Voronoi em 2D e 3D, com várias regiões e
+interfaces conformes, prontas para o seu solver. A biblioteca entrega células, faces,
 owner/neighbour, vetores de área, distâncias entre geradores, métricas de
 qualidade e adjacência compacta, sem depender de nenhum solver (DEC-015).
 

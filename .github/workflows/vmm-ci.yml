@@ -45,7 +45,15 @@ jobs:
             -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_TESTS=ON \
             -DVMM_SANITIZE=${{ matrix.sanitize }}
       - name: Build
-        run: cmake --build build -j
+        run: |
+          set +e
+          cmake --build build -j 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            # Public annotations: the job log needs a login, the annotations do not.
+            grep -E "error:|Error |Killed|No such file|not found" build.log | head -20 | sed 's/^/::error::/'
+          fi
+          exit $status
       - name: Test
         env:
           UBSAN_OPTIONS: print_stacktrace=1
@@ -78,7 +86,15 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_TESTS=ON -DVMM_COVERAGE=ON
-          cmake --build build -j
+          set +e
+          cmake --build build -j 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            # Public annotations: the job log needs a login, the annotations do not.
+            grep -E "error:|Error |Killed|No such file|not found" build.log | head -20 | sed 's/^/::error::/'
+          fi
+          [ $status -eq 0 ] || exit $status
+          set -e
           ctest --test-dir build -L vmm -j 4 --timeout 3600
       - name: Coverage per file (R25)
         run: cmake --build build --target vmm_coverage

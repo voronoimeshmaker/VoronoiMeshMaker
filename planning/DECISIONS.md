@@ -46,6 +46,8 @@
 | 037 | Sem contração FMA | APROVADA | P16 |
 | 038 | Roteiro renumerado: 3D publicado como 0.2 | APROVADA | P19 |
 | 039 | Sem escritores MODFLOW 6, PFLOTRAN e TOUGH | APROVADA | João |
+| 040 | Facilidade de uso: value_or_throw e vmm-mesh | APROVADA | João |
+| 041 | API 1.0 congelada; versionamento semântico | APROVADA | João |
 
 ---
 
@@ -555,3 +557,48 @@
   escritores só serviriam a usuários desses programas e não mudam a malha.
 - Consequências: a saída do VMM fica no formato nativo (persistência) e no VTK XML (visualização). Um escritor
   externo continua possível fora da biblioteca, a partir da API de adjacência e das métricas.
+
+## DEC-040 — Facilidade de uso: value_or_throw e vmm-mesh
+- Data: 2026-09-30
+- Origem: pergunta do João sobre o uso por quem tem pouca experiência em C++; pedido "pode fazer a facilidade de uso"
+- Status: APROVADA (30/09, instrução do João)
+- Decisão:
+  - `vmm::value_or_throw(Result)` devolve o valor ou lança `vmm::Exception` com o mesmo `Error`. É opcional: a
+    biblioteca continua a devolver `Result` e a lançar exceções só por invariantes internos (DEC-016 inalterada).
+  - Módulo `app` (no alvo `vmm`): arquivos de configuração em texto `chave = valor` com seções `[region]`, `[hole]` e
+    `[background]`; `MeshConfig`, `make_request_2d/3d`, `run_config`; registros abertos de fontes de sítios por nome
+    (`SiteSourceRegistry2D/3D`) e `ConfigRegistries`, que reúne esses registros e os de formas.
+  - Executável `vmm-mesh`, instalado em `bin/`, que lê um arquivo e grava `.vmesh` e `.vtu`.
+  - Formato próprio, sem dependência nova (R21). Bindings em Python ficam fora; exigem uma DEC própria.
+- Justificativa: parte dos usuários quer só a malha; testar cada `Result` é trabalhoso para quem está começando.
+- Consequências: exemplos `.cfg` na galeria, executados pelo `vmm-mesh`; página "Arquivos de configuração" no guia;
+  as formas e fontes de usuários entram nos registros sem mexer no leitor (sem despacho fechado, R3).
+
+## DEC-041 — API 1.0 congelada; versionamento semântico
+- Data: 2026-09-30
+- Origem: pedido do João ("o 3", congelamento da API)
+- Status: APROVADA (30/09, instrução do João)
+- Decisão:
+  - A versão 1.0.0 segue o versionamento semântico. A API estável são os headers de `include/vmm` no namespace `vmm`,
+    exceto os itens internos listados abaixo. Na série 1.x, nada da API estável é removido nem muda de assinatura ou
+    de significado. Funções, tipos, sobrecargas e campos novos (no fim das structs, com valor padrão) podem entrar
+    numa versão menor. Remoções só numa versão maior, depois de uma versão menor com `[[deprecated]]`.
+  - **Interno, sem garantia:**
+    - tudo o que `vmm/backend/backend2d.hpp` e `backend3d.hpp` declaram (tipos de rótulo, de recorte e de
+      informação, e os membros dos backends), exceto os nomes `Backend2D` e `Backend3D` e o membro
+      `build_partition`: continuam estáveis obter o backend por `cgal_backend_2d()`/`cgal_backend_3d()`,
+      chamar `build_partition` e passá-lo a `build_mesh_2d`/`build_mesh_3d`;
+    - o namespace `vmm::detail`;
+    - os contadores de `BuildStats2D`/`BuildStats3D`, que são diagnóstico.
+
+    Backends de terceiros não são suportados na 1.x.
+  - Também estáveis na 1.x: os códigos de erro (DEC-024), o formato `.vmesh` versão 1 (DEC-019) e as chaves do
+    formato de configuração da DEC-040.
+  - Não se garante: ABI (bibliotecas estáticas; recompile ao atualizar) e malhas idênticas bit a bit entre versões
+    menores. O determinismo da DEC-020 vale dentro de uma versão e plataforma; os invariantes valem sempre.
+  - Pacote CMake com compatibilidade `SameMajorVersion`; `vmm/core/version.hpp` expõe a versão, e um teste a mantém
+    igual à do projeto CMake.
+- Justificativa: 2D e 3D completos e verificados (P14, P19); usuários externos precisam saber o que pode mudar.
+- Consequências: seção de estabilidade na referência da API; os headers internos dizem que são internos;
+  `CHANGELOG` com a seção 1.0.0.
+

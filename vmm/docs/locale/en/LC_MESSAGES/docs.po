@@ -5,9 +5,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: en\n"
 
-msgid "Malhas de volumes finitos de Voronoi em 2D, com várias regiões e interfaces conformes, prontas para o seu solver. A biblioteca entrega células, faces, owner/neighbour, vetores de área, distâncias entre geradores, métricas de qualidade e adjacência compacta, sem depender de nenhum solver (DEC-015)."
-msgstr "2D multi-region Voronoi finite-volume meshes with conforming interfaces, ready for your solver. The library delivers cells, faces, owner/neighbour, area vectors, generator distances, quality metrics and compact adjacency, without depending on any solver (DEC-015)."
-
 msgid "Início rápido"
 msgstr "Quick start"
 
@@ -356,3 +353,137 @@ msgstr "Interface faces are not Voronoi faces and can be far from orthogonal. ``
 
 msgid "**STL** (``read_stl``, ``read_stl_surface``, ``write_stl``): superfícies de domínio 3D, ASCII (um patch por ``solid``) ou binário."
 msgstr "**STL** (``read_stl``, ``read_stl_surface``, ``write_stl``): 3D domain surfaces, ASCII (one patch per ``solid``) or binary."
+
+# 1.0: configuration files, value_or_throw, API stability (DEC-040, DEC-041)
+
+msgid "Estabilidade"
+msgstr "Stability"
+
+msgid "Desde a 1.0, a API segue o versionamento semântico (DEC-041). Na série 1.x nada do que está abaixo é removido nem muda de assinatura; funções, tipos e campos novos podem entrar em versões menores."
+msgstr "Since 1.0 the API follows semantic versioning (DEC-041). Within the 1.x series nothing listed below is removed or changes its signature; new functions, types and fields may be added in minor versions."
+
+msgid "**Estável:** os headers de ``vmm/include/vmm`` no namespace ``vmm``, os códigos de erro, o formato ``.vmesh`` versão 1 e as chaves dos arquivos de configuração."
+msgstr "**Stable:** the headers of ``vmm/include/vmm`` in namespace ``vmm``, the error codes, the ``.vmesh`` format version 1 and the keys of the configuration files."
+
+msgid "**Interno, pode mudar em qualquer versão:** tudo o que ``vmm/backend/backend2d.hpp`` e ``backend3d.hpp`` declaram, exceto os nomes ``Backend2D`` e ``Backend3D`` e o membro ``build_partition`` (obter o backend com ``cgal_backend_2d()``/``cgal_backend_3d()``, chamar ``build_partition`` e passá-lo a ``build_mesh_2d``/``build_mesh_3d`` é estável); o namespace ``vmm::detail``; os contadores de ``BuildStats2D``/``BuildStats3D``."
+msgstr "**Internal, may change in any version:** everything declared by ``vmm/backend/backend2d.hpp`` and ``backend3d.hpp`` except the names ``Backend2D`` and ``Backend3D`` and the member ``build_partition`` (getting the backend from ``cgal_backend_2d()``/``cgal_backend_3d()``, calling ``build_partition`` and passing it to ``build_mesh_2d``/``build_mesh_3d`` is stable); the namespace ``vmm::detail``; the counters of ``BuildStats2D``/``BuildStats3D``."
+
+msgid "**Sem garantia:** compatibilidade binária (recompile ao atualizar) e malhas idênticas bit a bit entre versões menores; os invariantes da DEC-011 valem sempre."
+msgstr "**Not guaranteed:** binary compatibility (rebuild when upgrading) and bit-identical meshes across minor versions; the DEC-011 invariants always hold."
+
+msgid "Símbolos"
+msgstr "Symbols"
+
+msgid "Seções por símbolo: Synopsis (declaração), Parameters, Notes, Level, See Also, Location e Examples, extraídas dos comentários Doxygen dos headers públicos em ``vmm/include/vmm``."
+msgstr "Sections per symbol: Synopsis (declaration), Parameters, Notes, Level, See Also, Location and Examples, taken from the Doxygen comments of the public headers in ``vmm/include/vmm``."
+
+msgid "Arquivos de configuração"
+msgstr "Configuration files"
+
+msgid "O executável ``vmm-mesh`` gera uma malha 2D ou 3D a partir de um arquivo de texto, sem escrever C++ (DEC-040). Ele é instalado com a biblioteca, em ``bin/``."
+msgstr "The ``vmm-mesh`` executable generates a 2D or 3D mesh from a text file, without writing C++ (DEC-040). It is installed with the library, in ``bin/``."
+
+msgid "Os arquivos de saída ficam ao lado do arquivo de configuração, com o nome dele (``solo.vmesh`` e ``solo.vtu``), a menos que a chave ``output`` ou a opção ``--output`` digam outro caminho. Em caso de erro, a mensagem indica a linha e a seção do arquivo, e o código de saída é 1."
+msgstr "The output files are written next to the configuration file, with its name (``solo.vmesh`` and ``solo.vtu``), unless the ``output`` key or the ``--output`` option give another path. On an error the message names the line and section of the file, and the exit code is 1."
+
+msgid "Formato"
+msgstr "Format"
+
+msgid "Uma instrução por linha, ``chave = valor``; ``#`` começa um comentário. As chaves antes da primeira seção são globais. Cada seção ``[region nome]`` declara uma região; as declaradas depois cobrem as anteriores onde se sobrepõem, como na API (precedência, DEC-018)."
+msgstr "One statement per line, ``key = value``; ``#`` starts a comment. Keys before the first section are global. Each ``[region name]`` section declares a region; regions declared later cover earlier ones where they overlap, as in the API (precedence, DEC-018)."
+
+msgid "**Chaves globais**"
+msgstr "**Global keys**"
+
+msgid "2 ou 3 (obrigatória)"
+msgstr "2 or 3 (required)"
+
+msgid "semente dos sítios (padrão 0)"
+msgstr "seed of the sites (default 0)"
+
+msgid "caminho dos arquivos de saída, sem extensão"
+msgstr "path of the output files, without extension"
+
+msgid "``vmesh``, ``vtu`` ou os dois (padrão: os dois)"
+msgstr "``vmesh``, ``vtu`` or both (default: both)"
+
+msgid "espaçamento dos pares espelhados nas interfaces (opcional)"
+msgstr "spacing of the mirrored pairs across interfaces (optional)"
+
+msgid "tolerância relativa de pontos (padrão 1e-12)"
+msgstr "relative point tolerance (default 1e-12)"
+
+msgid "**Seções**"
+msgstr "**Sections**"
+
+msgid "``[region nome]``: ``shape`` e seus parâmetros, ``sites`` e os parâmetros da fonte com o prefixo ``sites.``, ``medium`` (padrão: o nome da região; regiões com o mesmo meio o compartilham)."
+msgstr "``[region name]``: ``shape`` and its parameters, ``sites`` and the parameters of the source with the prefix ``sites.``, ``medium`` (default: the region name; regions with the same medium share it)."
+
+msgid "``[hole]``: ``shape`` e seus parâmetros."
+msgstr "``[hole]``: ``shape`` and its parameters."
+
+msgid "``[background nome]`` (só 2D): a região que preenche os vazios; ``sites`` e ``medium`` como numa região."
+msgstr "``[background name]`` (2D only): the region that fills the voids; ``sites`` and ``medium`` as in a region."
+
+msgid "Os valores numéricos são separados por espaços ou vírgulas. Os demais valores são nomes (patches). Um parâmetro de forma ``file`` é relativo à pasta do arquivo de configuração."
+msgstr "Numeric values are separated by spaces or commas. Other values are names (patches). A shape parameter ``file`` is relative to the folder of the configuration file."
+
+msgid "Formas"
+msgstr "Shapes"
+
+msgid "``xy`` (contorno), ``z`` (base e topo); patches ``tag``, ``bottom``, ``top``"
+msgstr "``xy`` (outline), ``z`` (bottom and top); patches ``tag``, ``bottom``, ``top``"
+
+msgid "``file``; ``patch`` (nome do patch de um STL binário)"
+msgstr "``file``; ``patch`` (patch name of a binary STL)"
+
+msgid "Fontes de sítios"
+msgstr "Site sources"
+
+msgid "``spacing``; ``min_distance`` e ``margin`` (frações, opcionais)"
+msgstr "``spacing``; ``min_distance`` and ``margin`` (fractions, optional)"
+
+msgid "``spacing``; ``origin`` e ``margin`` (opcionais)"
+msgstr "``spacing``; ``origin`` and ``margin`` (optional)"
+
+msgid "só 2D: ``spacing``; ``origin`` e ``margin`` (opcionais)"
+msgstr "2D only: ``spacing``; ``origin`` and ``margin`` (optional)"
+
+msgid "``xy`` (2D) ou ``xyz`` (3D): as coordenadas dos sítios"
+msgstr "``xy`` (2D) or ``xyz`` (3D): the site coordinates"
+
+msgid "``center``, ``axes``, ``angle`` (rad, opcional); patch ``tag``"
+msgstr "``center``, ``axes``, ``angle`` (rad, optional); patch ``tag``"
+
+msgid "``center``, ``radius``, ``n``, ``rotation`` (opcional); ``tag``"
+msgstr "``center``, ``radius``, ``n``, ``rotation`` (optional); ``tag``"
+
+msgid "``count``; ``margin`` (opcional)"
+msgstr "``count``; ``margin`` (optional)"
+
+msgid "Os exemplos :doc:`../gallery/soil2d` e :doc:`../gallery/layers3d` da galeria são executados pelo ``vmm-mesh`` a cada build da documentação."
+msgstr "The gallery examples :doc:`../gallery/soil2d` and :doc:`../gallery/layers3d` are run by ``vmm-mesh`` at every documentation build."
+
+msgid "Pelo C++"
+msgstr "From C++"
+
+msgid "O mesmo arquivo pode ser lido por um programa: ``MeshConfig::read`` devolve a configuração, ``make_request_2d`` e ``make_request_3d`` o pedido da fachada, e ``run_config`` faz tudo o que o ``vmm-mesh`` faz. Formas e fontes novas entram nos registros abertos de ``ConfigRegistries`` e passam a valer nos arquivos:"
+msgstr "A program can read the same file: ``MeshConfig::read`` returns the configuration, ``make_request_2d`` and ``make_request_3d`` the facade request, and ``run_config`` does everything ``vmm-mesh`` does. New shapes and sources go into the open registries of ``ConfigRegistries`` and become available in the files:"
+
+msgid "Exceções no lugar de ``Result``"
+msgstr "Exceptions instead of ``Result``"
+
+msgid "Quem prefere exceções a testar cada ``Result`` usa ``vmm::value_or_throw`` (DEC-040): a função devolve o valor ou lança ``vmm::Exception`` com o mesmo erro. Um ``try``/``catch`` substitui os testes; ``what()`` traz a mensagem em inglês e ``error().message()`` a do idioma atual. A biblioteca continua a não lançar exceções por conta própria, exceto para invariantes internos."
+msgstr "Code that prefers exceptions to checking every ``Result`` uses ``vmm::value_or_throw`` (DEC-040): it returns the value or throws ``vmm::Exception`` with the same error. One ``try``/``catch`` replaces the checks; ``what()`` holds the English message and ``error().message()`` the one in the current language. The library itself still throws only for internal invariants."
+
+msgid "O exemplo :doc:`../gallery/value_or_throw` mostra a mensagem de um erro capturado."
+msgstr "The example :doc:`../gallery/value_or_throw` shows the message of a caught error."
+
+msgid "Malhas de volumes finitos de Voronoi em 2D e 3D, com várias regiões e interfaces conformes, prontas para o seu solver. A biblioteca entrega células, faces, owner/neighbour, vetores de área, distâncias entre geradores, métricas de qualidade e adjacência compacta, sem depender de nenhum solver (DEC-015)."
+msgstr "2D and 3D multi-region Voronoi finite-volume meshes with conforming interfaces, ready for your solver. The library delivers cells, faces, owner/neighbour, area vectors, generator distances, quality metrics and compact adjacency, without depending on any solver (DEC-015)."
+
+msgid "Sem escrever C++"
+msgstr "Without writing C++"
+
+msgid "O executável ``vmm-mesh``, instalado com a biblioteca, gera a malha a partir de um arquivo de configuração (veja :doc:`guide/config`):"
+msgstr "The ``vmm-mesh`` executable, installed with the library, generates the mesh from a configuration file (see :doc:`guide/config`):"

@@ -32,8 +32,8 @@ msgstr "Public types and functions of the ``vmm`` namespace."
 msgid "Requisitos"
 msgstr "Requirements"
 
-msgid "compilador C++23 (GCC 14 ou Clang 18, no mínimo; DEC-022);"
-msgstr "a C++23 compiler (at least GCC 14 or Clang 18; DEC-022);"
+msgid "compilador C++23 (GCC 14 ou Clang 19, no mínimo; DEC-042);"
+msgstr "a C++23 compiler (at least GCC 14 or Clang 19; DEC-042);"
 
 msgid "CMake 3.28;"
 msgstr "CMake 3.28;"
@@ -229,8 +229,8 @@ msgstr "Every error has a stable code, a category, context, origin and, when the
 msgid "Linguagem, dependências e licença"
 msgstr "Language, dependencies and licence"
 
-msgid "C++23; compiladores mínimos GCC 14 e Clang 18 (R12, DEC-014). Nome ``VoronoiMeshMaker``, namespace ``vmm`` (R13)."
-msgstr "C++23; minimum compilers GCC 14 and Clang 18 (R12, DEC-014). Name ``VoronoiMeshMaker``, namespace ``vmm`` (R13)."
+msgid "C++23; compiladores mínimos GCC 14 e Clang 19 (R12, DEC-014, DEC-042). Nome ``VoronoiMeshMaker``, namespace ``vmm`` (R13)."
+msgstr "C++23; minimum compilers GCC 14 and Clang 19 (R12, DEC-014, DEC-042). Name ``VoronoiMeshMaker``, namespace ``vmm`` (R13)."
 
 msgid "Includes agrupados em biblioteca padrão, bibliotecas externas e VMM, cada grupo em ordem alfabética, com os comentários separadores do projeto."
 msgstr "Includes grouped as standard library, external libraries and VMM, each group in alphabetical order, with the project's separator comments."

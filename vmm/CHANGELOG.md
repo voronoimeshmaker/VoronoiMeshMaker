@@ -1,5 +1,11 @@
 # Changelog
 
+## Não publicada
+
+### Mudou
+- Clang mínimo 19 (DEC-042): com a libstdc++, o Clang 18 não tem `std::expected`, e a
+  biblioteca não compila com ele. O job do Clang na CI passa a usar o `clang-19`.
+
 ## 1.0.0 — 2026-09-30
 
 API estável (DEC-041) e facilidade de uso (DEC-040).

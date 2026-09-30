@@ -22,14 +22,14 @@ jobs:
         include:
           - { compiler: gcc-14, cxx: g++-14, build_type: Debug, sanitize: "OFF" }
           - { compiler: gcc-14, cxx: g++-14, build_type: Release, sanitize: "OFF" }
-          - { compiler: clang-18, cxx: clang++-18, build_type: Release, sanitize: "OFF" }
+          - { compiler: clang-19, cxx: clang++-19, build_type: Release, sanitize: "OFF" }  # DEC-042
           - { compiler: gcc-14, cxx: g++-14, build_type: Debug, sanitize: "ON" }
     steps:
       - uses: actions/checkout@v4
       - name: System packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build g++-14 clang-18 libboost-dev libgmp-dev libmpfr-dev \
+          sudo apt-get install -y ninja-build g++-14 clang-19 libboost-dev libgmp-dev libmpfr-dev \
             libgtest-dev libgmock-dev libtbb-dev zlib1g-dev python3
       - name: CGAL ${{ env.CGAL_VERSION }} (release tarball; the distribution package is older)
         run: |

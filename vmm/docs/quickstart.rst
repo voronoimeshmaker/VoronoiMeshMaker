@@ -4,7 +4,7 @@ Início rápido
 Requisitos
 ----------
 
-* compilador C++23 (GCC 14 ou Clang 18, no mínimo; DEC-022);
+* compilador C++23 (GCC 14 ou Clang 19, no mínimo; DEC-042);
 * CMake 3.28;
 * CGAL 6.2 (headers) e Boost 1.83; GMP e MPFR recomendados;
 * GoogleTest, só para os testes.

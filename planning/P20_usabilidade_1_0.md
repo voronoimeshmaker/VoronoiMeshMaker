@@ -92,11 +92,12 @@ as primeiras linhas de erro como anotações públicas; se o Clang ainda falhar,
     `value_or_throw`;
   - `bin/vmm-mesh --version` imprime 1.0.0.
 - g++ 14.3 (o compilador da CI), Debug: build limpo com `-Werror`; 289/289 testes.
-- Clang 18: não verificado localmente; só a CI mostra.
+- Clang 18: a primeira CI da 1.0.0 (75d42ae) falhou; com a libstdc++, o Clang 18 não tem `std::expected`.
+  Mínimo passado para Clang 19 (DEC-042).
 
 ## 7. Para publicar (João)
 
 1. Commit.
 2. `git tag -a v1.0.0 -m "VoronoiMeshMaker 1.0.0"`.
 3. `git push` e `git push origin v1.0.0`.
-4. Conferir se a CI passa, inclusive o Clang 18, e se o Pages foi publicado.
+4. Conferir se a CI passa, inclusive o Clang 19 (DEC-042), e se o Pages foi publicado.

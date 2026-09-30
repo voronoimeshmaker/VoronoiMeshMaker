@@ -48,7 +48,7 @@ Erros e mensagens
 Linguagem, dependências e licença
 ---------------------------------
 
-- C++23; compiladores mínimos GCC 14 e Clang 18 (R12, DEC-014). Nome ``VoronoiMeshMaker``, namespace ``vmm`` (R13).
+- C++23; compiladores mínimos GCC 14 e Clang 19 (R12, DEC-014, DEC-042). Nome ``VoronoiMeshMaker``, namespace ``vmm`` (R13).
 - Includes agrupados em biblioteca padrão, bibliotecas externas e VMM, cada grupo em ordem alfabética, com os comentários separadores do projeto.
 - Dependências: CGAL e Boost; GoogleTest só nos testes; qualquer outra exige uma nova decisão (R21). Só versões estáveis (R22).
 - ``vmm_core`` sob BSD-3-Clause; ``vmm_backend_cgal`` sob GPL-3.0-or-later; todo arquivo tem cabeçalho SPDX (R23).

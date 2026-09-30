@@ -48,6 +48,7 @@
 | 039 | Sem escritores MODFLOW 6, PFLOTRAN e TOUGH | APROVADA | João |
 | 040 | Facilidade de uso: value_or_throw e vmm-mesh | APROVADA | João |
 | 041 | API 1.0 congelada; versionamento semântico | APROVADA | João |
+| 042 | Clang mínimo 19 | APROVADA | João |
 
 ---
 
@@ -601,4 +602,17 @@
 - Justificativa: 2D e 3D completos e verificados (P14, P19); usuários externos precisam saber o que pode mudar.
 - Consequências: seção de estabilidade na referência da API; os headers internos dizem que são internos;
   `CHANGELOG` com a seção 1.0.0.
+
+## DEC-042 — Clang mínimo 19
+- Data: 2026-09-30
+- Origem: primeira CI da 1.0.0 (commit 75d42ae); pedido do João ("pode mudar o mínimo para Clang 19")
+- Status: APROVADA (30/09, instrução do João)
+- Decisão: o Clang mínimo passa de 18 para 19. Substitui a DEC-022 só nesse ponto; o GCC mínimo continua 14. O job
+  do Clang na CI usa o `clang-19` do Ubuntu 24.04.
+- Justificativa: com a libstdc++ (GCC 14), o `<expected>` só é ativado quando `__cpp_concepts >= 202002L`. O Clang 18
+  declara 201907L, e o Clang 19 foi o primeiro a declarar 202002L. Por isso, com o Clang 18, `std::expected` (e com ele
+  `vmm::Result`, DEC-016) não existe, e nada da biblioteca compila. A CI mostrou isso na primeira execução:
+  `no template named 'expected' in namespace 'std'`. O Clang 18 com a libc++ funcionaria, mas o GTest e o Boost da
+  distribuição são compilados com a libstdc++.
+- Consequências: requisitos do manual, diretrizes e matriz da CI atualizados. Nenhuma mudança de código.
 

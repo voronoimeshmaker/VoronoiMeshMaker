@@ -616,6 +616,8 @@ O João aprova a publicação.
 
 ## P14a — Escritores da 0.2 (esboço)
 
+**Cancelado pela DEC-039 (30/09): sem escritores MODFLOW 6, PFLOTRAN e TOUGH.**
+
 Prompt completo escrito depois da P14. Escritores MODFLOW 6 (DISV e DISU), PFLOTRAN
 (UNSTRUCTURED_EXPLICIT) e TOUGH (MESH), fora do núcleo, com teste de ida e volta ou validação pelo
 leitor oficial quando disponível (DEC-019, DEC-025).

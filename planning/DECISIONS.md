@@ -45,6 +45,7 @@
 | 036 | Domínio 3D por superfícies trianguladas fechadas | APROVADA | P15 |
 | 037 | Sem contração FMA | APROVADA | P16 |
 | 038 | Roteiro renumerado: 3D publicado como 0.2 | APROVADA | P19 |
+| 039 | Sem escritores MODFLOW 6, PFLOTRAN e TOUGH | APROVADA | João |
 
 ---
 
@@ -543,3 +544,14 @@
 - Justificativa: o 3D está implementado e verificado (P16–P19), e os escritores não dependem dele.
 - Consequências: pacote CMake 0.2.0 (`find_package(VoronoiMeshMaker 0.2)`, compatível na mesma versão menor); a
   0.1.0 não foi publicada separadamente.
+
+## DEC-039 — Sem escritores MODFLOW 6, PFLOTRAN e TOUGH
+- Data: 2026-09-30
+- Origem: resposta do João ao início do P14a ("para que isso?"; opção "descartar")
+- Status: APROVADA (30/09, instrução do João)
+- Decisão: o P14a é cancelado. O VMM não terá escritores MODFLOW 6 (DISV, DISU), PFLOTRAN nem TOUGH, como já não tem
+  OpenFOAM (DEC-030). Substitui a DEC-019 e a DEC-038 nesse ponto: a 0.3 deixa de ser a versão dos escritores.
+- Justificativa: o solver do João lê a malha pela API e pelo formato nativo `.vmesh` (DEC-015, DEC-019); os
+  escritores só serviriam a usuários desses programas e não mudam a malha.
+- Consequências: a saída do VMM fica no formato nativo (persistência) e no VTK XML (visualização). Um escritor
+  externo continua possível fora da biblioteca, a partir da API de adjacência e das métricas.

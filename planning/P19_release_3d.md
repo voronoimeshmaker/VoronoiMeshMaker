@@ -128,7 +128,7 @@
 
 ## 8. O que sobra depois do P19
 
-- **P14a:** escritores MODFLOW 6, PFLOTRAN e TOUGH (0.3 pela DEC-038).
+- ~~P14a (escritores MODFLOW 6, PFLOTRAN e TOUGH)~~: cancelado pela DEC-039.
 - **Facilidade de uso:** ajudante que troca `Result` por exceção, executável com arquivo de configuração ou
   bindings em Python (este precisa de uma DEC).
 - **Paralelização:** recorte e montagem das células.

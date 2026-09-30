@@ -49,6 +49,10 @@ if(VMM_TEST_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Sanitizers enabled: use a separate non-instrumented build for installation")
 endif()
 
+if(NOT VMM_INSTALL_VMMLIB)
+    return()
+endif()
+
 install(TARGETS VoronoiMeshMaker
     EXPORT VoronoiMeshMakerTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

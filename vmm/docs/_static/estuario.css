@@ -1,0 +1,25 @@
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* "Estuário" palette (planning/00_requisitos_iniciais.md §6.4). */
+html[data-theme="light"] {
+  --pst-color-background: #FBFAF7;
+  --pst-color-on-background: #F1EEE7;
+  --pst-color-surface: #F1EEE7;
+  --pst-color-text-base: #1E2528;
+  --pst-color-text-muted: #56636A;
+  --pst-color-primary: #0F6E7A;
+  --pst-color-secondary: #9A521D;
+  --pst-color-link: #0F6E7A;
+  --pst-color-link-hover: #9A521D;
+}
+html[data-theme="dark"] {
+  --pst-color-background: #10171A;
+  --pst-color-on-background: #18222A;
+  --pst-color-surface: #18222A;
+  --pst-color-text-base: #E4E9EA;
+  --pst-color-text-muted: #9AA8AD;
+  --pst-color-primary: #5CC2CC;
+  --pst-color-secondary: #E39A5C;
+  --pst-color-link: #5CC2CC;
+  --pst-color-link-hover: #E39A5C;
+}
+.vmm-gallery img { border-radius: 4px; }

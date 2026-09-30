@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# R25 exceptions (P05 §5, risk 2): path | reason. Reviewed by João.
+vmm/src/facade/facade.cpp | lines 100%; the missing branches are the build-failure and post-build invariant-failure paths, unreachable through the public API with the fixed CGAL backend; both are exercised directly in tests/voronoi/Builder2D and tests/mesh/InvariantReport

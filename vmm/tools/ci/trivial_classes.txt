@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Trivial classes (DEC-023): aggregates without invariants or behaviour.
+# They are exempt from a dedicated ut_<Class>.cpp (R1). One name per line.
+Id                  # strong index: value, valid(), index()
+CatalogEntry        # two string views
+FaceGeometry        # area vector and centroid
+PatchRange          # name, start, count
+RegionInfo          # name, medium
+MediumInfo          # name
+PolygonizeOptions   # segments per curve
+BuildOptions2D      # options without validation
+BuildStats2D        # counters
+SiteGenerationOptions
+InvariantReference
+InvariantReport
+QualityLimits
+QualityReport
+VtuOptions
+BackendInfo
+Backend2D           # struct of callables
+LabelledLoop2
+LabelledPolygon2
+RegionClip2
+Segment2
+TaggedEdge
+PartitionSegment
+ValidationIssue
+ValidationOptions
+Metrics
+NativeWriteOptions
+ShapeParameters     # parameter maps
+SegmentUse          # segment index and direction
+RegionComponent     # loops of one component
+Build2D             # result aggregate
+QualityRegion       # per-region numbers
+Pair                # nested in InterfacePairs
+RawFace
+Piece
+MeshData            # plain data, validated by Mesh::from_data
+RegionInfoMesh
+RegionSites         # source bound to a region
+MeshRequest2D       # facade input aggregate
+MeshResult2D        # facade output aggregate

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: BSD-3-Clause
+PROJECT_NAME     = VoronoiMeshMaker
+INPUT            = ../include/vmm
+RECURSIVE        = YES
+FILE_PATTERNS    = *.hpp
+GENERATE_XML     = YES
+GENERATE_HTML    = NO
+GENERATE_LATEX   = NO
+EXTRACT_ALL      = YES
+QUIET            = YES
+WARN_IF_UNDOCUMENTED = NO

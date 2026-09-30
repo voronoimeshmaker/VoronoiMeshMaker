@@ -73,7 +73,7 @@ foreach(dir_abs IN LISTS PAPER_DIRS_ABS)
     )
 
     set_target_properties(${target_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${dir_abs}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/paper/${dir_rel}"
         OUTPUT_NAME "${output_name}"
     )
 

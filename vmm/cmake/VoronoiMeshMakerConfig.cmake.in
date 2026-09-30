@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-3-Clause
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(CGAL 6.2)
+find_dependency(Boost 1.83)
+
+include("${CMAKE_CURRENT_LIST_DIR}/VoronoiMeshMakerTargets.cmake")
+check_required_components(VoronoiMeshMaker)

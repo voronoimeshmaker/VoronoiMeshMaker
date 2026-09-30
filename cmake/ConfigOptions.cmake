@@ -39,23 +39,31 @@ option(VMM_ENABLE_WARNINGS
 
 option(VMM_ENABLE_LTO
     "Enable interprocedural/link-time optimization in optimized builds"
-    ON
+    OFF
 )
 
 option(VMM_ENABLE_NATIVE_ARCH
     "Optimize release builds for the native CPU architecture"
-    ON
-)
-
-option(VMM_ENABLE_FAST_MATH
-    "Enable aggressive floating-point optimizations; may change geometric results"
     OFF
 )
 
-set(VMM_CXX_STANDARD 20 CACHE STRING
+# DEC-012: -ffast-math is not offered; it changes geometric results.
+
+option(VMM_BUILD_VMMLIB
+    "Build the legacy VMMLib (regression oracle until its retirement, DEC-011)"
+    ON
+)
+
+option(VMM_INSTALL_VMMLIB
+    "Install the legacy VMMLib package (the installed package is the new vmm/ library)"
+    OFF
+)
+
+# DEC-014: C++23 is the project standard.
+set(VMM_CXX_STANDARD 23 CACHE STRING
     "C++ standard used by VoronoiMeshMaker"
 )
-set_property(CACHE VMM_CXX_STANDARD PROPERTY STRINGS 20 23)
+set_property(CACHE VMM_CXX_STANDARD PROPERTY STRINGS 23)
 
 # Backward compatibility with the previous cache option names.
 if(DEFINED BUILD_EXAMPLES)

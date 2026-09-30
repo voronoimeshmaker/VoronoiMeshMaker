@@ -27,15 +27,6 @@ if(VMM_ENABLE_NATIVE_ARCH)
     )
 endif()
 
-if(VMM_ENABLE_FAST_MATH)
-    target_compile_options(vmm_project_options INTERFACE
-        $<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:GNU,Clang>>:-ffast-math>
-        $<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:GNU,Clang>>:-fno-math-errno>
-        $<$<AND:$<CONFIG:RelWithDebInfo>,$<CXX_COMPILER_ID:GNU,Clang>>:-ffast-math>
-        $<$<AND:$<CONFIG:RelWithDebInfo>,$<CXX_COMPILER_ID:GNU,Clang>>:-fno-math-errno>
-    )
-endif()
-
 add_library(vmm_project_warnings INTERFACE)
 add_library(VoronoiMeshMaker::project_warnings ALIAS vmm_project_warnings)
 

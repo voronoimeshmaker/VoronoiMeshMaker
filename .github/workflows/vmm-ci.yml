@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# CI of the new library (vmm/), P07: compilers (DEC-022 minimum and latest),
+# Debug/Release, sanitizers, coverage per file (R25) and static checks of the
+# P05 baseline. The legacy VMMLib is not built here (VMM_BUILD_VMMLIB=OFF).
+name: vmm-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CGAL_VERSION: "6.2.1"
+
+jobs:
+  build-test:
+    name: ${{ matrix.compiler }} ${{ matrix.build_type }}${{ matrix.sanitize == 'ON' && ' sanitize' || '' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { compiler: gcc-14, cxx: g++-14, build_type: Debug, sanitize: "OFF" }
+          - { compiler: gcc-14, cxx: g++-14, build_type: Release, sanitize: "OFF" }
+          - { compiler: clang-18, cxx: clang++-18, build_type: Release, sanitize: "OFF" }
+          - { compiler: gcc-14, cxx: g++-14, build_type: Debug, sanitize: "ON" }
+    steps:
+      - uses: actions/checkout@v4
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build g++-14 clang-18 libboost-dev libgmp-dev libmpfr-dev \
+            libgtest-dev libgmock-dev libtbb-dev zlib1g-dev python3
+      - name: CGAL ${{ env.CGAL_VERSION }} (release tarball; the distribution package is older)
+        run: |
+          curl -fsSL -o cgal.tar.xz \
+            https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}.tar.xz
+          tar xf cgal.tar.xz
+          cmake -S CGAL-${CGAL_VERSION} -B cgal-build -DCMAKE_INSTALL_PREFIX=$HOME/cgal
+          cmake --install cgal-build
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=$HOME/cgal \
+            -DVMM_BUILD_VMMLIB=OFF -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_PAPER=OFF -DVMM_BUILD_TESTS=ON \
+            -DVMM_SANITIZE=${{ matrix.sanitize }}
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: ctest --test-dir build -L vmm --output-on-failure -j 4 --timeout 1800
+
+  coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build g++-14 libboost-dev libgmp-dev libmpfr-dev libgtest-dev \
+            libgmock-dev libtbb-dev zlib1g-dev python3-pip
+          pip install --user gcovr
+      - name: CGAL
+        run: |
+          curl -fsSL -o cgal.tar.xz \
+            https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}.tar.xz
+          tar xf cgal.tar.xz && cmake -S CGAL-${CGAL_VERSION} -B cgal-build -DCMAKE_INSTALL_PREFIX=$HOME/cgal
+          cmake --install cgal-build
+      - name: Build with coverage
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_VMMLIB=OFF -DVMM_BUILD_EXAMPLES=OFF \
+            -DVMM_BUILD_PAPER=OFF -DVMM_BUILD_TESTS=ON -DVMM_COVERAGE=ON
+          cmake --build build -j
+          ctest --test-dir build -L vmm -j 4 --timeout 1800
+      - name: Coverage per file (R25)
+        run: cmake --build build --target vmm_coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: build/vmm_coverage.*
+
+  static-checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baseline requirements (R1-R4, R8, R13, R21, R23, include order)
+        run: python3 vmm/tools/ci/check_requirements.py --root vmm

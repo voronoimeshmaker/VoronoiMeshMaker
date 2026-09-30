@@ -122,14 +122,14 @@ foreach(dir_abs IN LISTS EXAMPLE_DIRS_ABS)
     set(out_name "${target_name}")
   endif()
   set_target_properties(${target_name} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${dir_abs}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples/${dir_rel}"
     OUTPUT_NAME "${out_name}"
   )
 
   # Otimizações leves em Release
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-      target_compile_options(${target_name} PRIVATE -O3 -march=native)
+      target_compile_options(${target_name} PRIVATE -O3)
     elseif(MSVC)
       target_compile_options(${target_name} PRIVATE /O2)
     endif()

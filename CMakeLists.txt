@@ -7,7 +7,7 @@ endif()
 
 project(VoronoiMeshMaker
     VERSION 1.0
-    DESCRIPTION "Two-dimensional Voronoi mesh generation library based on CGAL"
+    DESCRIPTION "Voronoi finite-volume mesh generation library"
     LANGUAGES CXX
 )
 
@@ -19,10 +19,14 @@ include(cmake/ConfigUtils.cmake)          # Guard rails and CMake helpers
 include(cmake/ConfigOptions.cmake)        # Project options and layout
 include(cmake/ConfigCompiler.cmake)       # Compiler settings and shared flags
 include(cmake/ConfigDependencies.cmake)   # External dependencies
-include(cmake/ConfigTargets.cmake)        # Main library target
-include(cmake/ConfigExamples.cmake)       # Optional examples
-include(cmake/ConfigPaper.cmake)          # Optional paper/research programs
-include(cmake/ConfigTests.cmake)          # Optional tests
+if(VMM_BUILD_VMMLIB)
+    include(cmake/ConfigTargets.cmake)    # Legacy VMMLib (oracle, DEC-011)
+    include(cmake/ConfigExamples.cmake)   # Legacy examples
+    include(cmake/ConfigPaper.cmake)      # Legacy paper/research programs
+    include(cmake/ConfigTests.cmake)      # Legacy tests
+endif()
+enable_testing()                          # ctest from the build root
+add_subdirectory(vmm)                     # New library (P06 architecture)
 include(cmake/ConfigDocs.cmake)           # Optional documentation
 
 # -----------------------------------------------------------------------------
@@ -45,5 +49,5 @@ if(VMM_TEST_SANITIZERS)
 else()
     message(STATUS "LTO/IPO             : ${VMM_ENABLE_LTO}")
 endif()
-message(STATUS "Fast math           : ${VMM_ENABLE_FAST_MATH}")
+message(STATUS "Legacy VMMLib       : ${VMM_BUILD_VMMLIB}")
 message(STATUS "Install prefix      : ${CMAKE_INSTALL_PREFIX}")

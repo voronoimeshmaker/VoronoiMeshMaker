@@ -368,7 +368,7 @@
 ## DEC-027 — Regras para protótipos em prototypes/
 - Data: 2026-09-28
 - Origem: P05a, plano de iterações
-- Status: PROPOSTA
+- Status: APROVADA (29/09, respostas do João ao P05a)
 - Decisão: Código de prova de conceito fica em prototypes/<prompt>/, com CMake próprio, fora do build principal e
   sem API estável. Está isento de teste por classe, árvore espelhada e cobertura mínima (R1, R2, R25), mas respeita
   o R3 (sem virtual, sem herança, sem enum de despacho) e usa tolerâncias relativas (R17). Cada protótipo termina
@@ -378,3 +378,75 @@
   proibir.
 - Consequências: P05a e P15a seguem esta regra; P07 exclui prototypes/ da CI de cobertura e dos verificadores de
   R1 e R2.
+## DEC-028 — Interface conforme na 0.1: refinamento comum com topologia por rótulos
+- Data: 2026-09-29
+- Origem: P05a §4 (planning/P05a_provas_conceito.md)
+- Status: APROVADA (29/09, respostas do João ao P05a)
+- Decisão: Na 0.1, cada região gera o seu Voronoi e o recorta pelo próprio polígono; a conformidade da interface é
+  garantida pelo refinamento comum dos pontos de quebra dos dois lados (E1), com fusão de pontos a 10⁻¹² L
+  (DEC-020). A topologia vem de rótulos de aresta propagados pelo backend e os vértices são recalculados de forma
+  canônica a partir dos rótulos (circuncentro, bissetor × segmento, canto), nunca por proximidade. Sítios
+  espelhados na interface (E2) entram como política opcional de geração de sítios sobre o mesmo pipeline, para
+  recuperar a ortogonalidade onde funcionam.
+- Justificativa: no P05a as duas estratégias cumpriram todos os invariantes em 3 escalas e 5 ordens; E1 garante a
+  conformidade por construção, E2 recuperou ortogonalidade exata em 81 % do comprimento da interface, mas falha
+  na quina convexa (face a 90°) e depende da fusão por tolerância. Alternativa descartada: E2 como mecanismo único
+  (sem garantia de conformidade).
+- Consequências: P06 define o formato dos rótulos na fronteira do backend, a política de células fragmentadas e a
+  de faces degeneradas; P10/P11 implementam; P15a avalia a extensão a 3D.
+
+## DEC-029 — Faces internas numeradas antes das de fronteira; views de volumes internos e de fronteira
+- Data: 2026-09-29
+- Origem: P05a, pedido do João durante a execução (iteradores de volumes internos e de fronteira)
+- Status: APROVADA (29/09, respostas do João ao P05a)
+- Decisão: A malha expõe dois intervalos de volumes (internos: nenhuma face de fronteira; de fronteira: ao menos
+  uma), cada um com acesso às faces do volume, e dois intervalos de faces (internas, incluindo as de interface; de
+  fronteira). As faces são renumeradas com as internas primeiro e as de fronteira agrupadas por patch, de modo que
+  os intervalos de faces sejam spans contíguos; os de volumes são listas de índices precomputadas.
+- Justificativa: no P05a as views filtradas (std::views::filter) funcionaram em 2D e 3D, mas não são iteráveis
+  como objeto const e refazem o filtro a cada passada; intervalos contíguos são mais simples e baratos. A
+  renumeração dos volumes fica livre para critérios de localidade (P06).
+- Consequências: P06 fixa a API (tipos e nomes) e a ordem canônica das faces; P09/P10 implementam com testes por
+  classe.
+
+## DEC-030 — Sem escritor OpenFOAM
+- Data: 2026-09-29
+- Origem: instrução do João durante o P06 ("não vou usá-lo de forma alguma")
+- Status: APROVADA (29/09, instrução do João)
+- Decisão: SUBSTITUI a DEC-019 no ponto do OpenFOAM: o escritor OpenFOAM polyMesh sai da 0.1 e não entra em versão
+  futura planejada. Os escritores da 0.1 passam a ser o formato nativo do VMM (com leitura) e o VTK XML (.vtu).
+  O restante da DEC-019 (0.2: MODFLOW 6, PFLOTRAN, TOUGH; CGNS opcional; Gmsh fora) continua valendo.
+- Justificativa: o consumidor da malha é o solver próprio do João (resposta à pergunta 7 do P04); o formato nativo
+  e a API de adjacência (DEC-015) cobrem esse uso.
+- Consequências: R28 e P12 perdem o OpenFOAM (extrusão 2D, patches empty, checkMesh); a ordem das faces da DEC-029
+  continua valendo por ser útil ao solver próprio, não por exigência do OpenFOAM.
+
+## DEC-031 — Não ortogonalidade verificada só em faces não degeneradas
+- Data: 2026-09-29
+- Origem: P10 (teste de 1000 configurações aleatórias, semente 599)
+- Status: REJEITADA (29/09, João: a ortogonalidade é garantida pelo CGAL; substituída pela DEC-032)
+- Decisão: O limite de 10⁻⁸ rad da DEC-020 para faces internas de uma região vale para faces de tamanho linear
+  s ≥ max(10⁻⁶ · d, 64 · ε · L / 10⁻⁸), com d a distância entre os geradores, ε o épsilon de máquina e L a escala do
+  domínio (para L = 1, cerca de 10⁻⁶; no A2, com L ≈ 2,2 km, cerca de 1,6 mm). Faces menores são contadas e têm a não
+  ortogonalidade máxima relatada à parte (InvariantReport::tiny_faces, max_nonortho_tiny), sem reprovar a malha.
+- Justificativa: a direção de uma face de tamanho s, calculada a partir de vértices com erro de arredondamento ε, só é
+  conhecida até ε/s. Na semente 599, uma face quase degenerada (sítios quase cocirculares) teve 1,4·10⁻⁸ rad com todos
+  os demais invariantes em 10⁻¹⁶; no benchmark (B1 com 10⁶ células, B3 = A2 em coordenadas de km) apareceram faces
+  de 1,1–1,4·10⁻⁸ rad. Os vértices carregam erro de arredondamento ~ε·L, então a direção de uma face de tamanho s só é
+  conhecida até ~ε·L/s. O achado 3 do P05a já apontava que a meta é mal posta para faces degeneradas.
+- Consequências: P10 e P12 usam o critério; o relatório de qualidade continua listando as faces curtas (P04 §5).
+
+## DEC-032 — Ortogonalidade garantida por construção
+- Data: 2026-09-29
+- Origem: instrução do João sobre a DEC-031
+- Status: APROVADA (29/09, instrução do João)
+- Decisão: SUBSTITUI a DEC-020 no ponto da não ortogonalidade. Uma face interna de uma região é, por construção, um
+  pedaço do bissetor entre dois sítios vizinhos, escolhido pelo backend exato (CGAL: Delaunay e recorte rotulado); a
+  ortogonalidade é, portanto, uma garantia estrutural e não um critério numérico. O ângulo medido sobre os vértices
+  gravados em double só reflete o arredondamento e passa a ser relatado (InvariantReport, relatório de qualidade),
+  sem reprovar a malha. A garantia estrutural continua verificada no construtor: toda peça de bissetor precisa ser
+  vista pelas duas células vizinhas (senão, erro InterfaceNotConforming).
+- Justificativa: confiança no CGAL para a topologia (DEC-006, DEC-007); a direção de uma face minúscula medida sobre
+  coordenadas arredondadas é indeterminada (semente 599, benchmark), sem que a malha esteja errada.
+- Consequências: a DEC-031 é rejeitada; InvariantReference perde nonorthogonality_limit; QualityLimits mantém um
+  limite só para o relatório de qualidade.

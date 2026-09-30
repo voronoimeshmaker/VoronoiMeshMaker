@@ -3,7 +3,7 @@
 // Description: Anchor problems of P04 (DEC-017) as declarations plus site
 //              sources: A1 (river cross-section, optional air layer) and A2
 //              (river plan with meander, widening and island); the 3D terrain
-//              block of P17. Shared by the
+//              block of P17; A3 (soil block with river, P18). Shared by the
 //              integration tests, the benchmark and the examples.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
@@ -17,6 +17,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <numbers>
 #include <string>
@@ -27,9 +28,12 @@
 //  VoronoiMeshMaker
 //==============================================================================
 #include <vmm/domain/declaration.hpp>
+#include <vmm/domain/declaration3d.hpp>
 #include <vmm/domain/shapes.hpp>
+#include <vmm/domain/shapes3d.hpp>
 #include <vmm/geometry/surface.hpp>
 #include <vmm/sites/sources.hpp>
+#include <vmm/sites/sources3d.hpp>
 
 namespace vmm::anchors {
 
@@ -154,6 +158,119 @@ inline TriangleSurface terrain_block(int n) {
         quad(point(1, a, 0), point(1, b, 0), point(1, b, h(1, b)), point(1, a, h(1, a)), 1);  // x = 1
     }
     return *TriangleSurface::make(std::move(pts), std::move(tris), std::move(patch), {"terrain", "rock"});
+}
+
+/// Closed block between two heightfields over [x0, x1] x [y0, y1]: bottom z =
+/// lo(x, y), top z = hi(x, y), an nx x ny grid on every face. Tags: x-, x+,
+/// y-, y+, z-, z+ ("" = boundary).
+inline TriangleSurface heightfield_block(double x0, double x1, double y0, double y1,
+                                         const std::function<double(double, double)>& lo,
+                                         const std::function<double(double, double)>& hi, int nx, int ny,
+                                         const std::array<std::string, 6>& tags) {
+    std::vector<Vec3> pts;
+    std::vector<Triangle> tris;
+    std::vector<std::uint32_t> patch;
+    std::map<std::array<long long, 3>, std::uint32_t> id;
+    const auto point = [&](double x, double y, double z) {
+        const std::array<long long, 3> key{std::llround(x * 1e6), std::llround(y * 1e6), std::llround(z * 1e6)};
+        const auto [it, added] = id.emplace(key, static_cast<std::uint32_t>(pts.size()));
+        if (added) pts.push_back({x, y, z});
+        return it->second;
+    };
+    const auto quad = [&](std::uint32_t a, std::uint32_t b, std::uint32_t c, std::uint32_t d, std::uint32_t p) {
+        tris.push_back({a, b, c});
+        tris.push_back({a, c, d});
+        patch.insert(patch.end(), {p, p});
+    };
+    const auto X = [&](int i) { return x0 + (x1 - x0) * i / nx; };
+    const auto Y = [&](int j) { return y0 + (y1 - y0) * j / ny; };
+    for (int i = 0; i < nx; ++i) {
+        for (int j = 0; j < ny; ++j) {
+            const double a = X(i), b = X(i + 1), c = Y(j), d = Y(j + 1);
+            quad(point(a, c, hi(a, c)), point(b, c, hi(b, c)), point(b, d, hi(b, d)), point(a, d, hi(a, d)), 5);
+            quad(point(a, c, lo(a, c)), point(a, d, lo(a, d)), point(b, d, lo(b, d)), point(b, c, lo(b, c)), 4);
+        }
+    }
+    for (int i = 0; i < nx; ++i) {
+        const double a = X(i), b = X(i + 1);
+        quad(point(a, y0, lo(a, y0)), point(b, y0, lo(b, y0)), point(b, y0, hi(b, y0)), point(a, y0, hi(a, y0)), 2);
+        quad(point(b, y1, lo(b, y1)), point(a, y1, lo(a, y1)), point(a, y1, hi(a, y1)), point(b, y1, hi(b, y1)), 3);
+    }
+    for (int j = 0; j < ny; ++j) {
+        const double c = Y(j), d = Y(j + 1);
+        quad(point(x0, d, lo(x0, d)), point(x0, c, lo(x0, c)), point(x0, c, hi(x0, c)), point(x0, d, hi(x0, d)), 0);
+        quad(point(x1, c, lo(x1, c)), point(x1, d, lo(x1, d)), point(x1, d, hi(x1, d)), point(x1, c, hi(x1, c)), 1);
+    }
+    std::vector<std::string> names;
+    for (const auto& t : tags) names.push_back(t.empty() ? "boundary" : t);
+    return *TriangleSurface::make(std::move(pts), std::move(tris), std::move(patch), std::move(names));
+}
+
+struct Anchor3 {
+    Declaration3D declaration;
+    std::vector<RegionSites3D> sources;
+};
+
+/// Axis of the A3 channel in plan and its depth (P04 §2.3).
+inline double a3_axis(double x) { return 100 + 30 * std::sin(2 * std::numbers::pi * x / 500); }
+inline double a3_depth(double x) { return 3 + 3 * x / 500; }
+
+/// A3 (P04 §2.3): soil block 500 m x 200 m x 30 m; lower and upper soil with an
+/// inclined contact z = 15 + 0.01 x; air above the terrain level z = 25; a
+/// trapezoidal channel (top 40 m, banks 1V:2H, depth 3 m to 6 m along x) whose
+/// axis curves in plan, filled with water up to the terrain level. Regions by
+/// precedence: solo_inf, solo_sup, atmosfera, canal. `n` = slices of the channel.
+inline Anchor3 a3(double refinement = 1, int n = 40) {
+    Anchor3 a;
+    auto& d = a.declaration;
+    const auto solid = *d.media().add("solid");
+    const auto gas = *d.media().add("air");
+    const auto water = *d.media().add("water");
+    const std::array<std::string, 6> box_tags{"montante", "jusante", "margem_dir", "margem_esq", "base", "topo_ar"};
+    const auto inf = *d.add_region("solo_inf", solid, Cuboid({0, 0, 0}, {500, 200, 30}, box_tags));
+    const auto sup = *d.add_region_surface(
+        "solo_sup", solid,
+        heightfield_block(0, 500, 0, 200, [](double x, double) { return 15 + 0.01 * x; }, [](double, double) { return 30.0; }, 10, 4,
+                          box_tags));
+    const auto air = *d.add_region("atmosfera", gas, Cuboid({0, 0, 25}, {500, 200, 30}, box_tags));
+    // Channel: cross-sections in the planes x = const, swept along x.
+    std::vector<Vec3> pts;
+    std::vector<Triangle> tris;
+    std::vector<std::uint32_t> patch;  // 0 leito, 1 montante, 2 jusante, 3 superficie
+    for (int i = 0; i <= n; ++i) {
+        const double x = 500.0 * i / n;
+        const double yc = a3_axis(x);
+        const double h = a3_depth(x);
+        pts.push_back({x, yc - 20, 25});
+        pts.push_back({x, yc - 20 + 2 * h, 25 - h});
+        pts.push_back({x, yc + 20 - 2 * h, 25 - h});
+        pts.push_back({x, yc + 20, 25});
+    }
+    const auto at = [](int i, int k) { return static_cast<std::uint32_t>(4 * i + k); };
+    for (int i = 0; i < n; ++i) {
+        for (int k = 0; k < 4; ++k) {
+            const int q = (k + 1) % 4;
+            tris.push_back({at(i, k), at(i, q), at(i + 1, q)});
+            tris.push_back({at(i, k), at(i + 1, q), at(i + 1, k)});
+            const std::uint32_t tag = k == 3 ? 3 : 0;
+            patch.insert(patch.end(), {tag, tag});
+        }
+    }
+    tris.push_back({at(0, 3), at(0, 2), at(0, 1)});
+    tris.push_back({at(0, 3), at(0, 1), at(0, 0)});
+    tris.push_back({at(n, 0), at(n, 1), at(n, 2)});
+    tris.push_back({at(n, 0), at(n, 2), at(n, 3)});
+    patch.insert(patch.end(), {1, 1, 2, 2});
+    const auto canal = *d.add_region_surface(
+        "canal", water,
+        *TriangleSurface::make(std::move(pts), std::move(tris), std::move(patch), {"leito", "montante", "jusante", "superficie"}));
+    const double h = 1 / refinement;
+    a.sources.push_back(sites_for_3d(inf, UniformRandomSource3D(12 * h)));
+    a.sources.push_back(sites_for_3d(sup, UniformRandomSource3D(9 * h)));
+    // The air layer is 5 m thick: a small margin to its surface leaves room for sites.
+    a.sources.push_back(sites_for_3d(air, UniformRandomSource3D(8 * h).boundary_margin_fraction(0.1)));
+    a.sources.push_back(sites_for_3d(canal, UniformRandomSource3D(3 * h)));
+    return a;
 }
 
 }  // namespace vmm::anchors

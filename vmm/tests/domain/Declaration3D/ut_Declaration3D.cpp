@@ -50,6 +50,18 @@ TEST(Declaration3D, Errors) {
     ASSERT_TRUE(d.add_region("a", m, Cuboid({0, 0, 0}, {1, 1, 1})));
     EXPECT_EQ(d.add_region("a", m, Cuboid({0, 0, 0}, {1, 1, 1})).error().code(), vmm::ErrorCode::DuplicateName);
     EXPECT_EQ(d.add_region_surface("b", m, vmm::TriangleSurface{}).error().code(), vmm::ErrorCode::InvalidSurface);
+    EXPECT_EQ(d.add_hole_surface(vmm::TriangleSurface{}).error().code(), vmm::ErrorCode::InvalidSurface);
+    EXPECT_EQ(d.add_hole(Cuboid({0, 0, 0}, {0, 1, 1})).error().code(), vmm::ErrorCode::DegenerateShape);
+}
+
+TEST(Declaration3D, Holes) {
+    Declaration3D d;
+    const auto m = *d.media().add("m");
+    ASSERT_TRUE(d.add_region("a", m, Cuboid({0, 0, 0}, {2, 2, 2})));
+    ASSERT_TRUE(d.add_hole(Cuboid({0.5, 0.5, 0.5}, {1, 1, 1})));
+    ASSERT_EQ(d.layers().size(), 2u);
+    EXPECT_FALSE(d.layers()[1].region.valid());
+    EXPECT_EQ(d.regions().size(), 1u);
 }
 
 }  // namespace

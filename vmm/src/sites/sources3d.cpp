@@ -176,12 +176,79 @@ Result<std::vector<Vec3>> ExplicitSites3D::generate(const TriangleSurface& regio
 }
 
 // ----------------------------------------------------------------------------
+// Interface pairs
+// ----------------------------------------------------------------------------
+
+Result<std::vector<InterfacePairs3D::Pair>> InterfacePairs3D::generate(const Partition3D& partition) const {
+    if (auto s = positive(spacing_, "pair spacing"); !s) return std::unexpected(s.error());
+    if (!(offset_ > 0 && offset_ < 0.5)) return fail(ErrorCode::InvalidSpacing, std::format("offset_fraction = {}", offset_));
+    std::vector<TriangleSurface> surfaces;
+    for (std::size_t r = 0; r < partition.region_count(); ++r) {
+        auto s = partition.region_surface(RegionId::from_index(r));
+        if (!s) return std::unexpected(s.error());
+        surfaces.push_back(std::move(*s));
+    }
+    const auto& p = partition.vertices();
+    PointGrid3 taken(0.5 * spacing_);
+    std::vector<Pair> pairs;
+    for (const PartitionTriangle& t : partition.triangles()) {
+        if (!t.inside.valid() || !t.outside.valid()) continue;
+        const Vec3& a = p[t.v[0]];
+        const Vec3& b = p[t.v[1]];
+        const Vec3& c = p[t.v[2]];
+        const Vec3 n = cross(b - a, c - a);
+        const Vec3 u = (1 / norm(n)) * n;  // out of the inside region
+        const Real longest = std::max({norm(b - a), norm(c - b), norm(a - c)});
+        const int k = std::max(1, static_cast<int>(std::ceil(longest / spacing_)));
+        // Centroids of the upright sub-triangles of a k x k barycentric subdivision.
+        for (int i = 0; i < k; ++i) {
+            for (int j = 0; i + j < k; ++j) {
+                const Real wb = (i + 1.0 / 3) / k;
+                const Real wc = (j + 1.0 / 3) / k;
+                const Vec3 x = a + wb * (b - a) + wc * (c - a);
+                if (taken.any_within(x, 0.5 * spacing_)) continue;
+                // Each pair stays mirrored (orthogonal face), but its offset varies by up to 20 %
+                // (deterministic): equal offsets put the sites of a curved interface on one
+                // sphere around its centre, a massive cospherical degeneracy.
+                const Real jitter = static_cast<Real>(splitmix64(pairs.size() + 1) >> 11) * 0x1.0p-53;
+                const Real delta = offset_ * spacing_ * (0.8 + 0.4 * jitter);
+                const Vec3 in = x - delta * u;
+                const Vec3 out = x + delta * u;
+                const TriangleSurface& si = surfaces[t.inside.index()];
+                const TriangleSurface& so = surfaces[t.outside.index()];
+                // The interface must be the nearest surface of both sites.
+                if (!si.contains(in) || !so.contains(out) || si.distance(in) < 0.99 * delta || so.distance(out) < 0.99 * delta) {
+                    continue;
+                }
+                taken.insert(x);
+                pairs.push_back({in, t.inside, out, t.outside});
+            }
+        }
+    }
+    return pairs;
+}
+
+// ----------------------------------------------------------------------------
 // Generation and checks
 // ----------------------------------------------------------------------------
 
 Result<SiteSet3D> generate_sites_3d(const Partition3D& partition, std::span<const RegionSites3D> sources,
                                     const SiteGenerationOptions3D& options) {
     SiteSet3D sites;
+    std::vector<InterfacePairs3D::Pair> pairs;
+    if (options.interface_pairs) {
+        auto made = options.interface_pairs->generate(partition);
+        if (!made) return std::unexpected(made.error());
+        pairs = std::move(*made);
+    }
+    const Real exclusion = options.interface_pairs ? options.pair_exclusion_fraction * options.interface_pairs->spacing() : 0;
+    PointGrid3 near_pairs(exclusion > 0 ? exclusion : 1);
+    for (const auto& pr : pairs) {
+        sites.add(pr.inside, pr.inside_region);
+        sites.add(pr.outside, pr.outside_region);
+        near_pairs.insert(pr.inside);
+        near_pairs.insert(pr.outside);
+    }
     for (const auto& spec : sources) {
         if (!spec.region.valid() || spec.region.index() >= partition.region_count() || !spec.source) {
             return fail(ErrorCode::InvalidArgument, "site source for an unknown region", spec.region);
@@ -191,7 +258,10 @@ Result<SiteSet3D> generate_sites_3d(const Partition3D& partition, std::span<cons
         Random rng(splitmix64(options.seed ^ splitmix64(spec.region.index() << 32)));
         auto pts = spec.source(*surface, rng);
         if (!pts) return std::unexpected(pts.error());
-        sites.append(*pts, spec.region);
+        for (const Vec3& x : *pts) {
+            if (exclusion > 0 && near_pairs.any_within(x, exclusion)) continue;
+            sites.add(x, spec.region);
+        }
     }
     if (auto ok = validate_sites_3d(partition, sites); !ok) return std::unexpected(ok.error());
     return sites;

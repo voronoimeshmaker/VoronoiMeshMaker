@@ -1,8 +1,8 @@
 // ============================================================================
 // File: declaration3d.hpp
-// Description: 3D domain declaration (P16): regions given by closed surfaces
-//              (DEC-036), in declaration order as in 2D (DEC-018). Version 0.3
-//              builds one region; precedence among several regions is P18.
+// Description: 3D domain declaration (P16, P18): regions and holes given by
+//              closed surfaces (DEC-036), by precedence as in 2D (DEC-018): a
+//              later layer paints over the earlier ones; a hole removes.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
 
@@ -28,7 +28,7 @@ namespace vmm {
 
 class Declaration3D {
 public:
-    /// A layer fills the inside of `surface` with `region`.
+    /// A layer fills the inside of `surface` with `region`; an invalid region means a hole.
     struct Layer {
         RegionId region;
         TriangleSurface surface;
@@ -46,8 +46,15 @@ public:
         if (!surface) return std::unexpected(surface.error());
         return add_region_surface(std::move(name), medium, std::move(*surface));
     }
+    template <Shape3D S>
+    Status add_hole(const S& shape) {
+        auto surface = shape.surface(options_);
+        if (!surface) return std::unexpected(surface.error());
+        return add_hole_surface(std::move(*surface));
+    }
     /// Fails on an empty or repeated name and on an unknown medium.
     Result<RegionId> add_region_surface(std::string name, MediumId medium, TriangleSurface surface);
+    Status add_hole_surface(TriangleSurface surface);
 
     [[nodiscard]] const std::vector<Layer>& layers() const noexcept { return layers_; }
     [[nodiscard]] const std::vector<RegionInfo>& regions() const noexcept { return regions_; }

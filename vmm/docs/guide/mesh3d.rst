@@ -1,10 +1,10 @@
 .. SPDX-License-Identifier: BSD-3-Clause
 
-======================
-Malhas 3D (versão 0.3)
-======================
+=========
+Malhas 3D
+=========
 
-A versão 0.3 gera malhas de volumes finitos de Voronoi em 3D para **uma região**. Várias regiões com interfaces conformes chegam na versão 0.5 (P18); domínios STL, na 0.4 (P17).
+Malhas de volumes finitos de Voronoi em 3D, com uma ou várias regiões, buracos e interfaces conformes, a partir de formas analíticas ou de arquivos STL.
 
 Domínio
 -------
@@ -56,4 +56,24 @@ Domínio de um arquivo STL (versão 0.4)
    const auto soil = *request.declaration.media().add("soil");
    const auto ground = *request.declaration.add_region("ground", soil, vmm::SurfaceShape(*surface));
    request.sources = {vmm::sites_for_3d(ground, vmm::UniformRandomSource3D(0.05))};
+   const auto result = vmm::generate_mesh_3d(request);
+
+Várias regiões
+--------------
+
+- As regiões e os buracos são declarados por precedência, como no 2D (DEC-018): cada camada pinta por cima das anteriores; ``add_hole`` remove. O backend autorrefina as superfícies de todas as camadas em aritmética exata e classifica cada triângulo pelos dois lados; faces coplanares de camadas diferentes são tratadas.
+- Cada região tem o seu próprio diagrama de Voronoi (DEC-028). Numa interface, a face entre duas células é a interseção dos seus pedaços sobre cada triângulo (refinamento comum), de modo que a interface é conforme e a sua área é conferida nos invariantes.
+- As faces de interface não são faces de Voronoi e podem ser bem não ortogonais. ``SiteGenerationOptions3D::interface_pairs`` (``InterfacePairs3D``) põe pares de sítios espelhados através de cada interface: a face entre os dois sítios de um par fica ortogonal, e a não ortogonalidade média nas interfaces cai de cerca de 0,5 rad para menos de 0,05 rad.
+
+.. code-block:: cpp
+
+   vmm::MeshRequest3D request;
+   auto& d = request.declaration;
+   const auto rock = *d.media().add("rock");
+   const auto water = *d.media().add("water");
+   const auto block = *d.add_region("block", rock, vmm::Cuboid({0, 0, 0}, {1, 1, 1}));
+   const auto lens = *d.add_region("lens", water, vmm::Sphere({0.5, 0.5, 0.5}, 0.3));  // pinta por cima
+   request.sources = {vmm::sites_for_3d(block, vmm::UniformRandomSource3D(0.08)),
+                      vmm::sites_for_3d(lens, vmm::UniformRandomSource3D(0.05))};
+   request.sites.interface_pairs = vmm::InterfacePairs3D(0.05);           // faces de interface ortogonais
    const auto result = vmm::generate_mesh_3d(request);

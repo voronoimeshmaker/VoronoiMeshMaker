@@ -1,5 +1,23 @@
 # Changelog
 
+## Não publicado — 3D com várias regiões (entrega d, planejada como 0.5 na DEC-025)
+
+### Novo
+- Partição 3D por precedência (DEC-018): regiões e buracos (`Declaration3D::add_hole`),
+  autorrefinamento exato de todas as camadas e classificação de cada triângulo pelos dois
+  lados; faces coplanares de camadas diferentes; arredondamento para double sem interseções.
+- `build_mesh_3d` com várias regiões: um diagrama de Voronoi por região (DEC-028) e o
+  refinamento comum dos pedaços sobre cada triângulo de interface; `BuildStats3D` com
+  `interface_faces` e `interface_slivers`.
+- `InterfacePairs3D` (pares espelhados através das interfaces, E2) em
+  `SiteGenerationOptions3D::interface_pairs`.
+- Âncora A3 (`anchors::a3`, `anchors::heightfield_block`), benchmark B7, exemplo
+  `ex_anchor_a3`; a galeria corta as malhas de várias regiões na vertical.
+
+### Mudou
+- A limpeza das faces divide laços que se tocam num vértice e roda também depois da
+  inserção de vértices em "T".
+
 ## Não publicado — domínio STL (entrega c, planejada como 0.4 na DEC-025)
 
 ### Novo

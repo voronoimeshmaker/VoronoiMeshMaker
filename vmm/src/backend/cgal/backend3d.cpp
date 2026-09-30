@@ -42,6 +42,7 @@
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_mesh_processing/autorefinement.h>
 #include <CGAL/Polygon_mesh_processing/connected_components.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
@@ -271,25 +272,211 @@ bool clip_local(const EMesh& cell, const State3& state, const Box3& box, EMesh& 
 
 }  // namespace
 
+namespace {
+
+/// Records the input triangle of every output triangle of the autorefinement.
+/// Satisfies CGAL's PMPAutorefinementVisitor by composition (AGENTS.md).
+class SourceVisitor {
+public:
+    explicit SourceVisitor(std::vector<std::size_t>* source) : source_(source) {}
+    void number_of_output_triangles(std::size_t n) { source_->assign(n, SIZE_MAX); }
+    void verbatim_triangle_copy(std::size_t target, std::size_t source) { (*source_)[target] = source; }
+    void new_subtriangle(std::size_t target, std::size_t source) { (*source_)[target] = source; }
+    void delete_triangle(std::size_t) {}
+
+private:
+    std::vector<std::size_t>* source_;
+};
+
+using SoupTriangle = std::array<std::size_t, 3>;
+
+/// True when t traverses a -> b.
+bool traverses(const SoupTriangle& t, std::size_t a, std::size_t b) {
+    for (std::size_t k = 0; k < 3; ++k) {
+        if (t[k] == a && t[(k + 1) % 3] == b) return true;
+    }
+    return false;
+}
+
+}  // namespace
+
 Result<Partition3D> build_partition_3d(const Declaration3D& declaration) {
-    if (declaration.layers().empty()) return fail(ErrorCode::EmptyDeclaration);
-    if (declaration.layers().size() > 1) {
-        return fail(ErrorCode::InvalidArgument,
-                    "version 0.3 builds one region; several regions are planned for version 0.5 (P18)");
+    const auto& layers = declaration.layers();
+    if (layers.empty()) return fail(ErrorCode::EmptyDeclaration);
+    const auto layer_name = [&](std::size_t l) {
+        return layers[l].region.valid() ? std::format("region '{}'", declaration.regions()[layers[l].region.index()].name)
+                                        : std::format("hole {}", l);
+    };
+    // 1. Every layer must be a valid surface on its own.
+    std::vector<EMesh> layer_mesh(layers.size());
+    std::vector<Box3> layer_box(layers.size());
+    std::vector<std::string> patches;
+    std::vector<std::vector<std::uint32_t>> patch_of(layers.size());  // layer patch -> global patch
+    for (std::size_t l = 0; l < layers.size(); ++l) {
+        const TriangleSurface& s = layers[l].surface;
+        const IMesh m = to_imesh(s.points(), s.triangles());
+        if (!CGAL::is_closed(m) || PMP::does_self_intersect(m)) {
+            return fail(ErrorCode::InvalidSurface, std::format("surface of {} is open or self-intersecting", layer_name(l)));
+        }
+        std::vector<EMesh::Vertex_index> v;
+        for (const Vec3& p : s.points()) v.push_back(layer_mesh[l].add_vertex(Epeck::Point_3(p[0], p[1], p[2])));
+        for (const Triangle& t : s.triangles()) layer_mesh[l].add_face(v[t[0]], v[t[1]], v[t[2]]);
+        layer_box[l] = s.bounding_box();
+        for (const std::string& name : s.patches()) {
+            const auto it = std::ranges::find(patches, name);
+            patch_of[l].push_back(static_cast<std::uint32_t>(it - patches.begin()));
+            if (it == patches.end()) patches.push_back(name);
+        }
     }
-    const auto& layer = declaration.layers().front();
-    const TriangleSurface& s = layer.surface;
-    const IMesh m = to_imesh(s.points(), s.triangles());
-    if (!CGAL::is_closed(m) || PMP::does_self_intersect(m)) {
-        return fail(ErrorCode::InvalidSurface, std::format("surface of region '{}' is open or self-intersecting",
-                                                           declaration.regions()[layer.region.index()].name));
+    std::vector<std::unique_ptr<CGAL::Side_of_triangle_mesh<EMesh, Epeck>>> inside;
+    for (const EMesh& m : layer_mesh) inside.push_back(std::make_unique<CGAL::Side_of_triangle_mesh<EMesh, Epeck>>(m));
+
+    // 2. Exact autorefinement of all the layers together.
+    std::vector<Epeck::Point_3> pts;
+    std::vector<SoupTriangle> tris;
+    std::vector<std::uint32_t> tri_layer;
+    std::vector<std::uint32_t> tri_patch;
+    for (std::size_t l = 0; l < layers.size(); ++l) {
+        const TriangleSurface& s = layers[l].surface;
+        const std::size_t base = pts.size();
+        for (const Vec3& p : s.points()) pts.emplace_back(p[0], p[1], p[2]);
+        for (std::size_t t = 0; t < s.triangle_count(); ++t) {
+            const Triangle& x = s.triangles()[t];
+            tris.push_back({base + x[0], base + x[1], base + x[2]});
+            tri_layer.push_back(static_cast<std::uint32_t>(l));
+            tri_patch.push_back(patch_of[l][s.triangle_patch()[t]]);
+        }
     }
+    std::vector<std::size_t> origin;
+    try {
+        PMP::autorefine_triangle_soup(pts, tris, CGAL::parameters::visitor(SourceVisitor(&origin)));
+    } catch (const std::exception& e) {
+        return fail(ErrorCode::BackendFailure, std::format("autorefinement: {}", e.what()));
+    }
+    if (origin.empty()) {  // nothing intersected: triangles unchanged
+        origin.resize(tris.size());
+        std::iota(origin.begin(), origin.end(), std::size_t{0});
+    }
+    if (origin.size() != tris.size()) return fail(ErrorCode::BackendFailure, "autorefinement lost track of the triangles");
+
+    // 3. Points by exact identity; triangles grouped by their three points.
+    std::map<Epeck::Point_3, std::size_t> unique;
+    std::vector<Epeck::Point_3> upts;
+    std::vector<std::size_t> pid(pts.size());
+    for (std::size_t i = 0; i < pts.size(); ++i) {
+        const auto [it, added] = unique.emplace(pts[i], upts.size());
+        if (added) upts.push_back(pts[i]);
+        pid[i] = it->second;
+    }
+    std::map<SoupTriangle, std::vector<std::size_t>> groups;
+    for (std::size_t t = 0; t < tris.size(); ++t) {
+        for (std::size_t& v : tris[t]) v = pid[v];
+        if (tris[t][0] == tris[t][1] || tris[t][1] == tris[t][2] || tris[t][0] == tris[t][2]) continue;
+        SoupTriangle key = tris[t];
+        std::ranges::sort(key);
+        groups[key].push_back(t);
+    }
+
+    // 4. Region on each side: the last layer that contains that side (DEC-018).
+    std::vector<SoupTriangle> kept;
+    std::vector<PartitionTriangle> kept_info;
+    const std::size_t nl = layers.size();
+    std::vector<int> contains_front(nl);
+    std::vector<int> contains_back(nl);
+    for (const auto& [key, members] : groups) {
+        const SoupTriangle& ref = tris[members.front()];
+        std::vector<int> contribution(nl, 0);  // +1 same orientation as ref, -1 opposite
+        std::size_t owner_member = members.front();
+        for (const std::size_t m : members) {
+            const std::size_t l = tri_layer[origin[m]];
+            contribution[l] = traverses(tris[m], ref[0], ref[1]) ? 1 : -1;
+            if (l >= tri_layer[origin[owner_member]]) owner_member = m;
+        }
+        const Epeck::Point_3 c = CGAL::centroid(upts[ref[0]], upts[ref[1]], upts[ref[2]]);
+        const Vec3 cd = to_vec(c);
+        for (std::size_t l = 0; l < nl; ++l) {
+            if (contribution[l] != 0) {
+                // The layer's outward normal is ref's normal when +1: its inside is behind.
+                contains_back[l] = contribution[l] > 0;
+                contains_front[l] = contribution[l] < 0;
+                continue;
+            }
+            bool in = false;
+            if (layer_box[l].inflated(1e-9 * layer_box[l].diagonal()).contains(cd)) {
+                const CGAL::Bounded_side side = (*inside[l])(c);
+                if (side == CGAL::ON_BOUNDARY) {
+                    return fail(ErrorCode::BackendFailure, std::format("ambiguous position against {}", layer_name(l)));
+                }
+                in = side == CGAL::ON_BOUNDED_SIDE;
+            }
+            contains_front[l] = in;
+            contains_back[l] = in;
+        }
+        RegionId front = RegionId::invalid();
+        RegionId back = RegionId::invalid();
+        for (std::size_t l = nl; l-- > 0;) {
+            if (contains_front[l]) {
+                front = layers[l].region;
+                break;
+            }
+        }
+        for (std::size_t l = nl; l-- > 0;) {
+            if (contains_back[l]) {
+                back = layers[l].region;
+                break;
+            }
+        }
+        if (front == back) continue;
+        PartitionTriangle info;
+        if (back.valid()) {
+            kept.push_back(ref);
+            info.inside = back;
+            info.outside = front;
+        } else {
+            kept.push_back({ref[0], ref[2], ref[1]});
+            info.inside = front;
+            info.outside = back;
+        }
+        if (!info.outside.valid()) info.patch = PatchId::from_index(tri_patch[origin[owner_member]]);
+        kept_info.push_back(info);
+    }
+    if (kept.empty()) return fail(ErrorCode::EmptyDeclaration, "the layers leave no region");
+
+    // 5. Rounding to doubles without creating intersections (CGAL snap rounding).
+    std::vector<std::size_t> origin2;
+    bool rounded = false;
+    try {
+        rounded = PMP::autorefine_triangle_soup(
+            upts, kept,
+            CGAL::parameters::apply_iterative_snap_rounding(true).snap_grid_size(51).visitor(SourceVisitor(&origin2)));
+    } catch (const std::exception& e) {
+        return fail(ErrorCode::BackendFailure, std::format("rounding: {}", e.what()));
+    }
+    if (!rounded) return fail(ErrorCode::BackendFailure, "the rounded partition still self-intersects");
+    if (origin2.empty()) {
+        origin2.resize(kept.size());
+        std::iota(origin2.begin(), origin2.end(), std::size_t{0});
+    }
+    std::vector<Vec3> vertices;
+    vertices.reserve(upts.size());
+    for (const auto& p : upts) vertices.push_back(to_vec(p));
     std::vector<PartitionTriangle> triangles;
-    triangles.reserve(s.triangle_count());
-    for (std::size_t t = 0; t < s.triangle_count(); ++t) {
-        triangles.push_back({s.triangles()[t], layer.region, RegionId::invalid(), PatchId::from_index(s.triangle_patch()[t])});
+    triangles.reserve(kept.size());
+    for (std::size_t t = 0; t < kept.size(); ++t) {
+        if (origin2[t] == SIZE_MAX) continue;
+        PartitionTriangle info = kept_info[origin2[t]];
+        info.v = {static_cast<std::uint32_t>(kept[t][0]), static_cast<std::uint32_t>(kept[t][1]),
+                  static_cast<std::uint32_t>(kept[t][2])};
+        triangles.push_back(info);
     }
-    return Partition3D(s.points(), std::move(triangles), declaration.regions(), declaration.media().names(), s.patches());
+    Partition3D partition(std::move(vertices), std::move(triangles), declaration.regions(), declaration.media().names(),
+                          std::move(patches));
+    for (std::size_t r = 0; r < partition.region_count(); ++r) {
+        if (!(partition.region_volume(RegionId::from_index(r)) > 0)) {
+            return fail(ErrorCode::RegionEmptied, declaration.regions()[r].name, RegionId::from_index(r));
+        }
+    }
+    return partition;
 }
 
 Result<PreparedDomain3> prepare_3d(const Partition3D& partition, RegionId region) {

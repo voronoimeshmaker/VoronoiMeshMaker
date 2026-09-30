@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <span>
 #include <utility>
 #include <vector>
@@ -121,8 +122,34 @@ template <SiteSource3D S>
     return {region, [s = std::move(source)](const TriangleSurface& r, Random& rng) { return s.generate(r, rng); }};
 }
 
+/// Mirrored site pairs across the interfaces (DEC-028, E2; P18): points every
+/// `spacing` on each interface triangle, one site on each side at about
+/// offset_fraction * spacing along the normal (varied by up to 20 % from pair to
+/// pair, deterministically, so that the sites of a curved interface are not cospherical). Their bisector is the triangle
+/// plane, so the interface face between the two sites is orthogonal. A pair is
+/// kept only where the interface is the nearest surface of both sites.
+class InterfacePairs3D {
+public:
+    struct Pair {
+        Vec3 inside;
+        RegionId inside_region;
+        Vec3 outside;
+        RegionId outside_region;
+    };
+    explicit InterfacePairs3D(Real spacing, Real offset_fraction = 0.25) : spacing_(spacing), offset_(offset_fraction) {}
+    [[nodiscard]] Real spacing() const noexcept { return spacing_; }
+    [[nodiscard]] Result<std::vector<Pair>> generate(const Partition3D& partition) const;
+
+private:
+    Real spacing_;
+    Real offset_;
+};
+
 struct SiteGenerationOptions3D {
     std::uint64_t seed = 0;
+    std::optional<InterfacePairs3D> interface_pairs;
+    /// Sites of the region sources closer than this * pair spacing to a pair site are dropped.
+    Real pair_exclusion_fraction = 0.75;
 };
 
 /// @brief Generates the sites of every region of a 3D partition.

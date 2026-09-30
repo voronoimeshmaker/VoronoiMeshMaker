@@ -31,4 +31,10 @@ Result<RegionId> Declaration3D::add_region_surface(std::string name, MediumId me
     return id;
 }
 
+Status Declaration3D::add_hole_surface(TriangleSurface surface) {
+    if (surface.triangle_count() == 0) return fail(ErrorCode::InvalidSurface, "empty surface");
+    layers_.push_back({RegionId::invalid(), std::move(surface)});
+    return {};
+}
+
 }  // namespace vmm

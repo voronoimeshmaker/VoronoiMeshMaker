@@ -214,33 +214,53 @@ struct IdFace {
     std::vector<std::uint32_t> v;
 };
 
-/// Removes repeated consecutive ids and the faces thinner than `tol`
-/// (width 2 A / longest edge). Returns the number of faces removed.
+/// True when the loop is at least `tol` wide (2 A / longest edge).
+bool wide_enough(const std::vector<std::uint32_t>& v, const PointSet& ps, Real tol) {
+    if (v.size() < 3) return false;
+    std::vector<Vec3> pts;
+    Real longest = 0;
+    for (std::size_t k = 0; k < v.size(); ++k) {
+        pts.push_back(ps.point(v[k]));
+        longest = std::max(longest, norm(ps.point(v[(k + 1) % v.size()]) - ps.point(v[k])));
+    }
+    return 2 * norm(face_geometry(std::span<const Vec3>(pts)).area_vector) > tol * longest;
+}
+
+/// Removes repeated consecutive ids, splits a loop that touches itself (a point
+/// repeated further on, after the merge of close points) into two loops, and
+/// removes the loops thinner than `tol`. Returns the number of loops removed.
 std::size_t clean_faces(std::vector<IdFace>& faces, const PointSet& ps, Real tol) {
     std::size_t removed = 0;
     std::vector<IdFace> kept;
-    for (IdFace& f : faces) {
+    std::vector<IdFace> todo = std::move(faces);
+    while (!todo.empty()) {
+        IdFace f = std::move(todo.back());
+        todo.pop_back();
         std::vector<std::uint32_t> v;
         for (const std::uint32_t x : f.v) {
             if (v.empty() || v.back() != x) v.push_back(x);
         }
         while (v.size() > 1 && v.front() == v.back()) v.pop_back();
-        bool keep = v.size() >= 3;
-        if (keep) {
-            std::vector<Vec3> pts;
-            Real longest = 0;
-            for (std::size_t k = 0; k < v.size(); ++k) {
-                pts.push_back(ps.point(v[k]));
-                longest = std::max(longest, norm(ps.point(v[(k + 1) % v.size()]) - ps.point(v[k])));
+        bool split = false;
+        for (std::size_t i = 0; i < v.size() && !split; ++i) {
+            for (std::size_t j = i + 1; j < v.size() && !split; ++j) {
+                if (v[i] != v[j]) continue;
+                std::vector<std::uint32_t> a(v.begin() + static_cast<std::ptrdiff_t>(i), v.begin() + static_cast<std::ptrdiff_t>(j));
+                std::vector<std::uint32_t> b(v.begin() + static_cast<std::ptrdiff_t>(j), v.end());
+                b.insert(b.end(), v.begin(), v.begin() + static_cast<std::ptrdiff_t>(i));
+                todo.push_back({f.label, std::move(a)});
+                todo.push_back({f.label, std::move(b)});
+                split = true;
             }
-            keep = 2 * norm(face_geometry(std::span<const Vec3>(pts)).area_vector) > tol * longest;
         }
-        if (keep) {
+        if (split) continue;
+        if (wide_enough(v, ps, tol)) {
             kept.push_back({f.label, std::move(v)});
         } else {
             ++removed;
         }
     }
+    std::ranges::reverse(kept);  // the order of the input faces
     faces = std::move(kept);
     return removed;
 }
@@ -310,220 +330,376 @@ std::vector<VertexId> vertex_ids(const std::vector<std::uint32_t>& v) {
     return ids;
 }
 
+/// Part of the convex polygon `a` inside the convex polygon `b`, both in one
+/// plane (b counter-clockwise around its own area vector); empty if none.
+std::vector<Vec3> clip_convex(std::vector<Vec3> a, const std::vector<Vec3>& b) {
+    const Vec3 nb = face_geometry(std::span<const Vec3>(b)).area_vector;
+    for (std::size_t k = 0; k < b.size() && a.size() >= 3; ++k) {
+        const Vec3& p = b[k];
+        const Vec3& q = b[(k + 1) % b.size()];
+        const auto f = [&](const Vec3& x) { return dot(cross(q - p, x - p), nb); };
+        std::vector<Vec3> out;
+        for (std::size_t i = 0; i < a.size(); ++i) {
+            const Vec3& u = a[i];
+            const Vec3& v = a[(i + 1) % a.size()];
+            const Real fu = f(u);
+            const Real fv = f(v);
+            if (fu >= 0) out.push_back(u);
+            if ((fu > 0 && fv < 0) || (fu < 0 && fv > 0)) out.push_back(u + (fu / (fu - fv)) * (v - u));
+        }
+        a = std::move(out);
+    }
+    return a.size() >= 3 ? a : std::vector<Vec3>{};
+}
+
+/// Internal faces stored contiguously (no allocation per face), in (owner, neighbour) order.
+struct FlatFaces {
+    std::vector<CellId> owner;
+    std::vector<CellId> neighbour;
+    Csr<VertexId> v;
+
+    void push(std::uint32_t o, std::uint32_t n, const std::vector<std::uint32_t>& ids) {
+        owner.push_back(CellId{o});
+        neighbour.push_back(CellId{n});
+        for (const std::uint32_t x : ids) v.values.push_back(VertexId{x});
+        v.offsets.push_back(v.values.size());
+    }
+};
+
+/// A face of a cell lying on an interface triangle (P18).
+struct InterfacePiece {
+    std::uint32_t cell;
+    std::vector<std::uint32_t> v;
+};
+
 }  // namespace
 
 Result<Build3D> build_mesh_3d(const Partition3D& partition, const SiteSet3D& sites, const Backend3D& backend,
                               const BuildOptions3D& options) {
     if (!backend.complete()) return fail(ErrorCode::InvalidArgument, "incomplete 3D backend");
-    if (partition.region_count() != 1) {
-        return fail(ErrorCode::InvalidArgument, "version 0.3 builds one region; several regions are planned for 0.5 (P18)");
-    }
-    if (sites.empty()) return fail(ErrorCode::RegionWithoutSites, partition.regions().front().name, RegionId::from_index(0));
+    const std::size_t nr = partition.region_count();
+    if (nr == 0) return fail(ErrorCode::InvalidArgument, "empty partition");
     const auto tolerance = Tolerance::from_length(partition.length_scale(), options.relative_tolerance);
     if (!tolerance) return fail(ErrorCode::InvalidLengthScale, "empty partition or invalid relative tolerance");
     const Real L = tolerance->length_scale();
     const Real tol = tolerance->point();
-    const RegionId region = RegionId::from_index(0);
-    auto prepared = backend.prepare(partition, region);
-    if (!prepared) return std::unexpected(prepared.error());
+    const Real tiny_area = tol * tol;
 
     Build3D out;
     BuildStats3D& st = out.stats;
 
-    // 1. Canonical order (R18).
+    // 1. Canonical order (R18): by region, then by position.
     const auto in = sites.positions();
+    const auto rin = sites.regions();
+    for (std::size_t k = 0; k < sites.size(); ++k) {
+        if (!rin[k].valid() || rin[k].index() >= nr) return fail(ErrorCode::SiteOutsideRegion, "bad region", SiteId::from_index(k));
+    }
     std::vector<std::uint32_t> order(sites.size());
     std::iota(order.begin(), order.end(), 0u);
     std::ranges::sort(order, [&](std::uint32_t a, std::uint32_t b) { return in[a] < in[b]; });
+    for (std::size_t k = 1; k < order.size(); ++k) {
+        if (in[order[k]] == in[order[k - 1]]) return fail(ErrorCode::DuplicateSite, {}, SiteId{order[k]});
+    }
+    std::ranges::stable_sort(order, [&](std::uint32_t a, std::uint32_t b) { return rin[a].value < rin[b].value; });
     std::vector<Vec3> s;
     s.reserve(order.size());
-    for (std::size_t k = 0; k < order.size(); ++k) {
-        if (sites.regions()[order[k]] != region) return fail(ErrorCode::SiteOutsideRegion, "bad region", SiteId{order[k]});
-        if (k > 0 && in[order[k]] == in[order[k - 1]]) return fail(ErrorCode::DuplicateSite, {}, SiteId{order[k]});
-        s.push_back(in[order[k]]);
+    std::vector<std::uint32_t> start(nr + 1, 0);
+    for (const std::uint32_t k : order) {
+        s.push_back(in[k]);
+        ++start[rin[k].index() + 1];
+    }
+    for (std::size_t r = 0; r < nr; ++r) {
+        if (start[r + 1] == 0) return fail(ErrorCode::RegionWithoutSites, partition.regions()[r].name, RegionId::from_index(r));
+        start[r + 1] += start[r];
     }
     const std::size_t n = s.size();
     st.cells = n;
 
-    // 2. Neighbours.
-    auto t0 = Clock::now();
-    std::vector<std::vector<std::uint32_t>> nb(n);
-    for (const auto& [a, b] : backend.delaunay_pairs(s)) {
-        nb[a.index()].push_back(b.value);
-        nb[b.index()].push_back(a.value);
-    }
-    st.seconds_delaunay = seconds_since(t0);
-
     const Box3 enclosing = partition.bounding_box().inflated(0.05 * L);
-    std::unordered_map<VertexKey, std::optional<Vec3>, KeyHash> centres;
     PointSet points(tol);
     const auto& ptri = partition.triangles();
-
-    MeshData<3> md;
     struct BoundaryFace {
         std::uint32_t patch;
         std::uint32_t cell;
         std::vector<std::uint32_t> v;
     };
     std::vector<BoundaryFace> boundary;
-    std::unordered_map<std::uint64_t, Pending> pending;
+    FlatFaces internal;   // faces inside the regions: already in (owner, neighbour) order
+    FlatFaces interfaces; // faces between regions, sorted at the end
+    std::unordered_map<std::size_t, std::array<std::vector<InterfacePiece>, 2>> pieces;
     const auto pair_key = [](std::uint32_t a, std::uint32_t b) { return (std::uint64_t{a} << 32) | b; };
-    const Real tiny_area = tol * tol;
     out.cell_volume.assign(n, 0);
 
-    for (std::uint32_t i = 0; i < n; ++i) {
-        // 3. Convex cell.
-        auto tc = Clock::now();
-        std::ranges::sort(nb[i]);
-        Poly poly = box_poly(enclosing);
-        for (const std::uint32_t j : nb[i]) {
-            clip(poly, 0.5 * (s[std::min(i, j)] + s[std::max(i, j)]), s[j] - s[i], j);
-        }
-        // 4. Canonical vertices.
-        std::vector<char> used(poly.verts.size(), 0);
-        for (const Face& f : poly.faces) {
-            for (const std::uint32_t v : f.v) used[v] = 1;
-        }
-        for (std::size_t v = 0; v < poly.verts.size(); ++v) {
-            const auto& pl = poly.verts[v].planes;
-            if (!used[v] || !std::ranges::all_of(pl, is_neighbour_face)) continue;
-            VertexKey key{i, static_cast<std::uint32_t>(pl[0]), static_cast<std::uint32_t>(pl[1]), static_cast<std::uint32_t>(pl[2])};
-            std::ranges::sort(key);
-            auto it = centres.find(key);
-            if (it == centres.end()) {
-                it = centres.emplace(key, backend.circumcentre({s[key[0]], s[key[1]], s[key[2]], s[key[3]]})).first;
-            }
-            if (it->second) {
-                poly.verts[v].p = *it->second;
-            } else {
-                ++st.unsnapped_vertices;
-            }
-            if (key[3] == i) centres.erase(it);  // cell i is the last one to use this vertex
-        }
-        // 5. Merge, thin faces, T-vertices.
-        std::vector<IdFace> faces;
-        for (const Face& f : poly.faces) {
-            IdFace g{f.label, {}};
-            for (const std::uint32_t v : f.v) g.v.push_back(points.id(poly.verts[v].p));
-            faces.push_back(std::move(g));
-        }
-        st.collapsed_faces += clean_faces(faces, points, tol);
-        st.t_vertices += insert_t_vertices(faces, points, tol);
-        st.seconds_cells += seconds_since(tc);
+    for (std::uint32_t r = 0; r < nr; ++r) {
+        const RegionId region = RegionId{r};
+        auto prepared = backend.prepare(partition, region);
+        if (!prepared) return std::unexpected(prepared.error());
+        const std::uint32_t first = start[r];
+        const std::span<const Vec3> rs(s.data() + first, start[r + 1] - first);  // sites of the region
+        const auto m = static_cast<std::uint32_t>(rs.size());
 
-        // 6. Exact clipping of the cells touching the boundary.
-        tc = Clock::now();
-        Box3 cell_box;
-        for (const IdFace& f : faces) {
-            for (const std::uint32_t v : f.v) cell_box.expand(points.point(v));
+        // 2. Neighbours inside the region (one Voronoi diagram per region, DEC-028).
+        auto t0 = Clock::now();
+        std::vector<std::vector<std::uint32_t>> nb(m);
+        for (const auto& [a, b] : backend.delaunay_pairs(rs)) {
+            nb[a.index()].push_back(b.value);
+            nb[b.index()].push_back(a.value);
         }
-        const bool reaches_box = std::ranges::any_of(faces, [](const IdFace& f) { return is_box_face(f.label); });
-        const bool needs_clip = !options.fast_path || reaches_box || backend.touches_boundary(*prepared, cell_box);
-        if (needs_clip) {
-            LabelledPolyhedron3 lp;
-            std::unordered_map<std::uint32_t, std::uint32_t> local;
-            for (const IdFace& f : faces) {
-                std::vector<std::uint32_t> row;
-                for (const std::uint32_t v : f.v) {
-                    const auto [it, added] = local.emplace(v, static_cast<std::uint32_t>(lp.points.size()));
-                    if (added) lp.points.push_back(points.point(v));
-                    row.push_back(it->second);
+        st.seconds_delaunay += seconds_since(t0);
+        std::unordered_map<VertexKey, std::optional<Vec3>, KeyHash> centres;
+        std::unordered_map<std::uint64_t, Pending> pending;
+
+        for (std::uint32_t i = 0; i < m; ++i) {
+            const std::uint32_t gi = first + i;
+            // 3. Convex cell.
+            auto tc = Clock::now();
+            std::ranges::sort(nb[i]);
+            Poly poly = box_poly(enclosing);
+            for (const std::uint32_t j : nb[i]) {
+                clip(poly, 0.5 * (rs[std::min(i, j)] + rs[std::max(i, j)]), rs[j] - rs[i], j);
+            }
+            // 4. Canonical vertices.
+            std::vector<char> used(poly.verts.size(), 0);
+            for (const Face& f : poly.faces) {
+                for (const std::uint32_t v : f.v) used[v] = 1;
+            }
+            for (std::size_t v = 0; v < poly.verts.size(); ++v) {
+                const auto& pl = poly.verts[v].planes;
+                if (!used[v] || !std::ranges::all_of(pl, is_neighbour_face)) continue;
+                VertexKey key{i, static_cast<std::uint32_t>(pl[0]), static_cast<std::uint32_t>(pl[1]),
+                              static_cast<std::uint32_t>(pl[2])};
+                std::ranges::sort(key);
+                auto it = centres.find(key);
+                if (it == centres.end()) {
+                    it = centres.emplace(key, backend.circumcentre({rs[key[0]], rs[key[1]], rs[key[2]], rs[key[3]]})).first;
                 }
-                lp.faces.push_row(row);
-                lp.labels.push_back(f.label);
+                if (it->second) {
+                    poly.verts[v].p = *it->second;
+                } else {
+                    ++st.unsnapped_vertices;
+                }
+                if (key[3] == i) centres.erase(it);  // cell i is the last one to use this vertex
             }
-            CellClip3 c = backend.clip_cell(lp, *prepared);
-            if (!c.error.empty()) return fail(ErrorCode::BackendFailure, c.error, CellId{i});
-            ++st.clipped_cells;
-            if (c.local) ++st.local_clips;
-            if (c.components > 1) {
-                ++st.fragmented_cells;
-                log(Error(ErrorCode::InvariantViolated, "cell made of several pieces (kept whole)", CellId{i}, Severity::Warning));
-            }
-            faces.clear();
-            for (std::size_t f = 0; f < c.cell.faces.rows(); ++f) {
-                IdFace g{c.cell.labels[f], {}};
-                for (const std::uint32_t v : c.cell.faces.row(f)) g.v.push_back(points.id(c.cell.points[v]));
+            // 5. Merge, thin faces, T-vertices.
+            std::vector<IdFace> faces;
+            for (const Face& f : poly.faces) {
+                IdFace g{f.label, {}};
+                for (const std::uint32_t v : f.v) g.v.push_back(points.id(poly.verts[v].p));
                 faces.push_back(std::move(g));
             }
             st.collapsed_faces += clean_faces(faces, points, tol);
-            out.cell_volume[i] = c.volume;
-        } else {
-            ++st.fast_cells;
-            out.cell_volume[i] = tetra_volume(faces, points, s[i]);
-        }
-        st.seconds_clip += seconds_since(tc);
+            st.t_vertices += insert_t_vertices(faces, points, tol);
+            st.collapsed_faces += clean_faces(faces, points, tol);  // spikes left by the insertion
+            st.seconds_cells += seconds_since(tc);
 
-        // 7. Streaming assembly: owner copies now, in (owner, neighbour) order; the
-        //    neighbour's copy is only matched against them.
-        tc = Clock::now();
-        std::ranges::stable_sort(faces, [](const IdFace& a, const IdFace& b) { return a.label < b.label; });
-        for (const IdFace& f : faces) {
-            if (is_box_face(f.label)) return fail(ErrorCode::BackendFailure, "enclosing-box face left in a cell", CellId{i});
-            if (is_domain_face(f.label)) {
-                const std::size_t t = f.label & ~kDomainFace;
-                boundary.push_back({ptri.at(t).patch.value, i, f.v});
-                continue;
+            // 6. Exact clipping of the cells touching the region surface.
+            tc = Clock::now();
+            Box3 cell_box;
+            for (const IdFace& f : faces) {
+                for (const std::uint32_t v : f.v) cell_box.expand(points.point(v));
             }
-            const auto j = static_cast<std::uint32_t>(f.label);
-            const Vec3 sv = area_vector(f, points);
-            if (j > i) {
-                md.face_vertices.push_row(vertex_ids(f.v));
-                md.owner.push_back(CellId{i});
-                md.neighbour.push_back(CellId{j});
-                Pending& p = pending[pair_key(i, j)];
-                p.area_vector = p.area_vector + sv;
-                ++p.owner_pieces;
+            const bool reaches_box = std::ranges::any_of(faces, [](const IdFace& f) { return is_box_face(f.label); });
+            const bool needs_clip = !options.fast_path || reaches_box || backend.touches_boundary(*prepared, cell_box);
+            if (needs_clip) {
+                LabelledPolyhedron3 lp;
+                std::unordered_map<std::uint32_t, std::uint32_t> local;
+                for (const IdFace& f : faces) {
+                    std::vector<std::uint32_t> row;
+                    for (const std::uint32_t v : f.v) {
+                        const auto [it, added] = local.emplace(v, static_cast<std::uint32_t>(lp.points.size()));
+                        if (added) lp.points.push_back(points.point(v));
+                        row.push_back(it->second);
+                    }
+                    lp.faces.push_row(row);
+                    lp.labels.push_back(f.label);
+                }
+                CellClip3 c = backend.clip_cell(lp, *prepared);
+                if (!c.error.empty()) return fail(ErrorCode::BackendFailure, c.error, CellId{gi});
+                ++st.clipped_cells;
+                if (c.local) ++st.local_clips;
+                if (c.components > 1) {
+                    ++st.fragmented_cells;
+                    log(Error(ErrorCode::InvariantViolated, "cell made of several pieces (kept whole)", CellId{gi},
+                              Severity::Warning));
+                }
+                faces.clear();
+                for (std::size_t f = 0; f < c.cell.faces.rows(); ++f) {
+                    IdFace g{c.cell.labels[f], {}};
+                    for (const std::uint32_t v : c.cell.faces.row(f)) g.v.push_back(points.id(c.cell.points[v]));
+                    faces.push_back(std::move(g));
+                }
+                st.collapsed_faces += clean_faces(faces, points, tol);
+                out.cell_volume[gi] = c.volume;
             } else {
-                Pending& p = pending[pair_key(j, i)];
-                p.area_vector = p.area_vector + sv;
-                ++p.neighbour_pieces;
+                ++st.fast_cells;
+                out.cell_volume[gi] = tetra_volume(faces, points, rs[i]);
             }
-        }
-        // Pairs closed by this cell (owner j < i, neighbour i).
-        for (const std::uint32_t j : nb[i]) {
-            if (j >= i) continue;
-            const auto it = pending.find(pair_key(j, i));
-            if (it == pending.end()) continue;
-            if ((it->second.owner_pieces == 0) != (it->second.neighbour_pieces == 0)) {
-                // Face seen by one cell only: acceptable only when it is below the tolerance.
-                if (norm(it->second.area_vector) > tiny_area) {
-                    return fail(ErrorCode::InterfaceNotConforming,
-                                std::format("face ({}, {}) seen by one cell only", j, i), CellId{i});
+            st.seconds_clip += seconds_since(tc);
+
+            // 7. Faces: internal ones matched with the neighbour's copy, boundary ones by
+            //    patch, the ones on an interface kept for the common refinement.
+            tc = Clock::now();
+            std::ranges::stable_sort(faces, [](const IdFace& a, const IdFace& b) { return a.label < b.label; });
+            for (IdFace& f : faces) {
+                if (is_box_face(f.label)) return fail(ErrorCode::BackendFailure, "enclosing-box face left in a cell", CellId{gi});
+                if (is_domain_face(f.label)) {
+                    const std::size_t t = f.label & ~kDomainFace;
+                    const PartitionTriangle& pt = ptri.at(t);
+                    if (pt.inside.valid() && pt.outside.valid()) {
+                        pieces[t][pt.inside == region ? 0 : 1].push_back({gi, std::move(f.v)});
+                    } else {
+                        boundary.push_back({pt.patch.value, gi, std::move(f.v)});
+                    }
+                    continue;
+                }
+                const auto j = static_cast<std::uint32_t>(f.label);
+                const Vec3 sv = area_vector(f, points);
+                Pending& p = pending[j > i ? pair_key(i, j) : pair_key(j, i)];
+                p.area_vector = p.area_vector + sv;
+                if (j > i) {
+                    ++p.owner_pieces;
+                    internal.push(gi, first + j, f.v);
+                } else {
+                    ++p.neighbour_pieces;
                 }
             }
-            pending.erase(it);
+            // Pairs closed by this cell (owner j < i, neighbour i).
+            for (const std::uint32_t j : nb[i]) {
+                if (j >= i) continue;
+                const auto it = pending.find(pair_key(j, i));
+                if (it == pending.end()) continue;
+                if ((it->second.owner_pieces == 0) != (it->second.neighbour_pieces == 0) &&
+                    norm(it->second.area_vector) > tiny_area) {
+                    return fail(ErrorCode::InterfaceNotConforming,
+                                std::format("face ({}, {}) seen by one cell only", first + j, gi), CellId{gi});
+                }
+                pending.erase(it);
+            }
+            st.seconds_assembly += seconds_since(tc);
         }
-        st.seconds_assembly += seconds_since(tc);
-    }
-    // Owner copies whose neighbour produced nothing.
-    for (const auto& [key, p] : pending) {
-        if (norm(p.area_vector) > tiny_area) {
-            return fail(ErrorCode::InterfaceNotConforming,
-                        std::format("face ({}, {}) seen by one cell only", key >> 32, key & 0xffffffffu));
+        for (const auto& [key, p] : pending) {
+            if (norm(p.area_vector) > tiny_area) {
+                return fail(ErrorCode::InterfaceNotConforming,
+                            std::format("face ({}, {}) seen by one cell only", first + (key >> 32), first + (key & 0xffffffffu)));
+            }
         }
     }
 
+    // 8. Common refinement of every interface triangle (P18a): the face between two
+    //    cells of different regions is the intersection of their pieces.
     auto t1 = Clock::now();
+    std::vector<std::size_t> interface_triangles;
+    for (const auto& [t, sides] : pieces) interface_triangles.push_back(t);
+    std::ranges::sort(interface_triangles);  // deterministic order
+    for (const std::size_t t : interface_triangles) {
+        const auto& sides = pieces.at(t);
+        const auto polygon = [&](const InterfacePiece& p) {
+            std::vector<Vec3> pts;
+            for (const std::uint32_t v : p.v) pts.push_back(points.point(v));
+            return pts;
+        };
+        std::vector<std::vector<Vec3>> pb;
+        for (const auto& b : sides[1]) pb.push_back(polygon(b));
+        std::vector<char> b_used(sides[1].size(), 0);
+        for (const auto& a : sides[0]) {
+            const std::vector<Vec3> pa = polygon(a);
+            bool a_used = false;
+            for (std::size_t k = 0; k < sides[1].size(); ++k) {
+                std::vector<Vec3> x = clip_convex(pa, pb[k]);
+                if (x.empty()) continue;
+                if (norm(face_geometry(std::span<const Vec3>(x)).area_vector) <= tiny_area) {
+                    ++st.interface_slivers;
+                    continue;
+                }
+                IdFace g{0, {}};
+                for (const Vec3& p : x) {
+                    const std::uint32_t id = points.id(p);
+                    if (g.v.empty() || g.v.back() != id) g.v.push_back(id);
+                }
+                while (g.v.size() > 1 && g.v.front() == g.v.back()) g.v.pop_back();
+                // Thin after the merge of close points: dropped like any thin face.
+                if (!wide_enough(g.v, points, tol)) {
+                    ++st.interface_slivers;
+                    continue;
+                }
+                a_used = true;
+                b_used[k] = 1;
+                const std::uint32_t cb = sides[1][k].cell;
+                if (a.cell > cb) std::ranges::reverse(g.v);  // the owner is the cell of lower id
+                interfaces.push(std::min(a.cell, cb), std::max(a.cell, cb), g.v);
+                ++st.interface_faces;
+            }
+            if (!a_used && norm(face_geometry(std::span<const Vec3>(pa)).area_vector) > tiny_area) {
+                return fail(ErrorCode::InterfaceNotConforming, std::format("interface piece of cell {} has no partner", a.cell),
+                            CellId{a.cell});
+            }
+        }
+        for (std::size_t k = 0; k < sides[1].size(); ++k) {
+            if (!b_used[k] && norm(face_geometry(std::span<const Vec3>(pb[k])).area_vector) > tiny_area) {
+                return fail(ErrorCode::InterfaceNotConforming,
+                            std::format("interface piece of cell {} has no partner", sides[1][k].cell), CellId{sides[1][k].cell});
+            }
+        }
+    }
+
+    // 9. Assembly: internal faces in (owner, neighbour) order (the region faces merged
+    //    with the sorted interface faces), then boundary faces by patch.
+    MeshData<3> md;
+    if (interfaces.owner.empty()) {
+        md.owner = std::move(internal.owner);
+        md.neighbour = std::move(internal.neighbour);
+        md.face_vertices = std::move(internal.v);
+    } else {
+        std::vector<std::size_t> order_if(interfaces.owner.size());
+        std::iota(order_if.begin(), order_if.end(), std::size_t{0});
+        std::ranges::stable_sort(order_if, [&](std::size_t a, std::size_t b) {
+            return std::pair(interfaces.owner[a], interfaces.neighbour[a]) < std::pair(interfaces.owner[b], interfaces.neighbour[b]);
+        });
+        const std::size_t total = internal.owner.size() + interfaces.owner.size();
+        md.owner.reserve(total);
+        md.neighbour.reserve(total);
+        md.face_vertices.values.reserve(internal.v.values.size() + interfaces.v.values.size());
+        const auto take = [&](const FlatFaces& from, std::size_t f) {
+            md.owner.push_back(from.owner[f]);
+            md.neighbour.push_back(from.neighbour[f]);
+            md.face_vertices.push_row(from.v.row(f));
+        };
+        std::size_t a = 0;
+        std::size_t b = 0;
+        while (a < internal.owner.size() || b < order_if.size()) {
+            const bool region_first =
+                b == order_if.size() ||
+                (a < internal.owner.size() && std::pair(internal.owner[a], internal.neighbour[a]) <
+                                                  std::pair(interfaces.owner[order_if[b]], interfaces.neighbour[order_if[b]]));
+            if (region_first) {
+                take(internal, a++);
+            } else {
+                take(interfaces, order_if[b++]);
+            }
+        }
+        internal = FlatFaces{};
+        interfaces = FlatFaces{};
+    }
     std::ranges::stable_sort(boundary, [](const BoundaryFace& a, const BoundaryFace& b) {
         return std::tie(a.patch, a.cell) < std::tie(b.patch, b.cell);
     });
     std::size_t next = 0;
     for (std::uint32_t patch = 0; patch < partition.patches().size(); ++patch) {
-        const std::size_t start = md.owner.size();
+        const std::size_t begin = md.owner.size();
         for (; next < boundary.size() && boundary[next].patch == patch; ++next) {
-            const auto& v = boundary[next].v;
-            md.face_vertices.push_row(vertex_ids(v));
+            md.face_vertices.push_row(vertex_ids(boundary[next].v));
             md.owner.push_back(CellId{boundary[next].cell});
         }
-        md.patches.push_back({partition.patches()[patch], start, md.owner.size() - start});
+        md.patches.push_back({partition.patches()[patch], begin, md.owner.size() - begin});
     }
     st.merged_vertices = points.merged();
     md.points = points.take_points();
     md.sites = std::move(s);
-    md.cell_region.assign(n, region);
-    for (const std::uint32_t k : order) md.cell_input_site.push_back(SiteId{k});
-    for (const auto& r : partition.regions()) md.regions.push_back({r.name, r.medium});
+    for (const std::uint32_t k : order) {
+        md.cell_region.push_back(rin[k]);
+        md.cell_input_site.push_back(SiteId{k});
+    }
+    for (const auto& reg : partition.regions()) md.regions.push_back({reg.name, reg.medium});
     md.media = partition.media();
     auto mesh = Mesh3D::from_data(std::move(md));
     if (!mesh) return std::unexpected(mesh.error());

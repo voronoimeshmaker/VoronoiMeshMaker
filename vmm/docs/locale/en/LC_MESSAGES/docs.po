@@ -289,11 +289,11 @@ msgstr "**Simple outlines:** a shape edge may neither touch nor cross another ed
 
 # guide/mesh3d.rst (P16)
 
-msgid "Malhas 3D (versão 0.3)"
-msgstr "3D meshes (version 0.3)"
+msgid "Malhas 3D"
+msgstr "3D meshes"
 
-msgid "A versão 0.3 gera malhas de volumes finitos de Voronoi em 3D para **uma região**. Várias regiões com interfaces conformes chegam na versão 0.5 (P18); domínios STL, na 0.4 (P17)."
-msgstr "Version 0.3 generates 3D Voronoi finite-volume meshes of **one region**. Several regions with conforming interfaces come with version 0.5 (P18); STL domains with 0.4 (P17)."
+msgid "Malhas de volumes finitos de Voronoi em 3D, com uma ou várias regiões, buracos e interfaces conformes, a partir de formas analíticas ou de arquivos STL."
+msgstr "3D Voronoi finite-volume meshes with one or several regions, holes and conforming interfaces, from analytic shapes or STL files."
 
 msgid "Domínio"
 msgstr "Domain"
@@ -339,3 +339,17 @@ msgstr "In an ASCII STL file every ``solid name`` block becomes a patch; a binar
 
 msgid "A superfície entra na declaração com ``SurfaceShape``. Cada célula de contorno é recortada só contra os triângulos próximos dela, em aritmética exata; o custo por célula não cresce com o tamanho do arquivo."
 msgstr "The surface enters the declaration through ``SurfaceShape``. Every boundary cell is clipped only against the triangles near it, in exact arithmetic; the cost per cell does not grow with the size of the file."
+
+# guide/mesh3d.rst, several regions (P18)
+
+msgid "Várias regiões"
+msgstr "Several regions"
+
+msgid "As regiões e os buracos são declarados por precedência, como no 2D (DEC-018): cada camada pinta por cima das anteriores; ``add_hole`` remove. O backend autorrefina as superfícies de todas as camadas em aritmética exata e classifica cada triângulo pelos dois lados; faces coplanares de camadas diferentes são tratadas."
+msgstr "Regions and holes are declared by precedence, as in 2D (DEC-018): every layer paints over the earlier ones; ``add_hole`` removes. The backend autorefines the surfaces of all the layers in exact arithmetic and classifies every triangle by its two sides; coplanar faces of different layers are handled."
+
+msgid "Cada região tem o seu próprio diagrama de Voronoi (DEC-028). Numa interface, a face entre duas células é a interseção dos seus pedaços sobre cada triângulo (refinamento comum), de modo que a interface é conforme e a sua área é conferida nos invariantes."
+msgstr "Every region has its own Voronoi diagram (DEC-028). On an interface, the face between two cells is the intersection of their pieces on every triangle (common refinement), so the interface is conforming and its area is checked by the invariants."
+
+msgid "As faces de interface não são faces de Voronoi e podem ser bem não ortogonais. ``SiteGenerationOptions3D::interface_pairs`` (``InterfacePairs3D``) põe pares de sítios espelhados através de cada interface: a face entre os dois sítios de um par fica ortogonal, e a não ortogonalidade média nas interfaces cai de cerca de 0,5 rad para menos de 0,05 rad."
+msgstr "Interface faces are not Voronoi faces and can be far from orthogonal. ``SiteGenerationOptions3D::interface_pairs`` (``InterfacePairs3D``) puts mirrored site pairs across every interface: the face between the two sites of a pair is orthogonal, and the mean non-orthogonality on the interfaces drops from about 0.5 rad to below 0.05 rad."

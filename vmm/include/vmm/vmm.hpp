@@ -80,11 +80,12 @@ struct MeshResult3D {
     InvariantReport invariants;
 };
 
-/// @brief Generates a checked 3D finite-volume mesh of one region in one call (version 0.3).
-/// @param request Domain declaration (one region), site sources, site and build options.
+/// @brief Generates a checked 3D finite-volume mesh in one call: regions and holes by precedence,
+///        conforming interfaces.
+/// @param request Domain declaration, site sources per region, site and build options.
 /// @return The mesh, its partition, build statistics and invariant report, or the first error
 ///         (surface, sites, backend or a violated DEC-011 invariant).
-/// @note Uses the CGAL backend; link VoronoiMeshMaker::vmm. Several regions: version 0.5 (P18).
+/// @note Uses the CGAL backend; link VoronoiMeshMaker::vmm.
 /// @par Level
 /// Beginner
 /// @sa build_mesh_3d, generate_sites_3d, check_invariants, write_vtu

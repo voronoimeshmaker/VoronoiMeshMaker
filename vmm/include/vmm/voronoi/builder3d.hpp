@@ -1,8 +1,9 @@
 // ============================================================================
 // File: builder3d.hpp
-// Description: 3D Voronoi mesh of one region (P16, P15 §5): convex cells by
-//              half-spaces, canonical vertices, exact clipping of the cells
-//              that touch the boundary, streaming assembly into Mesh<3>.
+// Description: 3D Voronoi mesh (P16, P18): one Voronoi diagram per region
+//              (DEC-028), convex cells by half-spaces, canonical vertices,
+//              exact clipping of the cells touching the region surface, and
+//              the common refinement of the pieces on every interface.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
 
@@ -44,6 +45,8 @@ struct BuildStats3D {
     std::size_t merged_vertices = 0;      ///< vertices moved by the merge within the tolerance
     std::size_t t_vertices = 0;           ///< vertices inserted into a neighbouring face edge
     std::size_t collapsed_faces = 0;      ///< faces thinner than the tolerance, removed
+    std::size_t interface_faces = 0;      ///< faces between cells of different regions (common refinement)
+    std::size_t interface_slivers = 0;    ///< overlaps of interface pieces below the tolerance, dropped
     double seconds_delaunay = 0;
     double seconds_cells = 0;             ///< convex cells and canonical vertices
     double seconds_clip = 0;
@@ -56,8 +59,8 @@ struct Build3D {
     std::vector<Real> cell_volume;  ///< independent volume of every cell (exact for clipped cells)
 };
 
-/// @brief Builds the 3D Voronoi mesh of a one-region partition.
-/// @param partition Partition (from Backend3D::build_partition), one region in version 0.3.
+/// @brief Builds the conforming 3D Voronoi mesh of a partition (one or several regions).
+/// @param partition Partition (from Backend3D::build_partition).
 /// @param sites Sites of the region, strictly inside it (generate_sites_3d).
 /// @param backend Geometric backend (cgal_backend_3d()).
 /// @param options Point tolerance relative to L and the fast path switch.

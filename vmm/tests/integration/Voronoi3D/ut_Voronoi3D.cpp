@@ -37,6 +37,12 @@
 
 namespace {
 
+vmm::SiteGenerationOptions3D seeded(std::uint64_t seed) {
+    vmm::SiteGenerationOptions3D o;
+    o.seed = seed;
+    return o;
+}
+
 using vmm::Real;
 using vmm::RegionId;
 using vmm::Vec2;
@@ -71,7 +77,7 @@ Outcome run(const vmm::TriangleSurface& surface, std::vector<Vec3> sites, std::s
     if (sites.empty()) {
         const Real h = std::cbrt(surface.volume() / static_cast<Real>(n));
         const std::vector<vmm::RegionSites3D> src{vmm::sites_for_3d(RegionId::from_index(0), vmm::UniformRandomSource3D(h))};
-        auto s = vmm::generate_sites_3d(*partition, src, {seed});
+        auto s = vmm::generate_sites_3d(*partition, src, seeded(seed));
         EXPECT_TRUE(s) << s.error().message();
         set = std::move(*s);
     } else {
@@ -221,8 +227,11 @@ TEST(Voronoi3D, FacadeErrors) {
     const auto m = *no_sites.declaration.media().add("m");
     (void)no_sites.declaration.add_region("a", m, vmm::Cuboid({0, 0, 0}, {1, 1, 1}));
     EXPECT_EQ(vmm::generate_mesh_3d(no_sites).error().code(), vmm::ErrorCode::RegionWithoutSites);
-    (void)no_sites.declaration.add_region("b", m, vmm::Cuboid({0, 0, 0}, {2, 2, 2}));
-    EXPECT_EQ(vmm::generate_mesh_3d(no_sites).error().code(), vmm::ErrorCode::InvalidArgument);  // one region in 0.3
+    vmm::MeshRequest3D covered;
+    const auto mc = *covered.declaration.media().add("m");
+    (void)covered.declaration.add_region("a", mc, vmm::Cuboid({0, 0, 0}, {1, 1, 1}));
+    (void)covered.declaration.add_region("b", mc, vmm::Cuboid({-1, -1, -1}, {2, 2, 2}));
+    EXPECT_EQ(vmm::generate_mesh_3d(covered).error().code(), vmm::ErrorCode::RegionEmptied);
 }
 
 }  // namespace

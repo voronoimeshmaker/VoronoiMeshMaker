@@ -89,9 +89,12 @@ TEST(Cgal3D, BuildPartition) {
 TEST(Cgal3D, BuildPartitionErrors) {
     const auto b = vmm::cgal_backend_3d();
     EXPECT_EQ(b.build_partition(vmm::Declaration3D{}).error().code(), ErrorCode::EmptyDeclaration);
-    auto two = cube_declaration();
-    (void)two.add_region("other", vmm::MediumId::from_index(0), vmm::Cuboid({2, 0, 0}, {3, 1, 1}));
-    EXPECT_EQ(b.build_partition(two).error().code(), ErrorCode::InvalidArgument);
+    auto covered = cube_declaration();  // a later region covering the cube empties it
+    (void)covered.add_region("over", vmm::MediumId::from_index(0), vmm::Cuboid({-1, -1, -1}, {2, 2, 2}));
+    EXPECT_EQ(b.build_partition(covered).error().code(), ErrorCode::RegionEmptied);
+    vmm::Declaration3D only_hole;
+    ASSERT_TRUE(only_hole.add_hole(vmm::Cuboid({0, 0, 0}, {1, 1, 1})));
+    EXPECT_EQ(b.build_partition(only_hole).error().code(), ErrorCode::EmptyDeclaration);
     // Two overlapping cubes in one surface: closed and oriented, but self-intersecting.
     auto a = *vmm::Cuboid({0, 0, 0}, {1, 1, 1}).surface({});
     const auto c = *vmm::Cuboid({0.5, 0.5, 0.5}, {1.5, 1.5, 1.5}).surface({});
@@ -105,6 +108,53 @@ TEST(Cgal3D, BuildPartitionErrors) {
     const auto m = *d.media().add("m");
     ASSERT_TRUE(d.add_region_surface("x", m, *overlap));
     EXPECT_EQ(b.build_partition(d).error().code(), ErrorCode::InvalidSurface);
+}
+
+TEST(Cgal3D, PartitionByPrecedence) {
+    const auto b = vmm::cgal_backend_3d();
+    const auto m = vmm::MediumId::from_index(0);
+    // A smaller cube painted over the unit cube: interface = its whole surface.
+    auto d = cube_declaration();
+    ASSERT_TRUE(d.add_region("core", m, vmm::Cuboid({0.25, 0.25, 0.25}, {0.75, 0.75, 0.75})));
+    auto p = b.build_partition(d);
+    ASSERT_TRUE(p) << p.error().message();
+    EXPECT_EQ(p->region_count(), 2u);
+    EXPECT_NEAR(p->region_volume(RegionId::from_index(0)), 1 - 0.125, 1e-15);
+    EXPECT_NEAR(p->region_volume(RegionId::from_index(1)), 0.125, 1e-15);
+    EXPECT_NEAR(p->interface_area(RegionId::from_index(0), RegionId::from_index(1)), 1.5, 1e-15);
+    EXPECT_NEAR(p->boundary_area(), 6.0, 1e-15);
+    // Coplanar faces: the core fills half of the cube and shares three of its faces.
+    auto half = cube_declaration();
+    ASSERT_TRUE(half.add_region("half", m, vmm::Cuboid({0, 0, 0}, {0.5, 1, 1}, {"hw", "he", "hs", "hn", "hb", "ht"})));
+    p = b.build_partition(half);
+    ASSERT_TRUE(p) << p.error().message();
+    EXPECT_NEAR(p->region_volume(RegionId::from_index(0)), 0.5, 1e-15);
+    EXPECT_NEAR(p->region_volume(RegionId::from_index(1)), 0.5, 1e-15);
+    EXPECT_NEAR(p->interface_area(RegionId::from_index(0), RegionId::from_index(1)), 1.0, 1e-15);
+    EXPECT_NEAR(p->boundary_area(), 6.0, 1e-15);
+    // Boundary patches come from the layer of highest precedence ("hw", not "w", on x = 0).
+    bool west_of_half = false;
+    for (const auto& t : p->triangles()) {
+        if (t.outside.valid() || p->vertices()[t.v[0]][0] != 0 || p->vertices()[t.v[1]][0] != 0) continue;
+        west_of_half = west_of_half || p->patches()[t.patch.index()] == "hw";
+        EXPECT_NE(p->patches()[t.patch.index()], "w");
+    }
+    EXPECT_TRUE(west_of_half);
+    // A hole removes a cube from the middle.
+    auto holed = cube_declaration();
+    ASSERT_TRUE(holed.add_hole(vmm::Cuboid({0.25, 0.25, 0.25}, {0.75, 0.75, 0.75})));
+    p = b.build_partition(holed);
+    ASSERT_TRUE(p) << p.error().message();
+    EXPECT_NEAR(p->total_volume(), 0.875, 1e-15);
+    EXPECT_NEAR(p->boundary_area(), 7.5, 1e-15);
+    // A sphere in the cube: curved interface.
+    auto ball = cube_declaration();
+    ASSERT_TRUE(ball.add_region("ball", m, vmm::Sphere({0.5, 0.5, 0.5}, 0.3)));
+    p = b.build_partition(ball);
+    ASSERT_TRUE(p) << p.error().message();
+    const auto sphere = *vmm::Sphere({0.5, 0.5, 0.5}, 0.3).surface({});
+    EXPECT_NEAR(p->region_volume(RegionId::from_index(1)), sphere.volume(), 1e-14);
+    EXPECT_NEAR(p->interface_area(RegionId::from_index(0), RegionId::from_index(1)), sphere.area(), 1e-14);
 }
 
 TEST(Cgal3D, PrepareAndTouchesBoundary) {

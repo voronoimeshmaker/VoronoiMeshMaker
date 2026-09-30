@@ -9,6 +9,7 @@
 //==============================================================================
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -25,6 +26,12 @@
 #include <vmm/sites/sources3d.hpp>
 
 namespace {
+
+vmm::SiteGenerationOptions3D seeded(std::uint64_t seed) {
+    vmm::SiteGenerationOptions3D o;
+    o.seed = seed;
+    return o;
+}
 
 using vmm::ErrorCode;
 using vmm::RegionId;
@@ -53,9 +60,9 @@ TEST(SiteSet3D, AddAppendCount) {
 TEST(SiteSet3D, GenerateIsDeterministic) {
     const auto p = unit_cube();
     const std::vector<vmm::RegionSites3D> src{vmm::sites_for_3d(RegionId::from_index(0), vmm::UniformRandomSource3D(0.2))};
-    const auto a = vmm::generate_sites_3d(p, src, {5});
-    const auto b = vmm::generate_sites_3d(p, src, {5});
-    const auto c = vmm::generate_sites_3d(p, src, {6});
+    const auto a = vmm::generate_sites_3d(p, src, seeded(5));
+    const auto b = vmm::generate_sites_3d(p, src, seeded(5));
+    const auto c = vmm::generate_sites_3d(p, src, seeded(6));
     ASSERT_TRUE(a) << a.error().message();
     ASSERT_TRUE(b);
     ASSERT_TRUE(c);

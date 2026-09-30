@@ -46,6 +46,12 @@
 
 namespace {
 
+vmm::SiteGenerationOptions3D seeded(std::uint64_t seed) {
+    vmm::SiteGenerationOptions3D o;
+    o.seed = seed;
+    return o;
+}
+
 using vmm::Real;
 using vmm::Vec3;
 using Clock = std::chrono::steady_clock;
@@ -238,7 +244,7 @@ Outcome build(const Layered& L, const std::vector<Real>& spacing, std::uint64_t 
         if (explicit_sites.empty()) {
             const std::vector<vmm::RegionSites3D> src{
                 vmm::sites_for_3d(vmm::RegionId{0}, vmm::UniformRandomSource3D(spacing[r]))};
-            auto s = vmm::generate_sites_3d(*partition, src, {seed + r});
+            auto s = vmm::generate_sites_3d(*partition, src, seeded(seed + r));
             if (!s) {
                 o.error = std::format("region {}: {}", r, s.error().message());
                 return o;

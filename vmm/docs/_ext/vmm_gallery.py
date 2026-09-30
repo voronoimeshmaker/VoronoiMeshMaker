@@ -94,8 +94,9 @@ def _read_polyhedra(vtu):
 
 
 def _render3d(vtu, png):
-    """Cutaway of a 3D mesh: the cells below the mid-height plane, drawn by the
-    outer faces of that set, shaded by their orientation."""
+    """Cutaway of a 3D mesh: the cells on one side of a mid plane (horizontal for
+    one region, vertical for several), without the air, drawn by the outer faces
+    of that set, shaded by their orientation."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -104,14 +105,23 @@ def _render3d(vtu, png):
     points, cells, region = _read_polyhedra(vtu)
     vmesh = Path(vtu).with_suffix(".vmesh")
     region_medium = _media_of_regions(vmesh) if vmesh.exists() else []
-    zs = [p[2] for p in points]
-    cut = 0.5 * (min(zs) + max(zs))
+    xs, ys, zs = [p[0] for p in points], [p[1] for p in points], [p[2] for p in points]
+    # One region: cut at mid-height; several regions: a vertical cut at mid-width (y),
+    # through the interfaces.
+    axis = 1 if len(set(region)) > 1 else 2
+    values = (xs, ys, zs)[axis]
+    cut = 0.5 * (min(values) + max(values))
 
     def centroid(faces):
         ids = {i for f in faces for i in f}
         return tuple(sum(points[i][a] for i in ids) / len(ids) for a in range(3))
 
-    kept = [c for c, faces in enumerate(cells) if centroid(faces)[2] <= cut]
+    # Air hides what lies under it: its cells are left out when there are other media.
+    hidden = {r for r, m in enumerate(region_medium) if m in ("air", "gas")}
+    if len(hidden) == len(region_medium):
+        hidden = set()
+    kept = [c for c, faces in enumerate(cells)
+            if centroid(faces)[axis] <= cut and not (region and region[c] in hidden)]
     count = {}
     for c in kept:
         for f in cells[c]:
@@ -140,11 +150,12 @@ def _render3d(vtu, png):
     fig = plt.figure(figsize=(8, 6), dpi=150)
     ax = fig.add_subplot(projection="3d")
     ax.add_collection3d(Poly3DCollection(polys, facecolors=colours, edgecolors="#1E2528", linewidths=0.15))
-    xs, ys = [p[0] for p in points], [p[1] for p in points]
     ax.set_xlim(min(xs), max(xs))
     ax.set_ylim(min(ys), max(ys))
     ax.set_zlim(min(zs), max(zs))
-    ax.set_box_aspect((max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)))
+    dx, dy, dz = max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)
+    exaggeration = max(1.0, 0.25 * max(dx, dy) / max(dz, 1e-300))  # flat domains: vertical exaggeration
+    ax.set_box_aspect((dx, dy, dz * exaggeration))
     ax.view_init(elev=35, azim=-60)
     ax.set_axis_off()
     fig.tight_layout()

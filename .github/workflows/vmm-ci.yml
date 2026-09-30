@@ -60,11 +60,18 @@ jobs:
         # The heavy integration tests (label "slow") take minutes in Debug; under the
         # sanitizers they would exceed the time limits, so that job skips them.
         run: |
-          if [ "${{ matrix.sanitize }}" = "ON" ]; then
-            ctest --test-dir build -L vmm -LE slow --output-on-failure -j 4 --timeout 3600
-          else
-            ctest --test-dir build -L vmm --output-on-failure -j 4 --timeout 3600
+          set +e
+          exclude=""
+          [ "${{ matrix.sanitize }}" = "ON" ] && exclude="-LE slow"
+          ctest --test-dir build -L vmm $exclude --output-on-failure -j 4 --timeout 3600 2>&1 | tee test.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            # Public annotations: names of the failed tests and the failure lines of their output.
+            sed 's/^/::error::failed test /' build/Testing/Temporary/LastTestsFailed.log | head -20
+            grep -E "Failure|Expected|Which is|Value of|actual|error:|Sanitizer|runtime error" test.log \
+              | head -30 | sed 's/^/::error::/'
           fi
+          exit $status
 
   coverage:
     runs-on: ubuntu-24.04

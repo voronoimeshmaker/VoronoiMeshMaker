@@ -26,7 +26,7 @@ Usar num projeto CMake
 
 .. code-block:: cmake
 
-   find_package(VoronoiMeshMaker 0.1 REQUIRED)
+   find_package(VoronoiMeshMaker 0.2 REQUIRED)
    target_link_libraries(meu_solver PRIVATE VoronoiMeshMaker::vmm VoronoiMeshMaker::vmm_io)
 
 Primeira malha

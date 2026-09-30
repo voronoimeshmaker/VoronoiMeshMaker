@@ -2,7 +2,8 @@
 
 - **Data:** 2026-09-30
 - **Ambiente:** WSL `Ubuntu-26.04-Test`; g++ 15.2.0; CMake 4.2.3; CGAL 6.2.1; Boost 1.92.
-- **Estado:** **candidata**. A publicação depende da sua aprovação e de um push (a CI e o Pages nunca rodaram).
+- **Estado:** **aprovada como 0.2.0** (DEC-038, 30/09). Falta o push, feito pelo João (AGENTS.md); a CI e o Pages
+  rodam pela primeira vez com ele.
 - **Convenção:** **[F]** fato verificado · **[I]** inferência · **[R]** recomendação.
 
 ## 1. O que a Fase 3 entregou
@@ -114,9 +115,20 @@
    **[R]** (a): o 3D está verificado e os escritores não dependem dele.
 3. **JOSS:** o artigo pode citar 2D e 3D; o checklist do P14 §5 continua valendo.
 
+## 7a. Preparação da 0.2.0 (feita)
+
+- **Versão:** 0.2.0 no CMake da raiz e no pacote (`VoronoiMeshMakerConfigVersion`, compatível na mesma versão
+  menor), na documentação e no início rápido (`find_package(VoronoiMeshMaker 0.2 REQUIRED)`).
+- **Roteiro:** DEC-038 (3D na 0.2; escritores na 0.3).
+- **`CHANGELOG`:** uma seção 0.2.0 com as entregas b, c e d.
+- **[F] Teste do pacote instalado:** build com `-DVMM_ENABLE_LTO=OFF -DVMM_ENABLE_NATIVE_ARCH=OFF` (a configuração
+  para distribuir, DEC-034) e `cmake --install` num prefixo temporário. Um projeto externo com
+  `find_package(VoronoiMeshMaker 0.2 REQUIRED)` compilou, ligou `VoronoiMeshMaker::vmm` e `::vmm_io` e gerou uma
+  malha 3D de duas regiões (1597 células, 4499 faces de interface).
+
 ## 8. O que sobra depois do P19
 
-- **P14a:** escritores MODFLOW 6, PFLOTRAN e TOUGH (0.2 na DEC-025).
+- **P14a:** escritores MODFLOW 6, PFLOTRAN e TOUGH (0.3 pela DEC-038).
 - **Facilidade de uso:** ajudante que troca `Result` por exceção, executável com arquivo de configuração ou
   bindings em Python (este precisa de uma DEC).
 - **Paralelização:** recorte e montagem das células.

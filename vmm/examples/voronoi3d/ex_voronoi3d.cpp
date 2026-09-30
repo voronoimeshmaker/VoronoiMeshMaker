@@ -3,7 +3,7 @@
 // Title: 3D - Voronoi volumes in an L-shaped block
 // Description: Extrudes an L-shaped outline into a non-convex block with
 //              tagged walls, fills it with random sites, builds the 3D
-//              Voronoi finite-volume mesh (version 0.3, one region) and
+//              Voronoi finite-volume mesh (one region) and
 //              writes it as .vtu and native files.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================

@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent / "_ext"))
 project = "VoronoiMeshMaker"
 author = "VoronoiMeshMaker Team"
 copyright = "2026, VoronoiMeshMaker Team"
-release = "0.1.0"
+release = "0.2.0"
 language = "pt_BR"
 
 extensions = ["breathe", "myst_parser", "sphinx_design", "sphinx.ext.mathjax", "vmm_gallery"]
@@ -23,7 +23,7 @@ exclude_patterns = ["_build", "gallery_src"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_css_files = ["estuario.css"]
-html_title = "VoronoiMeshMaker 0.1"
+html_title = "VoronoiMeshMaker 0.2"
 html_theme_options = {
     "icon_links": [
         {"name": "GitHub", "url": "https://github.com/voronoimeshmaker/voronoimeshmaker", "icon": "fa-brands fa-github"},

@@ -1,8 +1,12 @@
 # Changelog
 
-## Não publicado — 3D com várias regiões (entrega d, planejada como 0.5 na DEC-025)
+## 0.2.0 — 2026-09-30
 
-### Novo
+Malhas 3D: entregas (b), (c) e (d) numa só versão (DEC-038).
+
+### 3D com várias regiões (entrega d)
+
+#### Novo
 - Partição 3D por precedência (DEC-018): regiões e buracos (`Declaration3D::add_hole`),
   autorrefinamento exato de todas as camadas e classificação de cada triângulo pelos dois
   lados; faces coplanares de camadas diferentes; arredondamento para double sem interseções.
@@ -15,13 +19,13 @@
 - Âncora A3 (`anchors::a3`, `anchors::heightfield_block`), benchmark B7, exemplo
   `ex_anchor_a3`; a galeria corta as malhas de várias regiões na vertical.
 
-### Mudou
+#### Mudou
 - A limpeza das faces divide laços que se tocam num vértice e roda também depois da
   inserção de vértices em "T".
 
-## Não publicado — domínio STL (entrega c, planejada como 0.4 na DEC-025)
+### Domínio STL (entrega c)
 
-### Novo
+#### Novo
 - `read_stl` / `write_stl` (ASCII com um patch por `solid`, e binário) e `read_stl_surface`.
 - `repair_surface`: solda de pontos, remoção de triângulos colapsados e repetidos,
   orientação consistente por componente; buracos e arestas não manifold são erros.
@@ -32,9 +36,9 @@
   O(log n).
 - Terreno sintético `anchors::terrain_block`, benchmark B6 e exemplo `ex_stl_domain`.
 
-## Não publicado — 3D com uma região (entrega b, planejada como 0.3 na DEC-025)
+### 3D com uma região (entrega b)
 
-### Novo
+#### Novo
 - Domínio 3D por superfície triangulada fechada, com patch por triângulo (DEC-036):
   `TriangleSurface`, `Box3`, formas `Cuboid`, `Sphere`, `Cylinder`, `Extrusion`,
   `SurfaceShape` e o registro `ShapeRegistry3D`.
@@ -48,11 +52,11 @@
   galeria.
 - Código de erro `InvalidSurface`.
 
-### Mudou
+#### Mudou
 - `ShapeOutline::make` rejeita contornos que se tocam ou se cruzam.
 - Build padrão Release com LTO e `-march=native` (DEC-034).
 
-## 0.1.0 — 2026-09-29 (candidata; publicação depende da aprovação do P14)
+## 0.1.0 — 2026-09-29 (2D; não publicada separadamente, incluída na 0.2.0)
 
 ### Novo
 - Biblioteca `vmm/` com alvos `vmm_core` (BSD, sem CGAL), `vmm_backend_cgal`

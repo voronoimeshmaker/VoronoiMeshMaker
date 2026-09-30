@@ -258,4 +258,4 @@ def setup(app):
     app.add_config_value("vmm_examples_source", "", "env")
     app.add_config_value("vmm_examples_bin", "", "env")
     app.connect("builder-inited", _build_gallery)
-    return {"version": "0.1", "parallel_read_safe": True}
+    return {"version": "0.2", "parallel_read_safe": True}

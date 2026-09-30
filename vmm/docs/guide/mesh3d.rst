@@ -41,8 +41,8 @@ A saída é o mesmo ``Mesh<3>`` genérico: faces internas, faces de contorno por
    if (!result) return 1;              // result.error().message() explica o motivo
    return vmm::write_vtu(result->mesh, "tanque.vtu") ? 0 : 1;
 
-Domínio de um arquivo STL (versão 0.4)
---------------------------------------
+Domínio de um arquivo STL
+-------------------------
 
 - ``read_stl_surface`` lê um STL ASCII ou binário e o repara numa superfície fechada: solda pontos a menos de 10⁻⁹ da diagonal da caixa, remove triângulos colapsados e repetidos e orienta cada componente de forma consistente. Buracos e arestas com mais de dois triângulos são erros (``InvalidSurface``), nunca preenchidos às cegas.
 - Num STL ASCII, cada bloco ``solid nome`` vira um patch; um STL binário tem um patch só. ``write_stl`` grava uma superfície nos dois formatos.

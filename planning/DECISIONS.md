@@ -44,6 +44,7 @@
 | 035 | Célula partida pelo domínio fica inteira | APROVADA | P15a |
 | 036 | Domínio 3D por superfícies trianguladas fechadas | APROVADA | P15 |
 | 037 | Sem contração FMA | APROVADA | P16 |
+| 038 | Roteiro renumerado: 3D publicado como 0.2 | APROVADA | P19 |
 
 ---
 
@@ -531,3 +532,14 @@
   DEC-012 a proibir -ffast-math. As decisões de topologia exatas ficam no CGAL; as poucas em double (formas,
   geração de sítios) precisam dar o mesmo resultado em qualquer build.
 - Consequências: resultados iguais entre Debug e Release na mesma máquina; perda de velocidade medida no P16.
+
+## DEC-038 — Roteiro renumerado: 3D publicado como 0.2
+- Data: 2026-09-30
+- Origem: P19 §7; instrução do João ("pode publicar como 0.2")
+- Status: APROVADA (30/09, instrução do João)
+- Decisão: SUBSTITUI a DEC-025 no roteiro. A 0.2 publica as entregas 3D (b), (c) e (d) junto com o 2D da 0.1: uma
+  região com domínio analítico, domínio STL e várias regiões com interfaces conformes. Os escritores MODFLOW 6,
+  PFLOTRAN e TOUGH (P14a) passam para a 0.3. A 1.0 continua sendo o congelamento da API pública.
+- Justificativa: o 3D está implementado e verificado (P16–P19), e os escritores não dependem dele.
+- Consequências: pacote CMake 0.2.0 (`find_package(VoronoiMeshMaker 0.2)`, compatível na mesma versão menor); a
+  0.1.0 não foi publicada separadamente.

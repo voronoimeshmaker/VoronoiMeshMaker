@@ -41,3 +41,14 @@ RegionInfoMesh
 RegionSites         # source bound to a region
 MeshRequest2D       # facade input aggregate
 MeshResult2D        # facade output aggregate
+PolygonizeOptions3  # segments per circle, sphere subdivisions
+PartitionTriangle   # vertices, regions on each side, patch
+LabelledPolyhedron3 # points, face loops, labels
+CellClip3           # clipped cell, volume, components, error
+PreparedDomain3     # opaque backend state
+Backend3D           # struct of callables
+RegionSites3D       # region and a type-erased source
+SiteGenerationOptions3D
+BuildOptions3D      # options without validation
+BuildStats3D        # counters
+Build3D             # mesh, statistics, volumes

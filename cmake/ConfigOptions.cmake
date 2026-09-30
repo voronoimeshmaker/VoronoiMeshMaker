@@ -19,6 +19,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# DEC-034: Release is the default, for single- and multi-config generators.
+if(CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_DEFAULT_BUILD_TYPE)
+    set(CMAKE_DEFAULT_BUILD_TYPE Release CACHE STRING "Default build type (multi-config generators)")
+endif()
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS

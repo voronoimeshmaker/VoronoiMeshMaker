@@ -52,7 +52,7 @@ Linguagem, dependências e licença
 - Includes agrupados em biblioteca padrão, bibliotecas externas e VMM, cada grupo em ordem alfabética, com os comentários separadores do projeto.
 - Dependências: CGAL e Boost; GoogleTest só nos testes; qualquer outra exige uma nova decisão (R21). Só versões estáveis (R22).
 - ``vmm_core`` sob BSD-3-Clause; ``vmm_backend_cgal`` sob GPL-3.0-or-later; todo arquivo tem cabeçalho SPDX (R23).
-- Sem ``-ffast-math``; arquitetura nativa e LTO desligadas por padrão; ``-Werror`` nos alvos do VMM; nenhum binário versionado; fins de linha LF (R24, DEC-012).
+- Build padrão em Release, com LTO e ``-march=native`` (desligue ``VMM_ENABLE_NATIVE_ARCH`` para gerar binários para outras máquinas); nunca ``-ffast-math``; ``-Werror`` nos alvos do VMM; nenhum binário versionado; fins de linha LF (R24, DEC-012, DEC-034).
 
 Testes
 ------

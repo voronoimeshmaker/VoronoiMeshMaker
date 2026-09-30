@@ -46,4 +46,19 @@ struct VtuOptions {
 [[nodiscard]] Status write_vtu(const Mesh2D& mesh, std::ostream& out, const VtuOptions& options = {});
 [[nodiscard]] Status write_vtu(const Mesh2D& mesh, const std::filesystem::path& path, const VtuOptions& options = {});
 
+/// @brief Writes a 3D mesh as VTK XML (VTK_POLYHEDRON cells) for visualisation.
+/// @param mesh Mesh.
+/// @param out Destination stream.
+/// @param options Include the per-cell metrics (volume, aspect ratio, non-orthogonality).
+/// @note Each cell lists its faces with outward normals (the neighbour's copy of a face is reversed).
+/// @par Level
+/// Beginner
+/// @sa write_native, generate_mesh_3d
+/// @par Location
+/// vmm/io/vtu.hpp
+/// @par Examples
+/// ex_voronoi3d.cpp
+[[nodiscard]] Status write_vtu(const Mesh3D& mesh, std::ostream& out, const VtuOptions& options = {});
+[[nodiscard]] Status write_vtu(const Mesh3D& mesh, const std::filesystem::path& path, const VtuOptions& options = {});
+
 }  // namespace vmm

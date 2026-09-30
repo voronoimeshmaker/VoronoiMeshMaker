@@ -3,7 +3,8 @@
 
 For every vmm/examples/<name>/ex_<name>.cpp the extension reads the header
 (Title/Description), runs the compiled example (VMM_EXAMPLES_BIN), renders
-every .vtu it writes with the "Estuário" figure palette and generates a page
+every .vtu it writes with the "Estuário" figure palette (3D meshes as a
+cutaway below the mid-height plane) and generates a page
 with text, figure, output, source and download. A failing example stops the
 documentation build.
 """
@@ -71,7 +72,89 @@ def _shade(hex_colour, factor):
     return "#" + "".join(f"{v:02X}" for v in c)
 
 
+def _read_polyhedra(vtu):
+    """Points (x, y, z), faces of every VTK_POLYHEDRON cell and the region of each cell."""
+    root = ET.parse(vtu).getroot()
+    arrays = {a.get("Name"): a.text.split() for a in root.iter("DataArray") if a.get("Name")}
+    xyz = [float(v) for v in next(root.iter("Points")).find("DataArray").text.split()]
+    points = [tuple(xyz[i:i + 3]) for i in range(0, len(xyz), 3)]
+    stream = [int(v) for v in arrays["faces"]]
+    cells, k = [], 0
+    while k < len(stream):
+        nfaces = stream[k]
+        k += 1
+        faces = []
+        for _ in range(nfaces):
+            n = stream[k]
+            faces.append(stream[k + 1:k + 1 + n])
+            k += 1 + n
+        cells.append(faces)
+    region = [int(v) for v in arrays.get("region", [])]
+    return points, cells, region
+
+
+def _render3d(vtu, png):
+    """Cutaway of a 3D mesh: the cells below the mid-height plane, drawn by the
+    outer faces of that set, shaded by their orientation."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    points, cells, region = _read_polyhedra(vtu)
+    vmesh = Path(vtu).with_suffix(".vmesh")
+    region_medium = _media_of_regions(vmesh) if vmesh.exists() else []
+    zs = [p[2] for p in points]
+    cut = 0.5 * (min(zs) + max(zs))
+
+    def centroid(faces):
+        ids = {i for f in faces for i in f}
+        return tuple(sum(points[i][a] for i in ids) / len(ids) for a in range(3))
+
+    kept = [c for c, faces in enumerate(cells) if centroid(faces)[2] <= cut]
+    count = {}
+    for c in kept:
+        for f in cells[c]:
+            key = tuple(sorted(f))
+            count[key] = count.get(key, 0) + 1
+    light = (0.4, -0.5, 0.77)
+    polys, colours = [], []
+    for c in kept:
+        base = REGION_FALLBACK[0]
+        if region and region[c] < len(region_medium):
+            base = MEDIUM_COLOURS.get(region_medium[region[c]], REGION_FALLBACK[region[c] % 6])
+        for f in cells[c]:
+            if count[tuple(sorted(f))] > 1:
+                continue
+            pts = [points[i] for i in f]
+            # Newell normal for the shading.
+            n = [0.0, 0.0, 0.0]
+            for a, b in zip(pts, pts[1:] + pts[:1]):
+                n[0] += (a[1] - b[1]) * (a[2] + b[2])
+                n[1] += (a[2] - b[2]) * (a[0] + b[0])
+                n[2] += (a[0] - b[0]) * (a[1] + b[1])
+            length = max(1e-300, sum(x * x for x in n) ** 0.5)
+            shade = 0.55 + 0.45 * max(0.0, sum(x / length * l for x, l in zip(n, light)))
+            polys.append(pts)
+            colours.append(_shade(base, shade))
+    fig = plt.figure(figsize=(8, 6), dpi=150)
+    ax = fig.add_subplot(projection="3d")
+    ax.add_collection3d(Poly3DCollection(polys, facecolors=colours, edgecolors="#1E2528", linewidths=0.15))
+    xs, ys = [p[0] for p in points], [p[1] for p in points]
+    ax.set_xlim(min(xs), max(xs))
+    ax.set_ylim(min(ys), max(ys))
+    ax.set_zlim(min(zs), max(zs))
+    ax.set_box_aspect((max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)))
+    ax.view_init(elev=35, azim=-60)
+    ax.set_axis_off()
+    fig.tight_layout()
+    fig.savefig(png, facecolor="#FBFAF7")
+    plt.close(fig)
+
+
 def _render(vtu, png):
+    if "Name=\"faceoffsets\"" in Path(vtu).read_text():
+        return _render3d(vtu, png)
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

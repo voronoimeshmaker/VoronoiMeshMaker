@@ -244,8 +244,8 @@ msgstr "Dependencies: CGAL and Boost; GoogleTest only in tests; anything else ne
 msgid "``vmm_core`` sob BSD-3-Clause; ``vmm_backend_cgal`` sob GPL-3.0-or-later; todo arquivo tem cabeçalho SPDX (R23)."
 msgstr "``vmm_core`` under BSD-3-Clause; ``vmm_backend_cgal`` under GPL-3.0-or-later; every file has an SPDX header (R23)."
 
-msgid "Sem ``-ffast-math``; arquitetura nativa e LTO desligadas por padrão; ``-Werror`` nos alvos do VMM; nenhum binário versionado; fins de linha LF (R24, DEC-012)."
-msgstr "No ``-ffast-math``; native architecture and LTO off by default; ``-Werror`` on VMM targets; no versioned binaries; LF line endings (R24, DEC-012)."
+msgid "Build padrão em Release, com LTO e ``-march=native`` (desligue ``VMM_ENABLE_NATIVE_ARCH`` para gerar binários para outras máquinas); nunca ``-ffast-math``; ``-Werror`` nos alvos do VMM; nenhum binário versionado; fins de linha LF (R24, DEC-012, DEC-034)."
+msgstr "Release build by default, with LTO and ``-march=native`` (turn ``VMM_ENABLE_NATIVE_ARCH`` off to build binaries for other machines); never ``-ffast-math``; ``-Werror`` on VMM targets; no versioned binaries; LF line endings (R24, DEC-012, DEC-034)."
 
 msgid "Testes"
 msgstr "Tests"
@@ -279,3 +279,49 @@ msgstr "Persistence in the native ``.vmesh`` format; visualisation in VTK XML ``
 
 msgid "Referência da API com as seções Parameters, Notes, Level, See Also, Location e Examples; um exemplo que falha quebra o build da documentação (R29)."
 msgstr "API reference with Parameters, Notes, Level, See Also, Location and Examples sections; a failing example breaks the documentation build (R29)."
+
+# DEC-034 build defaults; simple outlines
+msgid "O build padrão é Release, com LTO e ``-march=native`` (DEC-034). Para gerar binários ou pacotes para outras máquinas, desligue as duas opções com ``-DVMM_ENABLE_NATIVE_ARCH=OFF -DVMM_ENABLE_LTO=OFF``."
+msgstr "The default build is Release, with LTO and ``-march=native`` (DEC-034). To build binaries or packages for other machines, turn both options off with ``-DVMM_ENABLE_NATIVE_ARCH=OFF -DVMM_ENABLE_LTO=OFF``."
+
+msgid "**Contornos simples:** uma aresta de forma não pode tocar nem cruzar outra aresta da mesma forma, e os buracos não tocam o anel externo nem uns aos outros; senão, a forma é rejeitada com ``InvalidPolygon``."
+msgstr "**Simple outlines:** a shape edge may neither touch nor cross another edge of the same shape, and holes touch neither the outer ring nor each other; otherwise the shape is rejected with ``InvalidPolygon``."
+
+# guide/mesh3d.rst (P16)
+
+msgid "Malhas 3D (versão 0.3)"
+msgstr "3D meshes (version 0.3)"
+
+msgid "A versão 0.3 gera malhas de volumes finitos de Voronoi em 3D para **uma região**. Várias regiões com interfaces conformes chegam na versão 0.5 (P18); domínios STL, na 0.4 (P17)."
+msgstr "Version 0.3 generates 3D Voronoi finite-volume meshes of **one region**. Several regions with conforming interfaces come with version 0.5 (P18); STL domains with 0.4 (P17)."
+
+msgid "Domínio"
+msgstr "Domain"
+
+msgid "O domínio é uma superfície triangulada fechada, orientada para fora, com um patch por triângulo (DEC-036). ``TriangleSurface::make`` verifica a superfície; o backend confere, em aritmética exata, que ela não se auto-intercepta."
+msgstr "The domain is a closed triangulated surface, oriented outward, with one patch per triangle (DEC-036). ``TriangleSurface::make`` checks the surface; the backend checks, in exact arithmetic, that it does not self-intersect."
+
+msgid "Formas prontas: ``Cuboid``, ``Sphere`` (icosaedro subdividido), ``Cylinder``, ``Extrusion`` de um contorno 2D (as arestas rotuladas viram patches das paredes) e ``SurfaceShape`` para uma superfície dada. O ``ShapeRegistry3D`` constrói formas pelo nome."
+msgstr "Ready-made shapes: ``Cuboid``, ``Sphere`` (subdivided icosahedron), ``Cylinder``, ``Extrusion`` of a 2D outline (tagged edges become wall patches) and ``SurfaceShape`` for a given surface. ``ShapeRegistry3D`` builds shapes by name."
+
+
+msgid "Fontes 3D: ``UniformRandomSource3D`` (espaçamento mínimo), ``RandomCountSource3D``, ``CartesianGridSource3D`` e ``ExplicitSites3D``. A mesma semente gera os mesmos sítios em qualquer plataforma."
+msgstr "3D sources: ``UniformRandomSource3D`` (minimum spacing), ``RandomCountSource3D``, ``CartesianGridSource3D`` and ``ExplicitSites3D``. The same seed gives the same sites on every platform."
+
+msgid "Construção"
+msgstr "Construction"
+
+msgid "Cada célula nasce convexa, da interseção de semiespaços dos vizinhos de Delaunay; os vértices de Voronoi são circuncentros calculados em aritmética exata, iguais em todas as células que os compartilham."
+msgstr "Every cell starts convex, from the half-spaces of its Delaunay neighbours; the Voronoi vertices are circumcentres computed in exact arithmetic, identical in every cell that shares them."
+
+msgid "Só as células que tocam o contorno são recortadas pelo domínio, também em aritmética exata. Uma célula que o domínio divide em pedaços fica inteira (DEC-035) e é contada em ``BuildStats3D::fragmented_cells``."
+msgstr "Only the cells that touch the boundary are clipped by the domain, also in exact arithmetic. A cell split by the domain stays whole (DEC-035) and is counted in ``BuildStats3D::fragmented_cells``."
+
+msgid "A malha não depende da ordem dos sítios (idêntica bit a bit) e passa pelos mesmos invariantes do 2D antes de ser devolvida."
+msgstr "The mesh does not depend on the order of the sites (bit-identical) and passes the same invariants as in 2D before it is returned."
+
+msgid "Uso"
+msgstr "Usage"
+
+msgid "A saída é o mesmo ``Mesh<3>`` genérico: faces internas, faces de contorno por patch, owner/neighbour, vetores de área, métricas, adjacência e reordenação funcionam como no 2D. ``write_vtu`` grava células ``VTK_POLYHEDRON``; ``write_native`` grava o formato ``.vmesh``."
+msgstr "The output is the same generic ``Mesh<3>``: internal faces, boundary faces per patch, owner/neighbour, area vectors, metrics, adjacency and reordering work as in 2D. ``write_vtu`` writes ``VTK_POLYHEDRON`` cells; ``write_native`` writes the ``.vmesh`` format."

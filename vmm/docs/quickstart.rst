@@ -14,10 +14,12 @@ Compilar e instalar
 
 .. code-block:: bash
 
-   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+   cmake -S . -B build -G Ninja
    cmake --build build
    ctest --test-dir build -L vmm
    cmake --install build --prefix $HOME/.local
+
+O build padrão é Release, com LTO e ``-march=native`` (DEC-034). Para gerar binários ou pacotes para outras máquinas, desligue as duas opções com ``-DVMM_ENABLE_NATIVE_ARCH=OFF -DVMM_ENABLE_LTO=OFF``.
 
 Usar num projeto CMake
 ----------------------

@@ -31,6 +31,7 @@ enum class ErrorCode : std::uint32_t {
     InvalidShapeParameter = 208,
     UnknownMedium = 209,
     DuplicateName = 210,
+    InvalidSurface = 211,
     // sites (3xx)
     SiteOutsideRegion = 300,
     DuplicateSite = 301,

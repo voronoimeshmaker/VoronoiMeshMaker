@@ -15,6 +15,10 @@ ctest --test-dir build -L vmm
 Dependências: CGAL ≥ 6.2, Boost ≥ 1.83 e GoogleTest ≥ 1.14 (só nos testes).
 Opções: `VMM_BUILD_TESTS` e `VMM_BUILD_EXAMPLES` (ambas `ON` por padrão).
 
+O build padrão é Release com LTO e `-march=native` (DEC-034). Para gerar
+binários ou pacotes para outras máquinas, use
+`-DVMM_ENABLE_NATIVE_ARCH=OFF -DVMM_ENABLE_LTO=OFF`.
+
 ## Estrutura
 
 | Pasta | Conteúdo |

@@ -8,4 +8,5 @@ Guia
    sites
    mesh
    io
+   mesh3d
    errors

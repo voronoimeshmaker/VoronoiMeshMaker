@@ -51,4 +51,16 @@ Backend2D cgal_backend_2d() {
     return b;
 }
 
+Backend3D cgal_backend_3d() {
+    Backend3D b;
+    b.build_partition = &cgal_detail::build_partition_3d;
+    b.prepare = &cgal_detail::prepare_3d;
+    b.delaunay_pairs = &cgal_detail::delaunay_pairs_3d;
+    b.circumcentre = &cgal_detail::circumcentre_3d;
+    b.touches_boundary = &cgal_detail::touches_boundary_3d;
+    b.clip_cell = &cgal_detail::clip_cell_3d;
+    b.info = &cgal_detail::info;
+    return b;
+}
+
 }  // namespace vmm

@@ -33,7 +33,16 @@
 | 024 | Enums de dado × enums de despacho | APROVADA | P05 |
 | 025 | Roteiro de versões | APROVADA | P05 |
 | 026 | Documento de diretrizes vigente em planning/ | APROVADA | P05 |
-| 027 | Regras para protótipos em prototypes/ | PROPOSTA | P05a |
+| 027 | Regras para protótipos em prototypes/ | APROVADA | P05a |
+| 028 | Interface conforme na 0.1: refinamento comum com topologia por rótulos | APROVADA | P05a |
+| 029 | Faces internas antes das de fronteira; views de volumes internos e de fronteira | APROVADA | P05a |
+| 030 | Sem escritor OpenFOAM | APROVADA | João |
+| 031 | Não ortogonalidade verificada só em faces não degeneradas | REJEITADA | P10 |
+| 032 | Ortogonalidade garantida por construção | APROVADA | João |
+| 033 | Retirada da VMMLib e do VoronoiGridMaker | APROVADA | João |
+| 034 | Build padrão rápido | APROVADA | João |
+| 035 | Célula partida pelo domínio fica inteira | APROVADA | P15a |
+| 036 | Domínio 3D por superfícies trianguladas fechadas | PROPOSTA | P15 |
 
 ---
 
@@ -468,3 +477,43 @@
 - Consequências: os golden files O1–O4 ficam congelados (não são mais regeneráveis; a VMMLib continua no histórico
   do git, commit d189461). O otimizador de Lloyd (CVT) não foi migrado e fica para a 0.2, com a VMMLib do histórico
   como referência. O build da raiz não tem mais as opções VMM_BUILD_VMMLIB, VMM_INSTALL_VMMLIB e VMM_BUILD_PAPER.
+
+## DEC-034 — Build padrão rápido
+- Data: 2026-09-30
+- Origem: instrução do João ("ao compilar a biblioteca a opção default sempre deverá ser a release, com os opcionais
+  que acelerem a velocidade do código")
+- Status: APROVADA (30/09, instrução do João)
+- Decisão: SUBSTITUI a DEC-012 (2) no ponto das otimizações. Sem tipo de build informado, o CMake usa Release
+  (também como CMAKE_DEFAULT_BUILD_TYPE em geradores multiconfiguração). Em Release e RelWithDebInfo, os alvos do
+  vmm/ usam LTO (VMM_ENABLE_LTO, ON) e -march=native (VMM_ENABLE_NATIVE_ARCH, ON). -ffast-math continua proibido, porque muda resultados
+  geométricos. Builds de cobertura e de sanitizadores ficam sem essas otimizações.
+- Consequências: binários e pacotes para outras máquinas precisam de -DVMM_ENABLE_NATIVE_ARCH=OFF (uma CPU sem as
+  instruções da máquina de build encerra com "illegal instruction"). O determinismo da DEC-020 continua valendo para
+  o mesmo build; entre máquinas, mesma topologia e geometria dentro da tolerância. Com LTO, as bibliotecas estáticas
+  levam só o código intermediário do GCC: quem as instala e liga precisa do mesmo compilador com LTO; para distribuir,
+  use -DVMM_ENABLE_LTO=OFF. (Objetos "fat" foram tentados e quebraram a ligação dos testes com o GCC 15.)
+
+## DEC-035 — Célula partida pelo domínio fica inteira
+- Data: 2026-09-30
+- Origem: P15a §3 (achado 5); resposta do João ("mantenha a célula inteira")
+- Status: APROVADA (30/09, instrução do João)
+- Decisão: quando o domínio não convexo corta uma célula de Voronoi em vários pedaços, a célula fica inteira, com
+  todos os pedaços, ligada ao seu sítio. Um aviso é registrado no log e a célula é contada nas estatísticas da
+  construção (BuildStats::fragmented_cells). Vale para 2D (comportamento atual do builder2d) e 3D.
+- Justificativa: os invariantes continuam valendo; mover pedaços para células vizinhas mudaria a célula de Voronoi e
+  a garantia de ortogonalidade das faces (DEC-032).
+- Consequências: o 3D usa o mesmo contador (fragmented_cells) e o mesmo aviso; o usuário pode refinar os sítios onde
+  elas aparecem.
+
+## DEC-036 — Domínio 3D por superfícies trianguladas fechadas
+- Data: 2026-09-30
+- Origem: P15a; P15 §3–§4
+- Status: PROPOSTA
+- Decisão: o domínio 3D (e cada região, na multirregião) é uma superfície triangulada fechada, orientada para fora,
+  sem auto-interseção, possivelmente com vários componentes, com um rótulo de patch por triângulo. Formas analíticas
+  (caixa, esfera, cilindro, extrusão de forma 2D) são poligonizadas para essa representação, como as curvas no 2D;
+  o STL (P17) entra na mesma representação depois de reparo e validação.
+- Justificativa: é a entrada natural do recorte exato do PMP/CGAL (P02 §6), validada no P15a; uma única
+  representação para formas analíticas e STL.
+- Consequências: P16 implementa TriangleSurface, as formas 3D e o validador; as superfícies curvas ficam aproximadas
+  por triângulos, com o volume exato da superfície poligonizada como referência dos invariantes.

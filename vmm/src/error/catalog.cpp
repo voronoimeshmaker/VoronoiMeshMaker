@@ -44,6 +44,10 @@ constexpr std::array kCatalog{
     Row{ErrorCode::InvalidShapeParameter, {"parâmetro de forma inválido", "invalid shape parameter"}},
     Row{ErrorCode::UnknownMedium, {"meio desconhecido", "unknown medium"}},
     Row{ErrorCode::DuplicateName, {"nome repetido", "duplicate name"}},
+    Row{ErrorCode::InvalidSurface, {"superfície inválida (aberta, com orientação inconsistente, com auto-interseção ou com "
+                                    "triângulo degenerado)",
+                                    "invalid surface (open, inconsistently oriented, self-intersecting or with a degenerate "
+                                    "triangle)"}},
     Row{ErrorCode::SiteOutsideRegion, {"sítio fora do interior da sua região", "site outside the interior of its region"}},
     Row{ErrorCode::DuplicateSite, {"sítio repetido", "duplicate site"}},
     Row{ErrorCode::RegionWithoutSites, {"componente de região sem sítios", "region component without sites"}},

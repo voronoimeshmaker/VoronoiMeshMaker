@@ -69,6 +69,18 @@ reduziu o pico de memória à metade e o tempo de B1 à metade, com o mesmo chec
 - **Memória 2D:** 673 B/célula, dentro da meta de 1 KB. Mantida, sem recalibração.
 - **3D:** sem medida; revisar após o P15a.
 
+**Build padrão rápido (DEC-034), medido em 30/09:** o mesmo Release com LTO e `-march=native` contra o Release
+sem as duas opções, em 3 execuções alternadas de cada (tempo de construção da malha):
+
+| Caso | Sem LTO/native | Com LTO/native |
+|---|---|---|
+| B1 | 6,79 · 5,71 · 5,51 s (média 6,00) | 6,08 · 5,39 · 5,68 s (média 5,72) |
+| B3 | 8,88 · 8,71 · 8,63 s (média 8,74) | 8,76 · 9,15 · 8,30 s (média 8,74) |
+
+Ganho de até ~5 % no B1 e nenhum no B3, dentro da variação entre execuções nesta máquina (WSL). Checksums de
+topologia idênticos e 157/157 testes aprovados com as duas opções. O tempo está no recorte exato do CGAL (aritmética
+GMP, compilada à parte), que essas opções de compilação não alcançam.
+
 ## 5. Como reproduzir
 
 ```bash

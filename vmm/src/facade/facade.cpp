@@ -34,4 +34,19 @@ Result<MeshResult2D> generate_mesh_2d(const MeshRequest2D& request) {
     return MeshResult2D{std::move(build->mesh), std::move(*partition), build->stats, std::move(validation), invariants};
 }
 
+Result<MeshResult3D> generate_mesh_3d(const MeshRequest3D& request) {
+    const Backend3D backend = cgal_backend_3d();
+    auto partition = backend.build_partition(request.declaration);
+    if (!partition) return std::unexpected(partition.error());
+    auto sites = generate_sites_3d(*partition, request.sources, request.sites);
+    if (!sites) return std::unexpected(sites.error());
+    auto build = build_mesh_3d(*partition, *sites, backend, request.build);
+    if (!build) return std::unexpected(build.error());
+    auto reference = invariant_reference(*partition);
+    reference.cell_measure = build->cell_volume;
+    InvariantReport invariants = check_invariants(build->mesh, reference);
+    if (!invariants.passed(reference)) return fail(ErrorCode::InvariantViolated, invariants.first_problem);
+    return MeshResult3D{std::move(build->mesh), std::move(*partition), build->stats, invariants};
+}
+
 }  // namespace vmm

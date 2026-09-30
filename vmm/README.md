@@ -1,7 +1,8 @@
 # VoronoiMeshMaker 0.1 (`vmm/`)
 
 Malhas de volumes finitos de Voronoi em 2D, multirregião, com interfaces
-conformes, prontas para um solver. Esta é a biblioteca nova (arquitetura do
+conformes, prontas para um solver; em 3D, por enquanto, com uma região
+(`generate_mesh_3d`, entrega b). Esta é a biblioteca nova (arquitetura do
 `planning/P06_arquitetura_a.md`), que substituiu a VMMLib legada (DEC-011).
 As malhas da VMMLib nos casos O1–O4 ficam congeladas como arquivos de
 referência em `tests/data/golden/`.

@@ -11,6 +11,7 @@
 //==============================================================================
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -88,6 +89,75 @@ TEST(InvariantReport, InterfacesAndCellMeasures) {
     r = vmm::check_invariants(m, ref);
     EXPECT_EQ(r.nonconforming_faces, 1u);
     EXPECT_FALSE(r.passed(ref));
+}
+
+/// Two unit cubes along x sharing the face x = 1 (cells 0 and 1), patch "wall".
+vmm::MeshData<3> two_cubes_data() {
+    vmm::MeshData<3> d;
+    for (int k = 0; k < 12; ++k) {
+        d.points.push_back({static_cast<double>(k % 3), static_cast<double>((k / 3) % 2), static_cast<double>(k / 6)});
+    }
+    const auto id = [](int x, int y, int z) { return vmm::VertexId{static_cast<std::uint32_t>(x + 3 * y + 6 * z)}; };
+    const auto face = [&](std::vector<vmm::VertexId> v, std::uint32_t owner) {
+        d.face_vertices.push_row(v);
+        d.owner.push_back(vmm::CellId{owner});
+    };
+    face({id(1, 0, 0), id(1, 1, 0), id(1, 1, 1), id(1, 0, 1)}, 0);
+    d.neighbour.push_back(vmm::CellId{1});
+    face({id(0, 0, 0), id(0, 0, 1), id(0, 1, 1), id(0, 1, 0)}, 0);
+    face({id(2, 0, 0), id(2, 1, 0), id(2, 1, 1), id(2, 0, 1)}, 1);
+    for (std::uint32_t c = 0; c < 2; ++c) {
+        const int x0 = static_cast<int>(c);
+        const int x1 = x0 + 1;
+        face({id(x0, 0, 0), id(x1, 0, 0), id(x1, 0, 1), id(x0, 0, 1)}, c);
+        face({id(x0, 1, 0), id(x0, 1, 1), id(x1, 1, 1), id(x1, 1, 0)}, c);
+        face({id(x0, 0, 0), id(x0, 1, 0), id(x1, 1, 0), id(x1, 0, 0)}, c);
+        face({id(x0, 0, 1), id(x1, 0, 1), id(x1, 1, 1), id(x0, 1, 1)}, c);
+    }
+    d.patches = {{"wall", 1, 10}};
+    d.sites = {{0.5, 0.5, 0.5}, {1.5, 0.5, 0.5}};
+    d.cell_region = {vmm::RegionId{0}, vmm::RegionId{0}};
+    d.cell_input_site = {vmm::SiteId{0}, vmm::SiteId{1}};
+    d.regions = {{"r", vmm::MediumId{0}}};
+    d.media = {"m"};
+    return d;
+}
+
+vmm::InvariantReference two_cubes_reference() {
+    vmm::InvariantReference ref;
+    ref.length_scale = std::sqrt(6.0);
+    ref.total_measure = 2;
+    ref.region_measure = {2};
+    ref.boundary_measure = 10;
+    return ref;
+}
+
+TEST(InvariantReport, ThreeDimensionalMeshes) {
+    const auto ok = *vmm::Mesh3D::from_data(two_cubes_data());
+    auto ref = two_cubes_reference();
+    auto r = vmm::check_invariants(ok, ref);
+    EXPECT_TRUE(r.passed(ref)) << r.first_problem;
+    ref.total_measure = 2.1;
+    ref.boundary_measure = 11;
+    EXPECT_FALSE(vmm::check_invariants(ok, ref).passed(ref));
+    auto flipped = two_cubes_data();
+    std::swap(flipped.face_vertices.values[1], flipped.face_vertices.values[3]);  // internal face reversed
+    ref = two_cubes_reference();
+    r = vmm::check_invariants(*vmm::Mesh3D::from_data(flipped), ref);
+    EXPECT_GT(r.bad_faces, 0u);
+    EXPECT_FALSE(r.passed(ref));
+    auto two = two_cubes_data();
+    two.regions.push_back({"s", vmm::MediumId{0}});
+    two.cell_region[1] = vmm::RegionId{1};
+    const auto m = *vmm::Mesh3D::from_data(two);
+    ref.region_measure = {1, 1};
+    ref.interface_measure[{0, 1}] = 1;
+    r = vmm::check_invariants(m, ref);
+    EXPECT_TRUE(r.passed(ref)) << r.first_problem;
+    ref.interface_measure.clear();
+    ref.interface_measure[{0, 2}] = 1;
+    r = vmm::check_invariants(m, ref);
+    EXPECT_EQ(r.nonconforming_faces, 1u);
 }
 
 TEST(InvariantReport, EachConditionFailsOnItsOwn) {

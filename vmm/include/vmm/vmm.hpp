@@ -19,15 +19,20 @@
 #include <vmm/core/csr.hpp>
 #include <vmm/core/types.hpp>
 #include <vmm/domain/declaration.hpp>
+#include <vmm/domain/declaration3d.hpp>
 #include <vmm/domain/partition.hpp>
+#include <vmm/domain/partition3d.hpp>
 #include <vmm/domain/shapes.hpp>
+#include <vmm/domain/shapes3d.hpp>
 #include <vmm/domain/validator.hpp>
 #include <vmm/error/error.hpp>
 #include <vmm/mesh/invariants.hpp>
 #include <vmm/mesh/mesh.hpp>
 #include <vmm/mesh/metrics.hpp>
 #include <vmm/sites/sources.hpp>
+#include <vmm/sites/sources3d.hpp>
 #include <vmm/voronoi/builder2d.hpp>
+#include <vmm/voronoi/builder3d.hpp>
 
 namespace vmm {
 
@@ -60,5 +65,33 @@ struct MeshResult2D {
 /// @par Examples
 /// ex_quickstart.cpp, ex_anchor_a1.cpp, ex_anchor_a2.cpp
 [[nodiscard]] Result<MeshResult2D> generate_mesh_2d(const MeshRequest2D& request);
+
+struct MeshRequest3D {
+    Declaration3D declaration;
+    std::vector<RegionSites3D> sources;
+    SiteGenerationOptions3D sites;
+    BuildOptions3D build;
+};
+
+struct MeshResult3D {
+    Mesh3D mesh;
+    Partition3D partition;
+    BuildStats3D stats;
+    InvariantReport invariants;
+};
+
+/// @brief Generates a checked 3D finite-volume mesh of one region in one call (version 0.3).
+/// @param request Domain declaration (one region), site sources, site and build options.
+/// @return The mesh, its partition, build statistics and invariant report, or the first error
+///         (surface, sites, backend or a violated DEC-011 invariant).
+/// @note Uses the CGAL backend; link VoronoiMeshMaker::vmm. Several regions: version 0.5 (P18).
+/// @par Level
+/// Beginner
+/// @sa build_mesh_3d, generate_sites_3d, check_invariants, write_vtu
+/// @par Location
+/// vmm/vmm.hpp
+/// @par Examples
+/// ex_voronoi3d.cpp
+[[nodiscard]] Result<MeshResult3D> generate_mesh_3d(const MeshRequest3D& request);
 
 }  // namespace vmm

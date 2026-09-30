@@ -9,6 +9,7 @@ anteriores.
   ``Ellipse``, ``RegularNGon`` ou qualquer tipo que satisfaça o concept
   ``Shape2D``. O ``ShapeRegistry`` constrói formas pelo nome, a partir de
   parâmetros.
+* **Contornos simples:** uma aresta de forma não pode tocar nem cruzar outra aresta da mesma forma, e os buracos não tocam o anel externo nem uns aos outros; senão, a forma é rejeitada com ``InvalidPolygon``.
 * **Patches:** cada aresta de forma pode levar um rótulo; a aresta de contorno
   recebe o rótulo da forma de maior precedência que a cobre (sem rótulo:
   ``boundary``).

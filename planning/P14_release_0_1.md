@@ -95,12 +95,15 @@ Headers em `vmm/include/vmm/`, namespace `vmm`:
 - redução de memória na montagem (meta de 1 KB/célula);
 - ~~retirada da VMMLib e de `VoronoiGridMaker/`~~: decidida na DEC-033 (30/09); diretrizes em `vmm/docs/guidelines.rst`.
 - otimizador de Lloyd (CVT), não migrado da VMMLib (referência no histórico do git, commit d189461).
+- paralelização da construção (recorte das células e montagem), adiada pelo João em 30/09 para uma etapa posterior; hoje o build roda em 1 thread e o gargalo é o recorte exato do CGAL (P07 §4).
 
 ## 7. Revisão da sequência para a Fase 3
 
 **[R]** Manter o P15a antes da arquitetura 3D, reaproveitando o que já existe:
 - `Mesh<D>`, `check_invariants<D>`, `compute_metrics<D>` e `renumber<D>` já são genéricos em D, e `face_geometry` já tem a versão 3D;
 - o protótipo 3D do P05a (`prototypes/P05a`) mostrou células por semiespaços com Euler e fechamento corretos.
+
+**Atualização 30/09:** o P15a foi executado; ver `planning/P15a_relatorio.md` (hipótese confirmada, 37/37 verificações).
 
 O P15a deve focar no que falta: recorte por domínio não convexo em 3D, vértices canônicos em 3D (as duas cópias de uma face diferiram em até 3,6·10⁻¹¹ no P05a) e a garantia estrutural da DEC-032 em 3D (faces como pedaços de bissetor escolhidos pelo backend). Nenhuma nova DEC é necessária para isso.
 

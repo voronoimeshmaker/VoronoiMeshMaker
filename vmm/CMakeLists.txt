@@ -14,6 +14,10 @@ option(VMM_SANITIZE "Build vmm/ targets and tests with ASan/UBSan" OFF)
 option(VMM_BUILD_VMM_TESTS "Build the vmm/ unit and integration tests" ${VMM_BUILD_TESTS})
 option(VMM_BUILD_VMM_EXAMPLES "Build the vmm/ gallery examples" ${VMM_BUILD_EXAMPLES})
 option(VMM_BUILD_VMM_TOOLS "Build the vmm/ tools (benchmark)" ON)
+# DEC-034: optimized builds are fast by default. Turn NATIVE_ARCH off to build
+# binaries or packages meant for other machines.
+option(VMM_ENABLE_LTO "Link-time optimization in Release/RelWithDebInfo builds" ON)
+option(VMM_ENABLE_NATIVE_ARCH "-march=native in Release/RelWithDebInfo builds (binaries run on this CPU family only)" ON)
 
 set(VMM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 include(GNUInstallDirs)
@@ -46,6 +50,25 @@ if(VMM_SANITIZE)
                                                   -fno-sanitize-recover=all)
     target_link_options(vmm_settings INTERFACE -fsanitize=address,undefined)
 endif()
+# Speed options (DEC-034); never -ffast-math, which changes geometric results (DEC-012).
+# Coverage and sanitizer builds are diagnostic and stay unoptimized.
+set(_vmm_optimized "$<CONFIG:Release,RelWithDebInfo>")
+if(VMM_ENABLE_NATIVE_ARCH AND NOT VMM_COVERAGE AND NOT VMM_SANITIZE)
+    target_compile_options(vmm_settings INTERFACE
+        $<$<AND:${_vmm_optimized},$<CXX_COMPILER_ID:GNU,Clang>>:-march=native>)
+endif()
+if(VMM_ENABLE_LTO AND NOT VMM_COVERAGE AND NOT VMM_SANITIZE)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _vmm_ipo OUTPUT _vmm_ipo_error LANGUAGES CXX)
+    if(_vmm_ipo)
+        # Applies to every vmm/ target defined below (libraries, tests, examples, tools).
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+    else()
+        message(WARNING "vmm: LTO not supported, building without it: ${_vmm_ipo_error}")
+    endif()
+endif()
+message(STATUS "vmm: build type ${CMAKE_BUILD_TYPE}; LTO ${VMM_ENABLE_LTO}; native arch ${VMM_ENABLE_NATIVE_ARCH}")
 
 function(vmm_module_sources out_var)
     set(files "")

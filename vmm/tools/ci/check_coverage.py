@@ -34,7 +34,8 @@ def main() -> int:
            "--filter", "vmm/src/", "--filter", "vmm/include/",
            "--exclude-throw-branches", "--exclude-unreachable-branches",
            "--gcov-ignore-parse-errors=negative_hits.warn_once_per_file",
-           "--json-summary", str(summary), "--txt", args.output + ".txt", "--print-summary"]
+           "--json-summary", str(summary), "--txt", args.output + ".txt", "--print-summary",
+           args.build]  # search only this build tree (other builds under the root have stale .gcda files)
     print(" ".join(cmd))
     subprocess.run(cmd, check=True)
     data = json.loads(summary.read_text())

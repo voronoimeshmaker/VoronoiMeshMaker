@@ -42,6 +42,17 @@ struct Metrics {
     std::vector<Real> skewness;
 };
 
+/// @brief Finite-volume metrics of every cell and face.
+/// @param mesh Mesh.
+/// @return Cell measures, centroids and aspect ratios; face area vectors, centroids,
+///         generator distances, intersection points, non-orthogonality and skewness.
+/// @par Level
+/// Beginner
+/// @sa quality_report, check_invariants
+/// @par Location
+/// vmm/mesh/metrics.hpp
+/// @par Examples
+/// ex_anchor_a1.cpp, ex_anchor_a2.cpp
 template <std::size_t D>
 [[nodiscard]] Metrics<D> compute_metrics(const Mesh<D>& mesh);
 

@@ -170,8 +170,19 @@ struct SiteGenerationOptions {
     Real pair_exclusion_fraction = 0.75;
 };
 
-/// Runs the sources of every region (each component with its own seeded
-/// generator), adds the interface pairs if requested, and validates the set.
+/// @brief Generates and validates the sites of every region.
+/// @param partition Partition whose region components receive the sites.
+/// @param sources One or more sources per region (sites_for).
+/// @param options Seed and the optional interface pairs.
+/// @return The site set, or an error (invalid spacing, region component without sites...).
+/// @note Each component uses its own seeded generator: the result is portable and reproducible.
+/// @par Level
+/// Beginner
+/// @sa UniformRandomSource, AdaptiveQuadtreeSource, InterfacePairs, validate_sites
+/// @par Location
+/// vmm/sites/sources.hpp
+/// @par Examples
+/// ex_quickstart.cpp, ex_anchor_a1.cpp
 [[nodiscard]] Result<SiteSet> generate_sites(const Partition2D& partition, std::span<const RegionSites> sources,
                                              const SiteGenerationOptions& options = {});
 

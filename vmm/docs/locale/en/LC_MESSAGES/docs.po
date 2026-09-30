@@ -1,0 +1,150 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# English catalogue of the vmm documentation (P13).
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+msgid "Malhas de volumes finitos de Voronoi em 2D, com várias regiões e interfaces conformes, prontas para o seu solver. A biblioteca entrega células, faces, owner/neighbour, vetores de área, distâncias entre geradores, métricas de qualidade e adjacência compacta, sem depender de nenhum solver (DEC-015)."
+msgstr "2D multi-region Voronoi finite-volume meshes with conforming interfaces, ready for your solver. The library delivers cells, faces, owner/neighbour, area vectors, generator distances, quality metrics and compact adjacency, without depending on any solver (DEC-015)."
+
+msgid "Início rápido"
+msgstr "Quick start"
+
+msgid "Instalação e a primeira malha em poucas linhas."
+msgstr "Installation and a first mesh in a few lines."
+
+msgid "Guia"
+msgstr "Guide"
+
+msgid "Domínio por precedência, sítios, malha, adjacência e arquivos."
+msgstr "Domain by precedence, sites, mesh, adjacency and files."
+
+msgid "Galeria"
+msgstr "Gallery"
+
+msgid "Exemplos compilados e executados a cada build."
+msgstr "Examples compiled and run at every build."
+
+msgid "Referência da API"
+msgstr "API reference"
+
+msgid "Tipos e funções públicas do namespace ``vmm``."
+msgstr "Public types and functions of the ``vmm`` namespace."
+
+msgid "Requisitos"
+msgstr "Requirements"
+
+msgid "compilador C++23 (GCC 14 ou Clang 18, no mínimo; DEC-022);"
+msgstr "a C++23 compiler (at least GCC 14 or Clang 18; DEC-022);"
+
+msgid "CMake 3.28;"
+msgstr "CMake 3.28;"
+
+msgid "CGAL 6.2 (headers) e Boost 1.83; GMP e MPFR recomendados;"
+msgstr "CGAL 6.2 (headers) and Boost 1.83; GMP and MPFR recommended;"
+
+msgid "GoogleTest, só para os testes."
+msgstr "GoogleTest, for the tests only."
+
+msgid "Compilar e instalar"
+msgstr "Build and install"
+
+msgid "Usar num projeto CMake"
+msgstr "Use from a CMake project"
+
+msgid "Primeira malha"
+msgstr "First mesh"
+
+msgid "As regiões são declaradas por precedência: ``inner`` pinta por cima de ``outer``. A malha resultante tem interfaces conformes entre as duas regiões e passa por todos os invariantes da DEC-011 antes de ser devolvida."
+msgstr "Regions are declared by precedence: ``inner`` paints over ``outer``. The resulting mesh has conforming interfaces between the two regions and passes every DEC-011 invariant before it is returned."
+
+msgid "Domínio, meios e regiões"
+msgstr "Domain, media and regions"
+
+msgid "Um domínio é uma lista ordenada de camadas (DEC-018). Cada camada é uma região, ligada a um meio, ou um buraco; uma camada posterior pinta por cima das anteriores."
+msgstr "A domain is an ordered list of layers (DEC-018). Each layer is a region, bound to a medium, or a hole; a later layer paints over the earlier ones."
+
+msgid "**Formas:** ``Rectangle``, ``PolygonShape`` (com buracos), ``Circle``, ``Ellipse``, ``RegularNGon`` ou qualquer tipo que satisfaça o concept ``Shape2D``. O ``ShapeRegistry`` constrói formas pelo nome, a partir de parâmetros."
+msgstr "**Shapes:** ``Rectangle``, ``PolygonShape`` (with holes), ``Circle``, ``Ellipse``, ``RegularNGon`` or any type satisfying the ``Shape2D`` concept. The ``ShapeRegistry`` builds shapes by name from parameters."
+
+msgid "**Patches:** cada aresta de forma pode levar um rótulo; a aresta de contorno recebe o rótulo da forma de maior precedência que a cobre (sem rótulo: ``boundary``)."
+msgstr "**Patches:** every shape edge may carry a tag; a boundary edge takes the tag of the highest-precedence shape covering it (untagged: ``boundary``)."
+
+msgid "**Partição:** o backend constrói um arranjo exato de todas as arestas; cada segmento de contorno ou interface existe uma única vez e é compartilhado pelas duas regiões, o que torna as interfaces conformes por construção."
+msgstr "**Partition:** the backend builds an exact arrangement of every edge; each boundary or interface segment exists once and is shared by the two regions, which makes interfaces conforming by construction."
+
+msgid "**Validação:** ``validate_partition`` aponta vazios (erro, salvo com região de fundo), regiões anuladas pela ordem (erro), regiões fragmentadas (aviso) e lascas (aviso ou erro)."
+msgstr "**Validation:** ``validate_partition`` reports voids (error, unless a background region exists), regions emptied by the order (error), fragmented regions (warning) and slivers (warning or error)."
+
+msgid "Sítios"
+msgstr "Sites"
+
+msgid "Cada região recebe uma ou mais fontes de sítios (``sites_for``), todas determinísticas pela semente, com um gerador portável (o mesmo resultado em qualquer plataforma):"
+msgstr "Each region receives one or more site sources (``sites_for``), all deterministic by seed, with a portable generator (the same result on every platform):"
+
+msgid "``UniformRandomSource``: sorteio com distância mínima (espaçamento constante);"
+msgstr "``UniformRandomSource``: random sites with a minimum distance (constant spacing);"
+
+msgid "``AdaptiveQuadtreeSource``: espaçamento variável h(x) por quadtree adaptativa;"
+msgstr "``AdaptiveQuadtreeSource``: variable spacing h(x) by an adaptive quadtree;"
+
+msgid "``RandomCountSource``: N pontos uniformes, sem distância mínima;"
+msgstr "``RandomCountSource``: N uniform points, no minimum distance;"
+
+msgid "``CartesianGridSource`` e ``HexagonalGridSource``: grades;"
+msgstr "``CartesianGridSource`` and ``HexagonalGridSource``: lattices;"
+
+msgid "``ExplicitSites``: sítios dados pelo usuário."
+msgstr "``ExplicitSites``: user-given sites."
+
+msgid "``InterfacePairs`` (opcional, DEC-028) coloca pares espelhados ao longo das interfaces; onde o espelhamento funciona, as faces de interface ficam ortogonais. A conformidade é sempre garantida pelo refinamento comum."
+msgstr "``InterfacePairs`` (optional, DEC-028) places mirrored pairs along the interfaces; where mirroring works, interface faces are orthogonal. Conformity is always guaranteed by the common refinement."
+
+msgid "Malha, iteradores e adjacência"
+msgstr "Mesh, iterators and adjacency"
+
+msgid "``Mesh2D`` é imutável depois de construída (R7):"
+msgstr "``Mesh2D`` is immutable once built (R7):"
+
+msgid "faces ``[0, internal_face_count())`` são internas, com ``owner < neighbour`` e o vetor de área apontando do owner para o neighbour, em ordem triangular superior; as demais são de contorno, agrupadas em faixas contíguas por patch (DEC-029);"
+msgstr "faces ``[0, internal_face_count())`` are internal, with ``owner < neighbour`` and the area vector pointing from owner to neighbour, in upper-triangular order; the others are boundary faces, grouped in contiguous ranges by patch (DEC-029);"
+
+msgid "``internal_faces()``, ``boundary_faces()`` e ``patch_faces(p)`` são intervalos iteráveis de ``FaceId``;"
+msgstr "``internal_faces()``, ``boundary_faces()`` and ``patch_faces(p)`` are iterable ranges of ``FaceId``;"
+
+msgid "``CellFaceIndex`` dá ``faces_of(c)``, ``internal_cells()`` (volumes sem face de contorno) e ``boundary_cells()``;"
+msgstr "``CellFaceIndex`` gives ``faces_of(c)``, ``internal_cells()`` (volumes without a boundary face) and ``boundary_cells()``;"
+
+msgid "``cell_adjacency(mesh)`` devolve a adjacência em CSR e ``sparse_pattern`` o padrão de uma matriz esparsa com diagonal, sem geometria (DEC-015)."
+msgstr "``cell_adjacency(mesh)`` returns the CSR adjacency and ``sparse_pattern`` the pattern of a sparse matrix with its diagonal, without geometry (DEC-015)."
+
+msgid "Métricas (``compute_metrics``): medida e centroide das células, vetor de área e centroide das faces, distância entre geradores, ponto de interseção, não ortogonalidade, skewness e razão de aspecto. ``quality_report`` resume por região. Reordenação: ``RcmOrdering``, ``HilbertOrdering``, ``LexicographicOrdering`` e ``renumber``."
+msgstr "Metrics (``compute_metrics``): cell measure and centroid, face area vector and centroid, generator distance, intersection point, non-orthogonality, skewness and aspect ratio. ``quality_report`` summarises per region. Reordering: ``RcmOrdering``, ``HilbertOrdering``, ``LexicographicOrdering`` and ``renumber``."
+
+msgid "Arquivos"
+msgstr "Files"
+
+msgid "**Formato nativo** (``write_native`` / ``read_native``): texto versionado, com ida e volta exata (17 algarismos significativos). É o formato de persistência e o dos golden files."
+msgstr "**Native format** (``write_native`` / ``read_native``): versioned text with an exact round trip (17 significant digits). It is the persistence format and the format of the golden files."
+
+msgid "**VTK XML** (``write_vtu``): visualização no ParaView, com região, meio, sítio de entrada, área, razão de aspecto e não ortogonalidade por célula."
+msgstr "**VTK XML** (``write_vtu``): visualisation in ParaView, with region, medium, input site, area, aspect ratio and non-orthogonality per cell."
+
+msgid "Não há escritor OpenFOAM (DEC-030)."
+msgstr "There is no OpenFOAM writer (DEC-030)."
+
+msgid "Erros"
+msgstr "Errors"
+
+msgid "Falhas previsíveis voltam como ``vmm::Result<T>`` (``std::expected``), com um ``vmm::Error`` que traz código estável, categoria, contexto, a entidade envolvida (sítio, célula, face, região ou patch) e ``std::source_location``. ``message()`` monta o texto em português ou inglês (``set_language``). ``vmm::Exception`` (sem herança de ``std::exception``) só é lançada quando um invariante interno é violado, o que indica um defeito (DEC-016)."
+msgstr "Predictable failures are returned as ``vmm::Result<T>`` (``std::expected``) with a ``vmm::Error`` that carries a stable code, category, context, the entity involved (site, cell, face, region or patch) and ``std::source_location``. ``message()`` renders the text in Portuguese or English (``set_language``). ``vmm::Exception`` (not derived from ``std::exception``) is thrown only when an internal invariant is violated, which indicates a defect (DEC-016)."
+
+msgid "Saída"
+msgstr "Output"
+
+msgid "Código"
+msgstr "Source"
+
+msgid "Exemplos compilados e executados no build da documentação."
+msgstr "Examples compiled and run by the documentation build."

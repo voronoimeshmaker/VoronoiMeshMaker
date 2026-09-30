@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# DEC-012: LF in the repository, whatever the editor or OS.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.xz binary
+*.vtu -text
+*.vtk -text

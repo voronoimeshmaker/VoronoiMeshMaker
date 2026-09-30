@@ -47,9 +47,18 @@ struct MeshResult2D {
     InvariantReport invariants;
 };
 
-/// Declaration -> partition -> validation -> sites -> mesh -> invariants,
-/// with the CGAL backend. Fails on the first validation error or on any
-/// violated DEC-011 invariant.
+/// @brief Generates a checked 2D multi-region finite-volume mesh in one call.
+/// @param request Domain declaration, site sources per region, site, build and validation options.
+/// @return The mesh, its partition, build statistics, validation warnings and invariant report,
+///         or the first error (validation, sites, backend or a violated DEC-011 invariant).
+/// @note Uses the CGAL backend; link VoronoiMeshMaker::vmm.
+/// @par Level
+/// Beginner
+/// @sa build_mesh_2d, generate_sites, validate_partition, check_invariants
+/// @par Location
+/// vmm/vmm.hpp
+/// @par Examples
+/// ex_quickstart.cpp, ex_anchor_a1.cpp, ex_anchor_a2.cpp
 [[nodiscard]] Result<MeshResult2D> generate_mesh_2d(const MeshRequest2D& request);
 
 }  // namespace vmm

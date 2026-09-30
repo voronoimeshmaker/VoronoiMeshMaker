@@ -37,7 +37,7 @@ breathe_default_project = "vmm"
 breathe_domain_by_extension = {"hpp": "cpp"}
 
 locale_dirs = ["locale/"]
-gettext_compact = False
+gettext_compact = "docs"  # one catalogue for every page (docs.po)
 
 vmm_examples_source = os.environ.get("VMM_EXAMPLES_SOURCE", str(Path(__file__).parent.parent / "examples"))
 vmm_examples_bin = os.environ.get("VMM_EXAMPLES_BIN", "")

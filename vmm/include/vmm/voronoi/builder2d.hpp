@@ -58,9 +58,21 @@ struct Build2D {
     std::vector<Real> cell_polygon_area;  ///< shoelace area of each cell (independent check)
 };
 
-/// Builds the mesh. Sites are validated and put in canonical order (region,
-/// then lexicographic position), so the result does not depend on the input
-/// order; Mesh::cell_input_sites() maps cells back to the input.
+/// @brief Builds the conforming multi-region Voronoi mesh of a partition.
+/// @param partition Explicit partition (from Backend2D::build_partition).
+/// @param sites Sites with their regions; strictly inside their regions.
+/// @param backend Geometric backend (e.g. cgal_backend_2d()).
+/// @param options Point tolerance relative to L and the fast path switch.
+/// @return Mesh, statistics and the independent polygon area of every cell.
+/// @note Sites are put in canonical order, so the result does not depend on the input order;
+///       Mesh::cell_input_sites() maps cells back to the input.
+/// @par Level
+/// Intermediate
+/// @sa generate_mesh_2d, invariant_reference, check_invariants
+/// @par Location
+/// vmm/voronoi/builder2d.hpp
+/// @par Examples
+/// ex_quickstart.cpp (through generate_mesh_2d)
 [[nodiscard]] Result<Build2D> build_mesh_2d(const Partition2D& partition, const SiteSet& sites,
                                             const Backend2D& backend, const BuildOptions2D& options = {});
 

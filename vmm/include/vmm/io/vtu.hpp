@@ -32,6 +32,17 @@ struct VtuOptions {
 /// largest area first.
 [[nodiscard]] Result<std::vector<std::vector<std::vector<VertexId>>>> cell_loops(const Mesh2D& mesh);
 
+/// @brief Writes a 2D mesh as VTK XML for visualisation.
+/// @param mesh Mesh.
+/// @param out Destination stream.
+/// @param options Include the per-cell metrics (area, aspect ratio, non-orthogonality).
+/// @par Level
+/// Beginner
+/// @sa write_native, cell_loops
+/// @par Location
+/// vmm/io/vtu.hpp
+/// @par Examples
+/// ex_quickstart.cpp, ex_anchor_a1.cpp, ex_anchor_a2.cpp
 [[nodiscard]] Status write_vtu(const Mesh2D& mesh, std::ostream& out, const VtuOptions& options = {});
 [[nodiscard]] Status write_vtu(const Mesh2D& mesh, const std::filesystem::path& path, const VtuOptions& options = {});
 

@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Documentation of vmm/ (P13): builds the library and the gallery examples,
+# runs the test gate (R30), builds the Portuguese and English sites and
+# publishes them on GitHub Pages. A failing example or test stops the job.
+# Requires Settings > Pages > Source: GitHub Actions.
+name: vmm-docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  CGAL_VERSION: "6.2.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build g++-14 libboost-dev libgmp-dev libmpfr-dev libgtest-dev \
+            libgmock-dev libtbb-dev zlib1g-dev doxygen python3-venv
+      - name: CGAL ${{ env.CGAL_VERSION }}
+        run: |
+          curl -fsSL -o cgal.tar.xz \
+            https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}.tar.xz
+          tar xf cgal.tar.xz && cmake -S CGAL-${CGAL_VERSION} -B cgal-build -DCMAKE_INSTALL_PREFIX=$HOME/cgal
+          cmake --install cgal-build
+      - name: Python tools
+        run: |
+          python3 -m venv $HOME/docs-venv
+          $HOME/docs-venv/bin/pip install sphinx pydata-sphinx-theme breathe myst-parser sphinx-design sphinx-intl matplotlib numpy
+      - name: Build library, tests and examples
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_VMMLIB=OFF -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_PAPER=OFF \
+            -DVMM_BUILD_TESTS=ON -DVMM_BUILD_VMM_EXAMPLES=ON
+          cmake --build build -j
+      - name: Documentation (test gate, Doxygen, Sphinx pt and en, gallery)
+        run: vmm/docs/build_docs.sh build $HOME/docs-venv
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/vmm_docs/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

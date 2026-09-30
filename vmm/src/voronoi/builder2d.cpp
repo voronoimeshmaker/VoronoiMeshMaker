@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <format>
 #include <limits>
-#include <map>
 #include <numeric>
 #include <span>
 #include <tuple>
@@ -352,8 +351,7 @@ private:
                 if (is_site(l)) {
                     const auto j = static_cast<std::uint32_t>(l);
                     const std::uint64_t key = (std::uint64_t{std::min(i, j)} << 32) | std::max(i, j);
-                    auto& entry = bisector_pieces_[key];
-                    (i < j ? entry.first : entry.second).emplace_back(p, q);
+                    bisector_pieces_.push_back({key, p, q, i < j ? std::uint8_t{0} : std::uint8_t{1}});
                 } else if (is_segment(l) && part_.is_interface(segment_of(l))) {
                     interface_pieces_[segment_of(l)].push_back({i, region_[i], p, q});
                     ++out_.stats.interface_pieces;
@@ -368,27 +366,41 @@ private:
         return {};
     }
 
+    /// Pieces are sorted by (pair key, side): for every pair, the owner's pieces
+    /// (side 0) must be matched by the neighbour's reversed pieces (side 1).
     void emit_internal_faces() {
-        std::vector<std::uint64_t> keys;
-        keys.reserve(bisector_pieces_.size());
-        for (const auto& [k, v] : bisector_pieces_) keys.push_back(k);
-        std::ranges::sort(keys);
-        for (const std::uint64_t key : keys) {
-            auto& [own, other] = bisector_pieces_[key];
-            for (const auto& [p, q] : own) {
+        std::ranges::sort(bisector_pieces_, [](const BisectorPiece& a, const BisectorPiece& b) {
+            return std::tie(a.key, a.side) < std::tie(b.key, b.side);
+        });
+        std::size_t first = 0;
+        std::vector<char> used;
+        while (first < bisector_pieces_.size()) {
+            const std::uint64_t key = bisector_pieces_[first].key;
+            std::size_t split = first;
+            while (split < bisector_pieces_.size() && bisector_pieces_[split].key == key && bisector_pieces_[split].side == 0) ++split;
+            std::size_t last = split;
+            while (last < bisector_pieces_.size() && bisector_pieces_[last].key == key) ++last;
+            used.assign(last - split, 0);
+            for (std::size_t k = first; k < split; ++k) {
+                const Vec2& p = bisector_pieces_[k].p;
+                const Vec2& q = bisector_pieces_[k].q;
                 // Same geometry from both cells, within the point tolerance (vertices of
                 // degree > 3 have no unique canonical construction).
-                const auto match = std::ranges::find_if(
-                    other, [&](const auto& e) { return norm(e.first - q) <= tol_ && norm(e.second - p) <= tol_; });
-                if (match == other.end()) {
-                    ++out_.stats.unmatched_bisector_pieces;
-                } else {
-                    other.erase(match);
+                bool matched = false;
+                for (std::size_t o = split; o < last && !matched; ++o) {
+                    const auto& e = bisector_pieces_[o];
+                    if (!used[o - split] && norm(e.p - q) <= tol_ && norm(e.q - p) <= tol_) {
+                        used[o - split] = 1;
+                        matched = true;
+                    }
                 }
+                if (!matched) ++out_.stats.unmatched_bisector_pieces;
                 raw_.push_back({static_cast<std::uint32_t>(key >> 32), static_cast<std::uint32_t>(key & 0xffffffffu), kNone, p, q});
             }
-            out_.stats.unmatched_bisector_pieces += other.size();
+            out_.stats.unmatched_bisector_pieces += static_cast<std::size_t>(std::ranges::count(used, 0));
+            first = last;
         }
+        std::vector<BisectorPiece>().swap(bisector_pieces_);
     }
 
     void emit_interface_faces(std::size_t s) {
@@ -451,39 +463,46 @@ private:
         }
         std::ranges::sort(pts);
         pts.erase(std::unique(pts.begin(), pts.end()), pts.end());
-        // Cluster within the tolerance with a hash grid of cell tol.
+        pts.shrink_to_fit();
+        // Cluster within the tolerance with a hash grid of cell size tol. The
+        // packed key may collide; distances are always checked.
         const Real cell = tol_ > 0 ? tol_ : 1;
-        auto key = [&](Real x, Real y) {
-            return std::pair(static_cast<std::int64_t>(std::floor(x / cell)), static_cast<std::int64_t>(std::floor(y / cell)));
+        auto pack = [](std::int64_t cx, std::int64_t cy) {
+            return static_cast<std::uint64_t>(cx) * 0x9E3779B97F4A7C15ull ^ static_cast<std::uint64_t>(cy);
         };
-        std::map<std::pair<std::int64_t, std::int64_t>, std::vector<std::uint32_t>> grid;
+        auto cell_of = [&](Real v) { return static_cast<std::int64_t>(std::floor(v / cell)); };
+        std::unordered_multimap<std::uint64_t, std::uint32_t> grid;
+        grid.reserve(pts.size());
         std::vector<std::uint32_t> rep(pts.size());
         std::vector<Vec2> reps;
+        reps.reserve(pts.size());
+        constexpr std::uint32_t none = std::numeric_limits<std::uint32_t>::max();
         for (std::size_t k = 0; k < pts.size(); ++k) {
-            const auto [cx, cy] = key(pts[k][0], pts[k][1]);
-            std::uint32_t found = std::numeric_limits<std::uint32_t>::max();
-            for (std::int64_t dy = -1; dy <= 1 && found == std::numeric_limits<std::uint32_t>::max(); ++dy) {
-                for (std::int64_t dx = -1; dx <= 1; ++dx) {
-                    const auto it = grid.find({cx + dx, cy + dy});
-                    if (it == grid.end()) continue;
-                    for (const std::uint32_t r : it->second) {
-                        if (norm(reps[r] - pts[k]) <= tol_) {
-                            found = r;
+            const std::int64_t cx = cell_of(pts[k][0]);
+            const std::int64_t cy = cell_of(pts[k][1]);
+            std::uint32_t found = none;
+            for (std::int64_t dy = -1; dy <= 1 && found == none; ++dy) {
+                for (std::int64_t dx = -1; dx <= 1 && found == none; ++dx) {
+                    const auto [lo, hi] = grid.equal_range(pack(cx + dx, cy + dy));
+                    for (auto it = lo; it != hi; ++it) {
+                        if (norm(reps[it->second] - pts[k]) <= tol_) {
+                            found = it->second;
                             break;
                         }
                     }
-                    if (found != std::numeric_limits<std::uint32_t>::max()) break;
                 }
             }
-            if (found == std::numeric_limits<std::uint32_t>::max()) {
+            if (found == none) {
                 found = static_cast<std::uint32_t>(reps.size());
                 reps.push_back(pts[k]);
-                grid[{cx, cy}].push_back(found);
+                grid.emplace(pack(cx, cy), found);
             } else {
                 ++out_.stats.merged_vertices;
             }
             rep[k] = found;
         }
+        std::unordered_multimap<std::uint64_t, std::uint32_t>().swap(grid);
+        reps.shrink_to_fit();
         auto vertex_of = [&](const Vec2& x) {
             const auto it = std::ranges::lower_bound(pts, x);
             return rep[static_cast<std::size_t>(it - pts.begin())];
@@ -553,8 +572,13 @@ private:
     std::vector<SegmentIndex2> index_;
     std::vector<std::vector<LabelledPolygon2>> components_;
     std::vector<std::vector<Box2>> component_boxes_;
-    std::unordered_map<std::uint64_t, std::pair<std::vector<std::pair<Vec2, Vec2>>, std::vector<std::pair<Vec2, Vec2>>>>
-        bisector_pieces_;
+    struct BisectorPiece {
+        std::uint64_t key;  ///< (min cell << 32) | max cell
+        Vec2 p;
+        Vec2 q;
+        std::uint8_t side;  ///< 0 seen from the lower cell (owner), 1 from the other
+    };
+    std::vector<BisectorPiece> bisector_pieces_;
     std::vector<std::vector<Piece>> interface_pieces_;
     std::vector<RawFace> raw_;
 };

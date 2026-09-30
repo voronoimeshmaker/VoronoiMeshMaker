@@ -66,6 +66,19 @@ struct InvariantReport {
     }
 };
 
+/// @brief Checks the DEC-011 invariants of a mesh.
+/// @param mesh Mesh to check.
+/// @param reference Expected measures (invariant_reference(partition) in 2D) and tolerance.
+/// @return Report with every measured error; InvariantReport::passed() applies the tolerances.
+/// @note Non-orthogonality is reported, not checked: faces inside a region are orthogonal by
+///       construction (DEC-032).
+/// @par Level
+/// Intermediate
+/// @sa invariant_reference, compute_metrics
+/// @par Location
+/// vmm/mesh/invariants.hpp
+/// @par Examples
+/// ex_anchor_a1.cpp (through generate_mesh_2d)
 template <std::size_t D>
 [[nodiscard]] InvariantReport check_invariants(const Mesh<D>& mesh, const InvariantReference& reference);
 

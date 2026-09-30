@@ -22,7 +22,7 @@
 - não ortogonalidade, skewness e razão de aspecto;
 - `quality_report` por região: máximos, percentil 99 e violações dos limites configuráveis.
 
-**Invariantes** (`mesh/invariants.hpp`): DEC-011 genérico em D, com o critério da DEC-031 para faces minúsculas.
+**Invariantes** (`mesh/invariants.hpp`): DEC-011 genérico em D. A não ortogonalidade é relatada, não verificada: é garantida por construção (DEC-032).
 
 **Reordenação** (`reorder/reorder.hpp`):
 - `Permutation` com as permutações direta e inversa explícitas;

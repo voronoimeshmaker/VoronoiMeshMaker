@@ -43,7 +43,14 @@ using CellPair = std::pair<CellId, CellId>;
 /// Symmetric cell-to-cell adjacency; each row sorted, duplicates removed.
 [[nodiscard]] Csr<CellId> build_adjacency(std::size_t cell_count, std::span<const CellPair> pairs);
 
-/// Pattern of a cell-centred operator: the diagonal plus one entry per neighbour.
+/// @brief Pattern of a cell-centred operator: the diagonal plus one entry per neighbour.
+/// @param adjacency Symmetric adjacency (cell_adjacency(mesh)).
+/// @note Only the adjacency is read: no geometry is needed (DEC-015).
+/// @par Level
+/// Beginner
+/// @sa build_adjacency, cell_adjacency
+/// @par Location
+/// vmm/core/csr.hpp
 [[nodiscard]] Csr<CellId> sparse_pattern(const Csr<CellId>& adjacency);
 
 /// True when (i, j) present implies (j, i) present. Rows must be sorted.

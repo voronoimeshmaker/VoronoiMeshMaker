@@ -20,11 +20,11 @@
 | R9 adjacência sem geometria | **OK** | `cell_adjacency`, `sparse_pattern`, `CellFaceIndex` |
 | R10 subsistema de erros | **OK** | códigos estáveis, entidade, `source_location`, catálogo pt/en testado |
 | R11 `std::expected` | **OK** | toda a API pública devolve `Result`; `Exception` só para invariante interno |
-| R12 C++23, GCC 14 / Clang 18 | **Parcial** | C++23 e GCC 15 verificados; GCC 14 e Clang 18 só na CI, que ainda não rodou |
+| R12 C++23, GCC 14 / Clang 18 | **Parcial** | C++23 com GCC 15.2 e GCC 14.3 verificados localmente (154/154 testes com g++-14, Release, `-Werror`); Clang 18 só na CI, que ainda não rodou |
 | R13 nome e namespace | **OK** | `vmm`; nenhum "VoronoiGridMaker" em `vmm/` |
 | R14 modelo de volumes finitos | **OK** | P11 |
 | R15 precedência e validador | **OK** | P09 |
-| R16 invariantes DEC-011 | **OK** | todos os testes de integração e o benchmark; 1000 configurações aleatórias |
+| R16 invariantes DEC-011 | **OK** | todos os testes de integração e o benchmark; 1000 configurações aleatórias; ortogonalidade estrutural (DEC-032) |
 | R17 tolerâncias relativas | **OK** | `Tolerance`; escalas 10⁻³ e 10⁶ com a mesma topologia |
 | R18 determinismo | **OK** | bit a bit entre 5 ordens de inserção; checksum de topologia no benchmark |
 | R19 firewall | **OK** | 26 headers sem CGAL/Boost/GMP (`-M`), com controle negativo |
@@ -32,12 +32,12 @@
 | R21 dependências | **OK** | `find_package` só da lista permitida |
 | R22 versões | **OK** | configure imprime; golden files registram |
 | R23 SPDX | **OK** | verificador (GPL só no backend CGAL e no gerador de golden) |
-| R24 build limpo | **Parcial** | `-Werror`, sem `fast-math`, `NATIVE_ARCH`/`LTO` OFF, saídas fora da árvore; **pendente:** remover os 55 binários versionados (operação no git) |
+| R24 build limpo | **OK** | `-Werror`, sem `fast-math`, `NATIVE_ARCH`/`LTO` OFF, saídas fora da árvore; binários retirados do índice (em *staging*) e `.gitattributes` com LF |
 | R25 cobertura | **OK** | 97,4 % / 91,9 %; 1 exceção declarada |
 | R26 propriedade, golden, patológicos | **OK** | 1000 configurações; O1–O4; sítios colados, cocirculares, regiões finas, escalas extremas |
 | R27 benchmark | **OK** | B1–B3 (P07 §4) |
 | R28 saída da 0.1 | **OK** | nativo e VTU; OpenFOAM removido (DEC-030) |
-| R29 documentação | **Parcial** | site e galeria gerados localmente; faltam inglês, seções PETSc por símbolo e publicação |
+| R29 documentação | **OK** | site pt/en e galeria gerados localmente; seções PETSc nas funções principais; workflow de publicação no Pages (roda após o push) |
 | R30 gate da galeria | **OK** | `build_docs.sh` roda os testes antes |
 
 ## 2. Problemas por severidade
@@ -46,13 +46,13 @@
 - Nenhum encontrado.
 
 **Média**
-1. **CI nunca executada** (R12). Até rodar, GCC 14 e Clang 18 não estão verificados.
-2. **Memória 1,34 KB/célula**, contra a meta de 1 KB (DEC-020). Recalibração proposta para 1,5 KB.
-3. **DEC-031 em PROPOSTA:** o critério de faces minúsculas para a não ortogonalidade depende da sua aprovação.
+1. **CI nunca executada** (R12). GCC 14.3 já passou localmente (154/154); Clang 18 continua sem verificação até a CI rodar.
+2. ~~Memória~~: resolvida (673 B/célula depois da otimização da montagem).
+3. ~~DEC-031~~: rejeitada pelo João e substituída pela DEC-032 (ortogonalidade garantida por construção, ângulo só relatado).
 
 **Baixa**
-4. **Documentação:** sem inglês, sem as seções PETSc completas, avisos do Breathe com concepts, figuras com matplotlib em vez de PyVista.
-5. **Higiene do repositório:** binários versionados e fins de linha (DEC-012 (1)) aguardam uma iteração sua no git.
+4. **Documentação:** avisos do Breathe com concepts; figuras com matplotlib em vez de PyVista.
+5. ~~Higiene do repositório~~: feita (P07 §2); falta o seu commit.
 6. **Fragmentos de célula:** ficam como célula de várias peças. Todos os invariantes continuam válidos, mas não há teste dedicado que force esse caso.
 7. **Crescimento N log N:** não medido em série.
 
@@ -101,12 +101,12 @@ Headers em `vmm/include/vmm/`, namespace `vmm`:
 - `Mesh<D>`, `check_invariants<D>`, `compute_metrics<D>` e `renumber<D>` já são genéricos em D, e `face_geometry` já tem a versão 3D;
 - o protótipo 3D do P05a (`prototypes/P05a`) mostrou células por semiespaços com Euler e fechamento corretos.
 
-O P15a deve focar no que falta: recorte por domínio não convexo em 3D, vértices canônicos em 3D (as duas cópias de uma face diferiram em até 3,6·10⁻¹¹ no P05a) e o critério da DEC-031 em 3D. Nenhuma nova DEC é necessária para isso.
+O P15a deve focar no que falta: recorte por domínio não convexo em 3D, vértices canônicos em 3D (as duas cópias de uma face diferiram em até 3,6·10⁻¹¹ no P05a) e a garantia estrutural da DEC-032 em 3D (faces como pedaços de bissetor escolhidos pelo backend). Nenhuma nova DEC é necessária para isso.
 
 ## 8. Decisões pendentes para o João
 
 1. **Aprovar a publicação da 0.1?** Recomendação: aprovar depois de a CI rodar verde no GitHub.
-2. **DEC-031** (faces minúsculas e não ortogonalidade)? Recomendação: aprovar.
-3. **Recalibrar a meta de memória 2D para 1,5 KB/célula** (DEC-020, recalibração única)? Recomendação: aprovar.
+2. ~~DEC-031~~: resolvida (rejeitada; DEC-032 aprovada).
+3. ~~Meta de memória~~: não é mais necessária (673 B/célula, dentro de 1 KB).
 4. **Retirar a VMMLib e `VoronoiGridMaker/`** agora (critério atingido) ou depois da 0.1? Recomendação: depois da 0.1, numa iteração só de movimentação.
-5. **Arquivos de licença na raiz:** copiar `vmm/LICENSE` para a raiz? Recomendação: sim, junto com um `LICENSE-GPL`.
+5. ~~Licenças na raiz~~: criados `LICENSE` (BSD-3-Clause), `COPYING` (GPL-3.0) e `LICENSES.md` (qual parte usa qual).

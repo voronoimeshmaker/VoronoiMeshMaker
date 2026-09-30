@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-29
 - **Sequência:** v5.2, prompt P07. Rodou em sequência com o P08–P14, sem aprovação entre prompts, por pedido do João.
-- **Ambiente:** WSL `Ubuntu-26.04-Test`; g++ 15.2.0 (GCC 14 também instalado); CMake 4.2.3; Ninja 1.13.2; CGAL 6.2.1 (`/usr/local`, headers verificados por `static_assert`); Boost 1.92; GMP 6.3.0; GoogleTest 1.17.0; gcovr 7.2; Python 3.14.
+- **Ambiente:** WSL `Ubuntu-26.04-Test`; g++ 15.2.0 e g++ 14.3.0 (build Release com `-Werror` e 154/154 testes aprovados em 30/09); CMake 4.2.3; Ninja 1.13.2; CGAL 6.2.1 (`/usr/local`, headers verificados por `static_assert`); Boost 1.92; GMP 6.3.0; GoogleTest 1.17.0; gcovr 7.2; Python 3.14.
 - **Convenção:** **[F]** fato verificado · **[I]** inferência · **[R]** recomendação.
 
 ## 1. O que foi feito
@@ -28,8 +28,10 @@
 - `cmake/ConfigTargets.cmake`: instalação do legado condicionada a `VMM_INSTALL_VMMLIB`.
 - `examples/CMakeLists.txt`, `paper/CMakeLists.txt`: saída em `${CMAKE_BINARY_DIR}`; sem `-march=native` nos exemplos.
 
-**Não executado:** remover do git os 55 binários versionados e normalizar fins de linha (DEC-012 (1)). As duas coisas exigem operações no índice do git, e o AGENTS.md reserva commits ao João.
-**[R]** Rodar `git rm --cached` nos binários listados no P03 §7 e criar um `.gitattributes` com `* text=auto eol=lf`, seguido de `git add --renormalize .`, numa iteração só de higiene.
+**Higiene do git (DEC-012 (1)), feita em 30/09:**
+- os 55 executáveis e o `.pyc` versionados saíram do índice (`git rm --cached`, arquivos mantidos no disco) e entraram no `.gitignore`. A remoção está em *staging*, aguardando o commit do João;
+- `.gitattributes` com `* text=auto eol=lf`;
+- as ~85 cópias de trabalho que diferiam do commit só por CRLF foram convertidas para LF (conteúdo idêntico ao commit, verificado por hash), com backup.
 
 ## 3. Evidência (WSL)
 
@@ -52,15 +54,19 @@
 
 | Caso | Células | Sítios | Construção | Delaunay | Células | Montagem | Invariantes | Pico de RSS |
 |---|---|---|---|---|---|---|---|---|
-| B1 (quadrado, 10⁶ sítios aleatórios) | 1 000 000 | 0,21 s | 10,2 s | 0,78 s | 3,9 s | 4,1 s | PASS | 1343 MB (1,34 KB/célula) |
-| B2 (A1) | 32 053 | 0,01 s | 0,42 s | 0,02 s | 0,29 s | 0,10 s | PASS | — |
-| B3 (A2) | 288 514 | 1,8 s | 9,8 s | 0,17 s | 7,8 s | 0,78 s | PASS | — |
+| B1 (quadrado, 10⁶ sítios aleatórios) | 1 000 000 | 0,19 s | 5,1 s | 0,76 s | 1,6 s | 2,5 s | PASS | 642 MB (673 B/célula) |
+| B2 (A1) | 32 053 | 0,01 s | 0,34 s | 0,02 s | 0,24 s | 0,08 s | PASS | — |
+| B3 (A2) | 288 514 | 1,8 s | 7,9 s | 0,16 s | 6,5 s | 0,44 s | PASS | — |
+
+Primeira medida (antes da otimização da montagem): B1 em 10,2 s e 1,34 KB/célula. A troca do mapa de peças de
+bissetor por um vetor plano ordenado e da grade de fusão de vértices (`std::map`) por um `unordered_multimap`
+reduziu o pico de memória à metade e o tempo de B1 à metade, com o mesmo checksum de topologia.
 
 **[I]** O RSS é o pico do processo inteiro, e B2 e B3 rodam depois de B1. Por isso a coluna só vale para B1.
 
 **Recalibração única das metas (DEC-020):**
 - **Tempo 2D:** 10⁶ células em 10,2 s, dentro da meta de 30 s. Mantida.
-- **Memória 2D:** 1,34 KB/célula medido, contra a meta de 1 KB. **[R]** Recalibrar para 1,5 KB/célula na 0.1. O maior consumo vem das estruturas transitórias da montagem (mapa de pares, tabela de vértices), que podem ser reduzidas depois.
+- **Memória 2D:** 673 B/célula, dentro da meta de 1 KB. Mantida, sem recalibração.
 - **3D:** sem medida; revisar após o P15a.
 
 ## 5. Como reproduzir

@@ -33,8 +33,8 @@ Nos três casos houve ida e volta exata pelo formato nativo e gravação `.vtu` 
 ## 3. Desempenho (metas do P04)
 
 **[F]** Ver a tabela em `planning/P07_infra.md` §4:
-- **Tempo:** 10⁶ células em 10,2 s (Release, 1 thread), contra a meta de 30 s.
-- **Memória:** 1,34 KB/célula, contra a meta de 1 KB. **[R]** Recalibrar para 1,5 KB (DEC-020 permite uma recalibração).
+- **Tempo:** 10⁶ células em 5,1 s (Release, 1 thread), contra a meta de 30 s.
+- **Memória:** 673 B/célula, dentro da meta de 1 KB.
 - **Crescimento N log N:** não medido em série (só N = 10⁶); fica para o P14.
 
 ## 4. Verificação por um solver

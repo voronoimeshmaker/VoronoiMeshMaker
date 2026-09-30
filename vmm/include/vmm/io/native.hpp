@@ -30,6 +30,17 @@ struct NativeWriteOptions {
     std::string generator;
 };
 
+/// @brief Writes a mesh in the native format (exact round trip).
+/// @param mesh Mesh; region, medium and patch names must be single words.
+/// @param out Destination stream.
+/// @param options Free text recorded in the header.
+/// @par Level
+/// Beginner
+/// @sa read_native, write_vtu
+/// @par Location
+/// vmm/io/native.hpp
+/// @par Examples
+/// ex_quickstart.cpp, ex_anchor_a1.cpp, ex_anchor_a2.cpp
 template <std::size_t D>
 [[nodiscard]] Status write_native(const Mesh<D>& mesh, std::ostream& out, const NativeWriteOptions& options = {});
 

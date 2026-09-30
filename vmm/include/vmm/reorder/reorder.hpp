@@ -85,8 +85,15 @@ struct RcmOrdering {
 /// Sum over rows of (i - min column in row, if smaller).
 [[nodiscard]] std::size_t profile(const Csr<CellId>& adjacency);
 
-/// Renumbers the cells; faces are re-sorted (internal upper-triangular, then
-/// boundary by patch and owner) and flipped when owner and neighbour swap.
+/// @brief Renumbers the cells of a mesh with a permutation.
+/// @param mesh Mesh.
+/// @param permutation New order of the cells (e.g. RcmOrdering{}.permutation(mesh)).
+/// @return The renumbered mesh; internal faces stay upper-triangular and boundary faces grouped by patch.
+/// @par Level
+/// Intermediate
+/// @sa RcmOrdering, HilbertOrdering, Permutation
+/// @par Location
+/// vmm/reorder/reorder.hpp
 template <std::size_t D>
 [[nodiscard]] Result<Mesh<D>> renumber(const Mesh<D>& mesh, const Permutation& permutation);
 

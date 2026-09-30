@@ -30,10 +30,10 @@
 ## 3. Desvios e pendências
 
 1. **Figuras com matplotlib em vez de PyVista.** O pyvista foi instalado, mas a renderização *offscreen* do VTK no WSL exige OSMesa/EGL e é frágil. A extensão lê o `.vtu` diretamente e desenha com matplotlib na paleta pedida. **[R]** Trocar por PyVista na CI, se o runner tiver EGL.
-2. **Sem tradução para o inglês.** A estrutura do sphinx-intl está pronta, mas os arquivos `.po` não foram traduzidos.
-3. **Sem workflow de publicação no GitHub Pages.** Publicar é uma ação externa e depende de você configurar o repositório.
+2. **Inglês:** catálogo `vmm/docs/locale/en/LC_MESSAGES/docs.po` (48 mensagens); `build_docs.sh` gera `html/` (pt) e `html/en/` (en).
+3. **Publicação:** `.github/workflows/vmm-docs.yml` compila, roda o gate, gera os dois idiomas e publica no GitHub Pages. Precisa de *Settings > Pages > Source: GitHub Actions* no repositório; ainda não rodou (sem push).
 4. **`project_guidelines.tex` não foi movido.** A DEC-026 manda movê-lo no P13, mas isso é uma iteração só de movimentação, que convém fazer junto com a retirada da VMMLib (P06 §11–12).
-5. **Seções PETSc fixas por símbolo** (Synopsis, Parameters, Notes, Level, See Also, Location, Examples): a página de API usa o que o Doxygen extrai. Os comentários dos headers ainda não seguem as sete seções, e a lista "Examples" por símbolo não é gerada automaticamente.
+5. **Seções PETSc:** as 9 funções principais (`generate_mesh_2d`, `build_mesh_2d`, `generate_sites`, `check_invariants`, `compute_metrics`, `write_native`, `write_vtu`, `renumber`, `sparse_pattern`) têm Parameters, Notes, Level, See Also, Location e Examples (Synopsis é a própria declaração). O restante da API tem descrição breve.
 
 ## 4. Cobertura (R25), medida para toda a biblioteca
 

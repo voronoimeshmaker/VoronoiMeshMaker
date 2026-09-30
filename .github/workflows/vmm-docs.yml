@@ -56,7 +56,7 @@ jobs:
           fi
           exit $status
       - name: Documentation (test gate, Doxygen, Sphinx pt and en, gallery)
-        run: vmm/docs/build_docs.sh build $HOME/docs-venv
+        run: bash vmm/docs/build_docs.sh build $HOME/docs-venv
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/vmm_docs/html

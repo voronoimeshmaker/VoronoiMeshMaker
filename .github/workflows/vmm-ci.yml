@@ -66,10 +66,12 @@ jobs:
           ctest --test-dir build -L vmm $exclude --output-on-failure -j 4 --timeout 3600 2>&1 | tee test.log
           status=${PIPESTATUS[0]}
           if [ $status -ne 0 ]; then
-            # Public annotations: names of the failed tests and the failure lines of their output.
-            sed 's/^/::error::failed test /' build/Testing/Temporary/LastTestsFailed.log | head -20
-            grep -E "Failure|Expected|Which is|Value of|actual|error:|Sanitizer|runtime error" test.log \
-              | head -30 | sed 's/^/::error::/'
+            # Public annotations (at most 10 per step): the failure lines first, then the failed
+            # tests, each group joined into one annotation (%0A is a line break).
+            lines=$(grep -E "Failure|Expected|Which is|Value of|actual|error:|Sanitizer|runtime error|#[0-9] " test.log \
+              | head -40 | cut -c1-300 | awk 'BEGIN{ORS="%0A"} 1')
+            echo "::error::${lines}"
+            echo "::error::failed tests%0A$(awk 'BEGIN{ORS="%0A"} 1' build/Testing/Temporary/LastTestsFailed.log)"
           fi
           exit $status
 

@@ -3,13 +3,19 @@
 # (compiler -M on each header) and fails if any CGAL or Boost header is among them.
 #
 # Inputs (-D): COMPILER, STD_FLAG, INCLUDE_DIR, HEADERS (;-separated),
-#              EXPECT_LEAK (ON for the negative control).
+#              EXPECT_LEAK (ON for the negative control),
+#              EXTRA_INCLUDE_DIRS (;-separated, optional: where the negative
+#              control finds CGAL when it is not in a system directory).
 
+set(extra "")
+foreach(dir IN LISTS EXTRA_INCLUDE_DIRS)
+    list(APPEND extra "-I${dir}")
+endforeach()
 set(leaks "")
 set(total 0)
 foreach(source IN LISTS HEADERS)
     execute_process(
-        COMMAND "${COMPILER}" "${STD_FLAG}" "-I${INCLUDE_DIR}" -M -x c++ "${source}"
+        COMMAND "${COMPILER}" "${STD_FLAG}" "-I${INCLUDE_DIR}" ${extra} -M -x c++ "${source}"
         OUTPUT_VARIABLE deps
         ERROR_VARIABLE errors
         RESULT_VARIABLE result)

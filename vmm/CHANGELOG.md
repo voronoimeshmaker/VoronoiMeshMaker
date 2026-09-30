@@ -6,6 +6,16 @@
 - Clang mínimo 19 (DEC-042): com a libstdc++, o Clang 18 não tem `std::expected`, e a
   biblioteca não compila com ele. O job do Clang na CI passa a usar o `clang-19`.
 
+### Corrigido (CI)
+- Clang 19 com `-march=native` em CPUs com AVX10.1: o aviso `invalid feature combination`
+  virava erro por causa do `-Werror`. Agora é silenciado quando o `-march=native` está ligado.
+- Build com sanitizadores: sem a verificação `vptr` do UBSan, que acusa um downcast dentro
+  dos iteradores do `Arrangement_2` do CGAL; o vmm não tem funções virtuais (R3).
+- Controle negativo do firewall: recebe o diretório de includes do CGAL, para funcionar com
+  o CGAL fora dos diretórios do sistema.
+- Documentação: `build_docs.sh` é chamado com `bash` (o arquivo não tem permissão de execução no git).
+- A CI publica em anotações os testes que falharam e as linhas de erro.
+
 ## 1.0.0 — 2026-09-30
 
 API estável (DEC-041) e facilidade de uso (DEC-040).

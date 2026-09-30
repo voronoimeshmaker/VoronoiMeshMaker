@@ -49,8 +49,10 @@ if(VMM_COVERAGE)
     target_link_options(vmm_settings INTERFACE --coverage)
 endif()
 if(VMM_SANITIZE)
-    target_compile_options(vmm_settings INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer
-                                                  -fno-sanitize-recover=all)
+    # No vptr check: vmm has no virtual functions (R3), and the check flags a downcast inside
+    # CGAL's Arrangement_2 iterators (Arrangement_2_iterators.h, CGAL 6.2.1).
+    target_compile_options(vmm_settings INTERFACE -fsanitize=address,undefined -fno-sanitize=vptr
+                                                  -fno-omit-frame-pointer -fno-sanitize-recover=all)
     target_link_options(vmm_settings INTERFACE -fsanitize=address,undefined)
 endif()
 # Speed options (DEC-034); never -ffast-math, which changes geometric results (DEC-012).
@@ -58,7 +60,10 @@ endif()
 set(_vmm_optimized "$<CONFIG:Release,RelWithDebInfo>")
 if(VMM_ENABLE_NATIVE_ARCH AND NOT VMM_COVERAGE AND NOT VMM_SANITIZE)
     target_compile_options(vmm_settings INTERFACE
-        $<$<AND:${_vmm_optimized},$<CXX_COMPILER_ID:GNU,Clang>>:-march=native>)
+        $<$<AND:${_vmm_optimized},$<CXX_COMPILER_ID:GNU,Clang>>:-march=native>
+        # Clang 19 warns that the AVX10.1-256 of recent Intel CPUs "will be promoted to
+        # avx10.1-512"; harmless, but an error under -Werror (first CI of 1.0.0, DEC-042).
+        $<$<AND:${_vmm_optimized},$<CXX_COMPILER_ID:Clang>>:-Wno-invalid-feature-combination>)
 endif()
 if(VMM_ENABLE_LTO AND NOT VMM_COVERAGE AND NOT VMM_SANITIZE)
     include(CheckIPOSupported)
@@ -182,6 +187,7 @@ if(VMM_BUILD_VMM_TESTS)
                  COMMAND "${CMAKE_COMMAND}" -DCOMPILER=${CMAKE_CXX_COMPILER} -DSTD_FLAG=-std=c++23
                          -DINCLUDE_DIR=${VMM_ROOT}/tools/ci/negative
                          "-DHEADERS=${VMM_ROOT}/tools/ci/negative/vmm/contaminated.hpp" -DEXPECT_LEAK=ON
+                         "-DEXTRA_INCLUDE_DIRS=${CGAL_INCLUDE_DIRS}"
                          -P "${VMM_ROOT}/cmake/ScanIncludes.cmake")
         add_test(NAME vmm/ci/requirements
                  COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/check_requirements.py" --root "${VMM_ROOT}")

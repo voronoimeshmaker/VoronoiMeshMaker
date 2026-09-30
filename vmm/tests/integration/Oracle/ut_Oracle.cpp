@@ -1,6 +1,7 @@
 // ============================================================================
 // File: ut_Oracle.cpp
-// Description: Oracle check against the legacy VMMLib (DEC-011): cases O1-O4
+// Description: Oracle check against the retired VMMLib (DEC-011, DEC-033),
+//              whose meshes are frozen in tests/data/golden: cases O1-O4
 //              rebuilt from the same sites; per cell (by site identity) the
 //              area must agree to 1e-12 (relative) and the neighbour pairs
 //              must be identical, zero-length VMMLib edges excepted.
@@ -92,7 +93,8 @@ bool read_golden(const std::filesystem::path& path, Golden& g) {
 
 void check_case(const std::string& name) {
     const auto path = std::filesystem::path(VMM_TEST_DATA_DIR) / "golden" / (name + ".golden");
-    if (!std::filesystem::exists(path)) GTEST_SKIP() << "golden file missing (run vmm_golden_generator): " << path;
+    // Frozen since the VMMLib retirement (DEC-033): a missing file cannot be regenerated.
+    ASSERT_TRUE(std::filesystem::exists(path)) << "golden file missing: " << path;
     Golden g;
     ASSERT_TRUE(read_golden(path, g)) << path;
     const auto backend = vmm::cgal_backend_2d();

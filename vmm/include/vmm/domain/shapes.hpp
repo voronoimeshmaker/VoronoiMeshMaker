@@ -40,7 +40,9 @@ class ShapeOutline {
 public:
     ShapeOutline() = default;
     /// Validates: at least 3 finite points per ring, tags sized like rings,
-    /// non-zero area. Rings are re-oriented (outer CCW, holes CW) with their tags.
+    /// non-zero area, and no edge touching or crossing another edge of the
+    /// outline (rings simple, holes disjoint from the outer ring and from each
+    /// other). Rings are re-oriented (outer CCW, holes CW) with their tags.
     [[nodiscard]] static Result<ShapeOutline> make(std::vector<Vec2> outer, std::vector<std::string> outer_tags,
                                                    std::vector<std::vector<Vec2>> holes = {},
                                                    std::vector<std::vector<std::string>> hole_tags = {});

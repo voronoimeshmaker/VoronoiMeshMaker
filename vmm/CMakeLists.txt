@@ -4,13 +4,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # ============================================================================
 cmake_minimum_required(VERSION 3.28)
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)  # BoostConfig.cmake instead of the removed FindBoost
+endif()
 
 option(VMM_WERROR "Treat warnings as errors in vmm/ targets (R24)" ON)
 option(VMM_COVERAGE "Instrument vmm/ targets and tests for coverage (gcovr)" OFF)
 option(VMM_SANITIZE "Build vmm/ targets and tests with ASan/UBSan" OFF)
 option(VMM_BUILD_VMM_TESTS "Build the vmm/ unit and integration tests" ${VMM_BUILD_TESTS})
 option(VMM_BUILD_VMM_EXAMPLES "Build the vmm/ gallery examples" ${VMM_BUILD_EXAMPLES})
-option(VMM_BUILD_VMM_TOOLS "Build the vmm/ tools (benchmark, golden generator)" ON)
+option(VMM_BUILD_VMM_TOOLS "Build the vmm/ tools (benchmark)" ON)
 
 set(VMM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 include(GNUInstallDirs)

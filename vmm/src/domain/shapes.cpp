@@ -47,6 +47,67 @@ Result<std::vector<std::string>> tags_for(std::vector<std::string> tags, std::si
 
 int curve_segments(const PolygonizeOptions& o) { return std::max(8, o.segments_per_curve); }
 
+int orientation(const Vec2& a, const Vec2& b, const Vec2& c) {
+    const Real d = cross(b - a, c - a);
+    return (d > 0) - (d < 0);
+}
+
+/// c collinear with [a, b] lies on the closed segment.
+bool on_segment(const Vec2& a, const Vec2& b, const Vec2& c) {
+    return std::min(a[0], b[0]) <= c[0] && c[0] <= std::max(a[0], b[0]) && std::min(a[1], b[1]) <= c[1] &&
+           c[1] <= std::max(a[1], b[1]);
+}
+
+/// Closed segments [a, b] and [c, d] share at least one point.
+bool segments_touch(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d) {
+    const int o1 = orientation(a, b, c);
+    const int o2 = orientation(a, b, d);
+    const int o3 = orientation(c, d, a);
+    const int o4 = orientation(c, d, b);
+    if (o1 != o2 && o3 != o4) return true;
+    return (o1 == 0 && on_segment(a, b, c)) || (o2 == 0 && on_segment(a, b, d)) ||
+           (o3 == 0 && on_segment(c, d, a)) || (o4 == 0 && on_segment(c, d, b));
+}
+
+/// First pair of outline edges that touch, other than consecutive edges of a
+/// ring meeting only at their shared vertex; empty when the outline is simple.
+/// Double-precision predicates: user input, not mesh topology.
+std::string first_touching_edges(const std::vector<Vec2>& outer, const std::vector<std::vector<Vec2>>& holes) {
+    std::vector<const std::vector<Vec2>*> rings{&outer};
+    for (const auto& h : holes) rings.push_back(&h);
+    const auto name = [](std::size_t r) { return r == 0 ? std::string("outer ring") : std::format("hole {}", r - 1); };
+    for (std::size_t r = 0; r < rings.size(); ++r) {
+        const auto& p = *rings[r];
+        const std::size_t n = p.size();
+        for (std::size_t i = 0; i < n; ++i) {
+            const Vec2& a = p[i];
+            const Vec2& b = p[(i + 1) % n];
+            for (std::size_t s = r; s < rings.size(); ++s) {
+                const auto& q = *rings[s];
+                const std::size_t m = q.size();
+                for (std::size_t j = s == r ? i + 1 : 0; j < m; ++j) {
+                    const Vec2& c = q[j];
+                    const Vec2& d = q[(j + 1) % m];
+                    const bool next = s == r && j == (i + 1) % n;       // b == c
+                    const bool previous = s == r && (j + 1) % m == i;  // d == a
+                    bool touch = false;
+                    if (next && previous) {
+                        touch = true;  // two-edge ring
+                    } else if (next) {
+                        touch = orientation(a, b, d) == 0 && dot(a - b, d - b) > 0;  // folds back on itself
+                    } else if (previous) {
+                        touch = orientation(c, d, b) == 0 && dot(c - a, b - a) > 0;
+                    } else {
+                        touch = segments_touch(a, b, c, d);
+                    }
+                    if (touch) return std::format("{} edge {} touches {} edge {}", name(r), i, name(s), j);
+                }
+            }
+        }
+    }
+    return {};
+}
+
 }  // namespace
 
 Result<ShapeOutline> ShapeOutline::make(std::vector<Vec2> outer, std::vector<std::string> outer_tags,
@@ -72,6 +133,9 @@ Result<ShapeOutline> ShapeOutline::make(std::vector<Vec2> outer, std::vector<std
         if (signed_area(holes[h]) > 0) reverse_ring(holes[h], *ht);
         s.holes_.push_back(std::move(holes[h]));
         s.hole_tags_.push_back(std::move(*ht));
+    }
+    if (auto where = first_touching_edges(s.outer_, s.holes_); !where.empty()) {
+        return fail(ErrorCode::InvalidPolygon, std::move(where));
     }
     return s;
 }

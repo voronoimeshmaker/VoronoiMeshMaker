@@ -41,3 +41,4 @@ qualidade e adjacência compacta, sem depender de nenhum solver (DEC-015).
    guide/index
    gallery/index
    api
+   guidelines

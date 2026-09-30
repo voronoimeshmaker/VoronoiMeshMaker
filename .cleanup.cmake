@@ -1,6 +1,0 @@
-message("Removendo arquivos de build existentes...")
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove "/home/jflavio/Programas/VoronoiMeshMaker/CMakeCache.txt")
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove "/home/jflavio/Programas/VoronoiMeshMaker/cmake_install.cmake")
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove "/home/jflavio/Programas/VoronoiMeshMaker/Makefile")
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory "/home/jflavio/Programas/VoronoiMeshMaker/CMakeFiles")
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove "/home/jflavio/Programas/VoronoiMeshMaker/.cleanup.cmake")

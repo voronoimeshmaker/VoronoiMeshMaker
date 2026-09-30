@@ -1,6 +1,6 @@
 // ============================================================================
 // File: ut_ShapeOutline.cpp
-// Description: ShapeOutline validation and orientation with tags.
+// Description: ShapeOutline validation (including simple rings) and orientation with tags.
 // SPDX-License-Identifier: BSD-3-Clause
 // ============================================================================
 
@@ -64,6 +64,41 @@ TEST(ShapeOutline, RejectsInvalidInput) {
               ErrorCode::InvalidShapeParameter);
     EXPECT_EQ(ShapeOutline::make({{0, 0}, {3, 0}, {0, 3}}, {}, {{{1, 1}, {1.5, 1}, {1, 1.5}}}, {{"a"}}).error().code(),
               ErrorCode::InvalidShapeParameter);
+}
+
+TEST(ShapeOutline, RejectsSelfIntersectingRing) {
+    // Uneven bow-tie (non-zero signed area): edges (0,0)->(2,2) and (2,0)->(0,3) cross.
+    const auto bow = ShapeOutline::make({{0, 0}, {2, 2}, {2, 0}, {0, 3}}, {});
+    ASSERT_FALSE(bow);
+    EXPECT_EQ(bow.error().code(), ErrorCode::InvalidPolygon);
+    // Ring passing twice through (1,1) (touching, not crossing).
+    EXPECT_EQ(ShapeOutline::make({{0, 0}, {1, 1}, {2, 0}, {2, 2}, {1, 1}, {0, 2}}, {}).error().code(),
+              ErrorCode::InvalidPolygon);
+    // Spike folding back along the previous edge.
+    EXPECT_EQ(ShapeOutline::make({{0, 0}, {2, 0}, {1, 0}, {1, 1}}, {}).error().code(), ErrorCode::InvalidPolygon);
+    // Collinear consecutive vertices going forward are allowed.
+    EXPECT_TRUE(ShapeOutline::make({{0, 0}, {1, 0}, {2, 0}, {2, 2}, {0, 2}}, {}));
+}
+
+TEST(ShapeOutline, AcceptsConcaveSimpleRing) {
+    const auto l = ShapeOutline::make({{0, 0}, {2, 0}, {2, 1}, {1, 1}, {1, 2}, {0, 2}}, {});
+    ASSERT_TRUE(l);
+    EXPECT_DOUBLE_EQ(l->area(), 3.0);
+}
+
+TEST(ShapeOutline, RejectsHolesTouchingTheOuterRingOrEachOther) {
+    const std::vector<Vec2> outer{{0, 0}, {4, 0}, {4, 4}, {0, 4}};
+    // Hole crossing the outer ring.
+    EXPECT_EQ(ShapeOutline::make(outer, {}, {{{3, 1}, {5, 1}, {5, 2}, {3, 2}}}).error().code(), ErrorCode::InvalidPolygon);
+    // Hole with a vertex on the outer ring.
+    EXPECT_EQ(ShapeOutline::make(outer, {}, {{{0, 2}, {1, 1}, {1, 3}}}).error().code(), ErrorCode::InvalidPolygon);
+    // Overlapping holes.
+    EXPECT_EQ(ShapeOutline::make(outer, {}, {{{1, 1}, {2, 1}, {2, 2}, {1, 2}}, {{1.5, 1.5}, {3, 1.5}, {3, 3}, {1.5, 3}}})
+                  .error()
+                  .code(),
+              ErrorCode::InvalidPolygon);
+    // Disjoint holes are fine.
+    EXPECT_TRUE(ShapeOutline::make(outer, {}, {{{1, 1}, {2, 1}, {2, 2}, {1, 2}}, {{2.5, 2.5}, {3, 2.5}, {3, 3}, {2.5, 3}}}));
 }
 
 }  // namespace

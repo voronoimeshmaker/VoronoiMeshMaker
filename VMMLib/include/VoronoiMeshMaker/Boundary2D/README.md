@@ -1,1 +1,0 @@
-The blank Boundary2D.hpp, Boundary2DBooleanOps.hpp, Boundary2DBVH.hpp, Boundary2DRegistry.hpp, Boundary2DClip.hpp, Boundary2DTags.hpp and Boundary2DViews.hpp are planned extension points, not implemented modules; the concrete builders, shapes and other non-empty headers remain the supported boundary implementation.

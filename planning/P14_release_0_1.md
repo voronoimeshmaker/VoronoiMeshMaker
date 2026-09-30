@@ -93,7 +93,8 @@ Headers em `vmm/include/vmm/`, namespace `vmm`:
 - figuras com PyVista na CI;
 - teste dedicado de fragmentos de célula e política opcional de fusão;
 - redução de memória na montagem (meta de 1 KB/célula);
-- retirada da VMMLib e da árvore `VoronoiGridMaker/` (critério da DEC-011 atingido para O1–O4; falta decidir o momento) e mudança de `project_guidelines.tex` para a documentação.
+- ~~retirada da VMMLib e de `VoronoiGridMaker/`~~: decidida na DEC-033 (30/09); diretrizes em `vmm/docs/guidelines.rst`.
+- otimizador de Lloyd (CVT), não migrado da VMMLib (referência no histórico do git, commit d189461).
 
 ## 7. Revisão da sequência para a Fase 3
 
@@ -108,5 +109,5 @@ O P15a deve focar no que falta: recorte por domínio não convexo em 3D, vértic
 1. **Aprovar a publicação da 0.1?** Recomendação: aprovar depois de a CI rodar verde no GitHub.
 2. ~~DEC-031~~: resolvida (rejeitada; DEC-032 aprovada).
 3. ~~Meta de memória~~: não é mais necessária (673 B/célula, dentro de 1 KB).
-4. **Retirar a VMMLib e `VoronoiGridMaker/`** agora (critério atingido) ou depois da 0.1? Recomendação: depois da 0.1, numa iteração só de movimentação.
+4. ~~Retirar a VMMLib e `VoronoiGridMaker/`~~: decidido, retirar agora (DEC-033).
 5. ~~Licenças na raiz~~: criados `LICENSE` (BSD-3-Clause), `COPYING` (GPL-3.0) e `LICENSES.md` (qual parte usa qual).

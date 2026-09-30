@@ -2,8 +2,9 @@
 
 Malhas de volumes finitos de Voronoi em 2D, multirregião, com interfaces
 conformes, prontas para um solver. Esta é a biblioteca nova (arquitetura do
-`planning/P06_arquitetura_a.md`); a `VMMLib/` legada permanece como oráculo até
-a retirada (DEC-011).
+`planning/P06_arquitetura_a.md`), que substituiu a VMMLib legada (DEC-011).
+As malhas da VMMLib nos casos O1–O4 ficam congeladas como arquivos de
+referência em `tests/data/golden/`.
 
 - **Domínio por precedência** (regiões e buracos, formas com rótulos de patch),
   convertido numa partição exata e validada.
@@ -16,7 +17,7 @@ a retirada (DEC-011).
 - **Arquivos**: formato nativo com ida e volta exata e VTK XML.
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVMM_BUILD_VMMLIB=OFF
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build && ctest --test-dir build -L vmm
 ```
 

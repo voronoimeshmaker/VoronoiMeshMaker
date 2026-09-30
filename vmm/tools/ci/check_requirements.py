@@ -109,7 +109,7 @@ def main() -> int:
         if "VoronoiGridMaker" in text and p.name != "check_requirements.py":
             errors.append(f"R13 'VoronoiGridMaker' in {p}")
         spdx = re.search(r"SPDX-License-Identifier:\s*(\S+)", text)
-        gpl = ("backend" in p.parts and "cgal" in p.parts) or "golden" in p.parts  # CGAL / legacy VMMLib
+        gpl = "backend" in p.parts and "cgal" in p.parts  # CGAL
         expected = "GPL-3.0-or-later" if gpl else "BSD-3-Clause"
         if not spdx:
             errors.append(f"R23 missing SPDX in {p}")

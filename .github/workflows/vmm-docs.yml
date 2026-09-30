@@ -45,8 +45,8 @@ jobs:
       - name: Build library, tests and examples
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_VMMLIB=OFF -DVMM_BUILD_EXAMPLES=OFF -DVMM_BUILD_PAPER=OFF \
-            -DVMM_BUILD_TESTS=ON -DVMM_BUILD_VMM_EXAMPLES=ON
+            -DCMAKE_PREFIX_PATH=$HOME/cgal -DVMM_BUILD_EXAMPLES=ON \
+            -DVMM_BUILD_TESTS=ON
           cmake --build build -j
       - name: Documentation (test gate, Doxygen, Sphinx pt and en, gallery)
         run: vmm/docs/build_docs.sh build $HOME/docs-venv

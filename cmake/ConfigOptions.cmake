@@ -2,105 +2,20 @@
 # Project options and layout
 # -----------------------------------------------------------------------------
 
-option(VMM_BUILD_SHARED_LIBS
-    "Build VoronoiMeshMaker as a shared library"
-    ON
-)
-
 option(VMM_BUILD_EXAMPLES
-    "Build example programs"
-    ON
-)
-
-option(VMM_BUILD_PAPER
-    "Build paper/research helper programs"
+    "Build the gallery examples"
     ON
 )
 
 option(VMM_BUILD_TESTS
-    "Build GTest-based unit tests"
+    "Build GTest-based unit and integration tests"
     ON
-)
-
-option(VMM_BUILD_DOCS
-    "Build Doxygen/Sphinx documentation"
-    OFF
-)
-
-option(VMM_TEST_SANITIZERS
-    "Instrument the library and build-tree consumers with ASan/UBSan (diagnostic builds only)"
-    OFF
-)
-
-option(VMM_ENABLE_WARNINGS
-    "Enable project warning flags"
-    ON
-)
-
-option(VMM_ENABLE_LTO
-    "Enable interprocedural/link-time optimization in optimized builds"
-    OFF
-)
-
-option(VMM_ENABLE_NATIVE_ARCH
-    "Optimize release builds for the native CPU architecture"
-    OFF
 )
 
 # DEC-012: -ffast-math is not offered; it changes geometric results.
 
-option(VMM_BUILD_VMMLIB
-    "Build the legacy VMMLib (regression oracle until its retirement, DEC-011)"
-    ON
-)
-
-option(VMM_INSTALL_VMMLIB
-    "Install the legacy VMMLib package (the installed package is the new vmm/ library)"
-    OFF
-)
-
 # DEC-014: C++23 is the project standard.
-set(VMM_CXX_STANDARD 23 CACHE STRING
-    "C++ standard used by VoronoiMeshMaker"
-)
-set_property(CACHE VMM_CXX_STANDARD PROPERTY STRINGS 23)
-
-# Backward compatibility with the previous cache option names.
-if(DEFINED BUILD_EXAMPLES)
-    set(VMM_BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL
-        "Build example programs"
-        FORCE
-    )
-endif()
-
-if(DEFINED BUILD_TESTS)
-    set(VMM_BUILD_TESTS ${BUILD_TESTS} CACHE BOOL
-        "Build GTest-based unit tests"
-        FORCE
-    )
-endif()
-
-if(DEFINED BUILD_DOCS)
-    set(VMM_BUILD_DOCS ${BUILD_DOCS} CACHE BOOL
-        "Build Doxygen/Sphinx documentation"
-        FORCE
-    )
-endif()
-
-set(BUILD_EXAMPLES ${VMM_BUILD_EXAMPLES} CACHE BOOL
-    "Compatibility alias for VMM_BUILD_EXAMPLES"
-    FORCE
-)
-set(BUILD_TESTS ${VMM_BUILD_TESTS} CACHE BOOL
-    "Compatibility alias for VMM_BUILD_TESTS"
-    FORCE
-)
-set(BUILD_DOCS ${VMM_BUILD_DOCS} CACHE BOOL
-    "Compatibility alias for VMM_BUILD_DOCS"
-    FORCE
-)
-
-set(CMAKE_CXX_STANDARD ${VMM_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -116,10 +31,6 @@ endif()
 
 include(GNUInstallDirs)
 
-set(VMMLib_DIR "${CMAKE_CURRENT_SOURCE_DIR}/VMMLib" CACHE PATH
-    "VoronoiMeshMaker library root"
-)
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
 )
@@ -129,6 +40,3 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/bin"
 )
-
-set(VMM_OUTPUT_BIN_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-set(BUILD_SHARED_LIBS ${VMM_BUILD_SHARED_LIBS})

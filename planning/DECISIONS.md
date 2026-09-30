@@ -450,3 +450,21 @@
   coordenadas arredondadas é indeterminada (semente 599, benchmark), sem que a malha esteja errada.
 - Consequências: a DEC-031 é rejeitada; InvariantReference perde nonorthogonality_limit; QualityLimits mantém um
   limite só para o relatório de qualidade.
+
+## DEC-033 — Retirada da VMMLib e do VoronoiGridMaker
+- Data: 2026-09-30
+- Origem: instrução do João ("a VMMLib antiga deve sumir do mapa"; "ficar somente com a nova versão", depois de
+  confirmar que a migração foi feita)
+- Status: APROVADA (30/09, instrução do João); a remoção dos arquivos é feita por ele
+- Decisão: o repositório fica só com a biblioteca nova (`vmm/`). Saem `VMMLib/`, `VoronoiGridMaker/`, os `examples/`,
+  `tests/`, `paper/` e `docs_sphinx/` antigos, `.readthedocs.yaml`, `.cleanup.cmake`, os módulos CMake do legado
+  e o gerador de golden files (`vmm/tools/golden/`). As diretrizes (`planning/project_guidelines.tex`) viram a página
+  `vmm/docs/guidelines.rst` (DEC-026).
+- Verificação do critério da DEC-011 (P06 §11): O1–O4 reproduzidos (vizinhos idênticos, área até 1,1·10⁻¹³); os 56
+  arquivos "refatorar"/"mover" do mapa do P06 §15 têm destino implementado com teste por classe; nada da `vmm/` depende
+  da VMMLib fora do gerador de golden files. Lacuna fechada antes da retirada: contornos com auto-interseção, buracos
+  tocando o anel externo ou uns aos outros passam a ser rejeitados (`InvalidPolygon`) em `ShapeOutline::make`.
+  Os textos de `VoronoiGridMaker/docs/theory/` eram só marcadores, sem conteúdo a aproveitar.
+- Consequências: os golden files O1–O4 ficam congelados (não são mais regeneráveis; a VMMLib continua no histórico
+  do git, commit d189461). O otimizador de Lloyd (CVT) não foi migrado e fica para a 0.2, com a VMMLib do histórico
+  como referência. O build da raiz não tem mais as opções VMM_BUILD_VMMLIB, VMM_INSTALL_VMMLIB e VMM_BUILD_PAPER.

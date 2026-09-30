@@ -14,7 +14,7 @@ Compilar e instalar
 
 .. code-block:: bash
 
-   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVMM_BUILD_VMMLIB=OFF
+   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
    cmake --build build
    ctest --test-dir build -L vmm
    cmake --install build --prefix $HOME/.local

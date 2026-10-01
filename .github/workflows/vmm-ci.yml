@@ -84,7 +84,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build g++-14 libboost-dev libgmp-dev libmpfr-dev libgtest-dev \
             libgmock-dev libtbb-dev zlib1g-dev python3-pip
-          pip install --user gcovr
+          # Pinned: R25 was calibrated with gcovr 7.2; gcovr 8 counts template lines and branches
+          # differently (7 files below the minimum with the same .gcda data).
+          pip install --user "gcovr==7.2"
       - name: CGAL
         run: |
           curl -fsSL --retry 5 --retry-delay 15 --retry-all-errors -o cgal.tar.xz \

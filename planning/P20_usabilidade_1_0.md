@@ -95,6 +95,27 @@ as primeiras linhas de erro como anotações públicas; se o Clang ainda falhar,
 - Clang 18: a primeira CI da 1.0.0 (75d42ae) falhou; com a libstdc++, o Clang 18 não tem `std::expected`.
   Mínimo passado para Clang 19 (DEC-042).
 
+## 6a. Primeiras execuções da CI depois da 1.0.0
+
+A CI nunca tinha rodado até o fim. Cada execução mostrou um problema que não aparecia no WSL:
+
+| Commit | Problema | Correção |
+|---|---|---|
+| 75d42ae | Clang 18 sem `std::expected` com a libstdc++ | Clang mínimo 19 (DEC-042) |
+| 0864e27 | Controle negativo do firewall sem o CGAL de `$HOME/cgal` | `EXTRA_INCLUDE_DIRS` com `CGAL_INCLUDE_DIRS` |
+| 0864e27 | UBSan `vptr` dentro do `Arrangement_2` do CGAL (testes 2D) | `-fno-sanitize=vptr` com os sanitizadores (sem virtuais, R3) |
+| 0864e27 | Clang 19 com `-march=native` numa CPU com AVX10.1: aviso promovido a erro | `-Wno-invalid-feature-combination` |
+| 0864e27 | `build_docs.sh` sem permissão de execução no git | o workflow o chama com `bash` |
+| f90b623 | Download do CGAL falhou em todos os jobs (falha passageira do GitHub) | `curl --retry` |
+| d96c9a7 | `gcovr` com o `gcov` do GCC 13 lendo dados do g++-14 | `--gcov-executable` derivado do compilador |
+| d96c9a7 | `build_docs.sh` com o diretório de build relativo | caminho convertido em absoluto |
+| 46befcf | `gcovr` 8.6 (o pip instala o mais novo) recusa contagens muito altas e conta linhas e ramos de templates de outro jeito: 7 arquivos abaixo da R25 com os mesmos dados | `gcovr==7.2` fixado na CI (o mesmo do WSL); a opção de contagens suspeitas só é usada quando o `gcovr` a aceita |
+| 46befcf | Deploy: GitHub Pages não ativado (404) | ativar em Settings → Pages (João) |
+
+**[F]** Em d96c9a7 e 46befcf, gcc-14 Debug e Release, clang-19 e o job com sanitizadores passaram. Em 46befcf a
+documentação também foi gerada na CI. **[F]** A cobertura com o `gcovr` 7.2 do pip sobre um build g++-14 dá 97,6% das
+linhas e 92,0% dos ramos, nenhum arquivo abaixo do mínimo.
+
 ## 7. Para publicar (João)
 
 1. Commit.

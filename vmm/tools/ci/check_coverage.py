@@ -37,6 +37,11 @@ def main() -> int:
            "--gcov-ignore-parse-errors=negative_hits.warn_once_per_file",
            "--json-summary", str(summary), "--txt", args.output + ".txt", "--print-summary",
            args.build]  # search only this build tree (other builds under the root have stale .gcda files)
+    # gcovr 8 rejects very large hit counts (inner loops of the 3D tests run billions of
+    # times) as "suspicious"; gcovr 7 has no such check and no such option.
+    help_text = subprocess.run(["gcovr", "--help"], capture_output=True, text=True).stdout
+    if "suspicious_hits" in help_text:
+        cmd[-1:-1] = ["--gcov-ignore-parse-errors=suspicious_hits.warn_once_per_file"]
     print(" ".join(cmd))
     subprocess.run(cmd, check=True)
     data = json.loads(summary.read_text())

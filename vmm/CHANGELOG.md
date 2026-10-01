@@ -1,24 +1,5 @@
 # Changelog
 
-## Não publicada
-
-### Mudou
-- Clang mínimo 19 (DEC-042): com a libstdc++, o Clang 18 não tem `std::expected`, e a
-  biblioteca não compila com ele. O job do Clang na CI passa a usar o `clang-19`.
-
-### Corrigido (CI)
-- Clang 19 com `-march=native` em CPUs com AVX10.1: o aviso `invalid feature combination`
-  virava erro por causa do `-Werror`. Agora é silenciado quando o `-march=native` está ligado.
-- Build com sanitizadores: sem a verificação `vptr` do UBSan, que acusa um downcast dentro
-  dos iteradores do `Arrangement_2` do CGAL; o vmm não tem funções virtuais (R3).
-- Controle negativo do firewall: recebe o diretório de includes do CGAL, para funcionar com
-  o CGAL fora dos diretórios do sistema.
-- Documentação: `build_docs.sh` é chamado com `bash` (o arquivo não tem permissão de execução no git).
-- A CI publica em anotações os testes que falharam e as linhas de erro.
-- CI: novas tentativas no download do CGAL.
-- `build_docs.sh` aceita um diretório de build relativo (é convertido em absoluto).
-- Cobertura: o `gcovr` usa o `gcov` do compilador do build (`gcov-14` para o `g++-14`).
-
 ## 1.0.0 — 2026-09-30
 
 API estável (DEC-041) e facilidade de uso (DEC-040).
@@ -40,6 +21,8 @@ API estável (DEC-041) e facilidade de uso (DEC-040).
 - Interno, sem garantia de estabilidade: os membros do backend (exceto `build_partition`), os
   tipos de rótulo e de recorte, `vmm::detail` e os contadores de `BuildStats2D/3D`. A referência
   da API lista o que é estável.
+- Clang mínimo 19 (DEC-042): com a libstdc++, o Clang 18 não tem `std::expected`, e a
+  biblioteca não compila com ele. O job do Clang na CI passa a usar o `clang-19`.
 
 ### Corrigido
 - Um teste 3D usava uma referência a um temporário num `for` por intervalo, que o GCC 14
@@ -47,6 +30,19 @@ API estável (DEC-041) e facilidade de uso (DEC-040).
   falhava na compilação por `-Werror=dangling-reference`.
 - CMake sem varredura de módulos C++ (`CMAKE_CXX_SCAN_FOR_MODULES OFF`): o projeto não usa
   módulos, e o Clang precisaria de `clang-scan-deps`.
+- Clang 19 com `-march=native` em CPUs com AVX10.1: o aviso `invalid feature combination`
+  virava erro por causa do `-Werror`. Agora é silenciado quando o `-march=native` está ligado.
+- Build com sanitizadores: sem a verificação `vptr` do UBSan, que acusa um downcast dentro
+  dos iteradores do `Arrangement_2` do CGAL; o vmm não tem funções virtuais (R3).
+- Controle negativo do firewall: recebe o diretório de includes do CGAL, para funcionar com
+  o CGAL fora dos diretórios do sistema.
+- Documentação: `build_docs.sh` é chamado com `bash` (o arquivo não tem permissão de execução no git).
+- A CI publica em anotações os testes que falharam e as linhas de erro.
+- CI: novas tentativas no download do CGAL.
+- `build_docs.sh` aceita um diretório de build relativo (é convertido em absoluto).
+- Cobertura: o `gcovr` usa o `gcov` do compilador do build (`gcov-14` para o `g++-14`). A CI fixa o
+  `gcovr` 7.2, com o qual a R25 foi calibrada: o 8.x conta de outro jeito as linhas e os ramos de
+  templates, e recusa contagens muito altas, comuns nos laços dos testes 3D.
 
 ## 0.2.0 — 2026-09-30
 

@@ -196,10 +196,19 @@ if(VMM_BUILD_VMM_TESTS)
     endif()
 
     if(VMM_COVERAGE)
+        # gcov must match the compiler: the default gcov of Ubuntu 24.04 (GCC 13) cannot read
+        # the data of g++-14 (first CI of 1.0.0).
+        get_filename_component(_vmm_cxx_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
+        get_filename_component(_vmm_cxx_name "${CMAKE_CXX_COMPILER}" NAME)
+        string(REPLACE "g++" "gcov" _vmm_gcov_name "${_vmm_cxx_name}")
+        set(VMM_GCOV "gcov")
+        if(NOT _vmm_gcov_name STREQUAL _vmm_cxx_name AND EXISTS "${_vmm_cxx_dir}/${_vmm_gcov_name}")
+            set(VMM_GCOV "${_vmm_cxx_dir}/${_vmm_gcov_name}")
+        endif()
         add_custom_target(vmm_coverage
             COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/check_coverage.py"
                     --root "${CMAKE_SOURCE_DIR}" --build "${CMAKE_BINARY_DIR}"
-                    --output "${CMAKE_BINARY_DIR}/vmm_coverage"
+                    --output "${CMAKE_BINARY_DIR}/vmm_coverage" --gcov "${VMM_GCOV}"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
             COMMENT "vmm coverage per file (R25: 90% lines, 80% branches)")
     endif()

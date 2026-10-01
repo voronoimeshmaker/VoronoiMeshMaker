@@ -15,6 +15,9 @@
   o CGAL fora dos diretórios do sistema.
 - Documentação: `build_docs.sh` é chamado com `bash` (o arquivo não tem permissão de execução no git).
 - A CI publica em anotações os testes que falharam e as linhas de erro.
+- CI: novas tentativas no download do CGAL.
+- `build_docs.sh` aceita um diretório de build relativo (é convertido em absoluto).
+- Cobertura: o `gcovr` usa o `gcov` do compilador do build (`gcov-14` para o `g++-14`).
 
 ## 1.0.0 — 2026-09-30
 

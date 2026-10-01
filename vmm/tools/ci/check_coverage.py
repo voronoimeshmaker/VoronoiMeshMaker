@@ -20,6 +20,7 @@ def main() -> int:
     ap.add_argument("--root", required=True, help="repository root")
     ap.add_argument("--build", required=True, help="build directory")
     ap.add_argument("--output", required=True, help="output prefix")
+    ap.add_argument("--gcov", default="gcov", help="gcov of the compiler that built the tree (gcov-14 for g++-14)")
     args = ap.parse_args()
     root = pathlib.Path(args.root)
     exceptions = {}
@@ -30,7 +31,7 @@ def main() -> int:
                 path, reason = line.split("|", 1)
                 exceptions[path.strip()] = reason.strip()
     summary = pathlib.Path(args.output + ".json")
-    cmd = ["gcovr", "-r", str(root), "--object-directory", args.build,
+    cmd = ["gcovr", "-r", str(root), "--object-directory", args.build, "--gcov-executable", args.gcov,
            "--filter", "vmm/src/", "--filter", "vmm/include/",
            "--exclude-throw-branches", "--exclude-unreachable-branches",
            "--gcov-ignore-parse-errors=negative_hits.warn_once_per_file",

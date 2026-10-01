@@ -5,7 +5,9 @@
 #   vmm/docs/build_docs.sh <cmake build dir> [python venv]
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-build="${1:?cmake build directory}"
+# Absolute: the Doxygen step runs from the docs directory and the gallery runs
+# the examples from its own work directories.
+build="$(cd "${1:?cmake build directory}" && pwd)"
 venv="${2:-}"
 [[ -n "$venv" ]] && source "$venv/bin/activate"
 ctest --test-dir "$build" -L vmm -j 4 --timeout 1800 --output-on-failure

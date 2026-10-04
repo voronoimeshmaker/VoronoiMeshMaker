@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 — preparada para revisão, não publicada
+
+- `HorizonGrid`, `LayeredMesh` e `generate_layered_mesh`: referência facetada fixa,
+  encontros, desaparecimento parcial e subdivisões uniformes ou graduadas.
+- Consultas de colunas/vizinhos verticais, renumeração com proveniência e formato
+  `.vlayers`; composição `horizons` no `vmm-mesh`, mantendo `.vmesh` compatível.
+- Corrigida precisão do centro de faces pequenas longe da origem; conversão
+  consistente de interseções exatas coincidentes em coordenadas de saída.
+- Guia pt/en e exemplos geométricos C++/CLI. Sem física nem otimizador CVT.
+- Limites: gráficos z(x,y), precisão double e classificação do refinamento com
+  custo aproximadamente quadrático em colunas; ver relatórios P27.
+
 ## 1.0.0 — 2026-09-30
 
 API estável (DEC-041) e facilidade de uso (DEC-040).

@@ -5,7 +5,7 @@ if(POLICY CMP0167)
 endif()
 
 project(VoronoiMeshMaker
-    VERSION 1.0.0
+    VERSION 1.1.0
     DESCRIPTION "Voronoi finite-volume mesh generation library"
     LANGUAGES CXX
 )

@@ -1,7 +1,7 @@
 # Sequência — colunas e horizontes no VMM
 
 - Versão do plano: 1.0 — 2026-10-03.
-- Estado: planejamento para revisão; nenhuma implementação iniciada.
+- Estado: P21–P29 concluídos em 2026-10-04; versão 1.1.0 preparada para revisão, não publicada.
 - Repositório: /home/jflavio/Programas/VMM, WSL Ubuntu-26.04-Test.
 - Continuação de [sequencia_prompts.md](../sequencia_prompts.md), após P20.
 - Base observada: API 1.0.0; commit da5c03e. Reconfirmar a árvore antes de executar.
@@ -15,9 +15,9 @@ Os arquivos P21–P29 são instruções de trabalho, não relatórios de resulta
 As decisões já expressas pelo João estão registradas como confirmadas em 01_requisitos.md.
 As recomendações ainda não respondidas não são autorização de implementação.
 
-O protocolo de revisão por iteração segue a sequência anterior: apresentar um resultado concreto,
-registrar evidência e aguardar a revisão antes da próxima etapa. Isso não impede preparar agora
-todo este pacote documental, pedido explicitamente pelo João.
+O João autorizou posteriormente executar todas as etapas sem aprovação intermediária.
+Registrar resultados e evidência a cada etapa e prosseguir autonomamente; esta autorização
+substitui a espera por revisão mencionada nos documentos iniciais.
 
 ## Ordem de execução
 
@@ -70,3 +70,28 @@ P21 iniciado e contrato consolidado com respostas explícitas do João.
 Ver [relatório P21](relatorios/P21_contrato.md). Encontros/desaparecimento de domínios,
 superfícies facetadas, bases gerais, API e CLI, persistência e casos sintéticos estão
 incluídos. P22 ainda não executado; não há implementação nova nem validação numérica.
+
+## Andamento — 2026-10-04
+
+P21 fechado. Implementados grade de referência, refinamento comum, colunas com
+horizontes facetados e desaparecimento, consultas, persistência e composição CLI.
+Ver [validação incremental](relatorios/P27_incremental_20261004.md).
+P27 continua: cobertura, matriz completa, desempenho e casos patológicos.
+P28/P29 ainda não concluídos. Não interpretar o estado histórico abaixo como
+ausência da implementação atual. Sem commit ou push.
+
+## Conclusão — 2026-10-04
+
+A autorização posterior do João permitiu completar todas as etapas sem revisão
+intermediária. Registros anteriores são históricos; o estado final é este.
+
+- P21: [contrato](relatorios/P21_contrato.md).
+- P22–P26: [implementação e arquitetura](relatorios/P22_P26_implementacao.md).
+- P27: [validação consolidada](relatorios/P27_validacao.md) e [desempenho](relatorios/P27_desempenho.md).
+- P28: [documentação executada](relatorios/P28_documentacao.md).
+- P29: [entrega, problemas, limitações e riscos](relatorios/P29_entrega.md).
+
+310 testes Release; matriz complementar e cobertura descritas nos relatórios.
+Sphinx pt/en e consumo instalado verificados. Os 16 avisos por idioma da
+referência API estão documentados. Não houve commit, tag ou push.
+T01/CVT permanece futuro; a conclusão não amplia esse escopo.

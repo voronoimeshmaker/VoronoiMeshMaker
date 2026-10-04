@@ -36,3 +36,10 @@ As regras do projeto estão na página "Diretrizes do projeto" (`vmm/docs/guidel
 ## Licença
 
 Núcleo sob BSD-3-Clause; backend CGAL sob GPL-3.0-or-later. Veja `LICENSES.md`.
+
+## Colunas e horizontes
+
+A versão 1.1 preparada na árvore de trabalho inclui `generate_layered_mesh`,
+referência facetada fixa e persistência `.vlayers`. Veja
+[vmm/README.md](vmm/README.md) e [relatórios](planning/horizontes/relatorios/).
+O mohid-ng consome a malha; propriedades físicas não fazem parte desta extensão.

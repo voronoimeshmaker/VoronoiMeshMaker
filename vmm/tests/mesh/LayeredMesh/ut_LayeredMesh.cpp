@@ -75,3 +75,44 @@ TEST(LayeredMesh, EmptyIntervalsAndErrors) {
     EXPECT_FALSE(vmm::generate_layered_mesh(vmm::Mesh2D{},*h));
 }
 }
+
+TEST(LayeredMesh, RejectsShiftedSupportAndWrongRegion) {
+    auto m=build(); ASSERT_TRUE(m);
+    auto d=m->data();
+    auto raw=d.mesh.data();
+    // A rigid vertical translation preserves all volumes and closure.
+    for(auto& p:raw.points) p[2]+=0.125;
+    for(auto& p:raw.sites) p[2]+=0.125;
+    auto shifted=vmm::Mesh3D::from_data(raw); ASSERT_TRUE(shifted);
+    d.mesh=*shifted;
+    EXPECT_FALSE(vmm::LayeredMesh::from_data(d));
+    d=m->data(); raw=d.mesh.data();
+    raw.cell_region[0]=vmm::RegionId{1};
+    auto mislabeled=vmm::Mesh3D::from_data(raw); ASSERT_TRUE(mislabeled);
+    d.mesh=*mislabeled;
+    EXPECT_FALSE(vmm::LayeredMesh::from_data(d));
+}
+
+TEST(LayeredMesh, RejectsDuplicateFaceAndGap) {
+    auto m=build(); ASSERT_TRUE(m);
+    auto d=m->data(); auto raw=d.mesh.data();
+    const auto last=raw.owner.size()-1;
+    const auto vertices=raw.face_vertices.row(last);
+    const std::vector<vmm::VertexId> copy(vertices.begin(),vertices.end());
+    raw.face_vertices.push_row(copy);
+    raw.owner.push_back(raw.owner.back());
+    ++raw.patches.back().count;
+    d.face_level.push_back(d.face_level.back());
+    auto duplicate=vmm::Mesh3D::from_data(raw); ASSERT_TRUE(duplicate);
+    d.mesh=*duplicate;
+    EXPECT_FALSE(vmm::LayeredMesh::from_data(d));
+    d=m->data(); raw=d.mesh.data();
+    raw.face_vertices.offsets.pop_back();
+    raw.face_vertices.values.resize(raw.face_vertices.offsets.back());
+    raw.owner.pop_back();
+    --raw.patches.back().count;
+    d.face_level.pop_back();
+    auto gap=vmm::Mesh3D::from_data(raw); ASSERT_TRUE(gap);
+    d.mesh=*gap;
+    EXPECT_FALSE(vmm::LayeredMesh::from_data(d));
+}

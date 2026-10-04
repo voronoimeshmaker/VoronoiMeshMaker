@@ -27,9 +27,23 @@ struct LayeredData {
 /// Immutable mesh with explicit columns; identifiers are not physical properties.
 class LayeredMesh {
 public:
+    /// @brief Validates metadata, sampled support, closure and cell orientation.
+    /// @param data Geometry and provenance to freeze.
+    /// @return Immutable mesh or an inconsistency error.
+    /// @note This is not a general proof for arbitrary transformed external faces.
+    /// @par Level
+    /// Intermediate
+    /// @par Location
+    /// vmm/mesh/layered.hpp
+    /// @par Examples
+    /// ex_horizons.cpp (through generate_layered_mesh)
+    /// @sa generate_layered_mesh
     [[nodiscard]] static Result<LayeredMesh> from_data(LayeredData data);
+    /// Read-only volumetric geometry.
     [[nodiscard]] const Mesh3D& mesh() const noexcept { return data_.mesh; }
+    /// Read-only reference and provenance.
     [[nodiscard]] const LayeredData& data() const noexcept { return data_; }
+    /// Cells sorted bottom to top; empty for an absent or unknown column.
     [[nodiscard]] std::vector<CellId> cells_in_column(std::size_t column) const;
     /// Returns all neighbours across horizontal subdivision surfaces.
     [[nodiscard]] std::vector<CellId> vertical_neighbours(CellId cell) const;

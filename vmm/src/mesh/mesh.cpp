@@ -92,9 +92,9 @@ FaceGeometry<3> face_geometry(std::span<const Vec3> pts) noexcept {
         g.area_vector = g.area_vector + tri;
         const Real a = norm(tri);
         total += a;
-        weighted = weighted + (a / 3.0) * (pts[0] + pts[k] + pts[k + 1]);
+        weighted = weighted + (a / 3.0) * ((pts[k] - pts[0]) + (pts[k + 1] - pts[0]));
     }
-    g.centroid = total > 0 ? (1.0 / total) * weighted : pts[0];
+    g.centroid = total > 0 ? pts[0] + (1.0 / total) * weighted : pts[0];
     return g;
 }
 

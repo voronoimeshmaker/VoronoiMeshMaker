@@ -21,13 +21,20 @@ public:
     using Surface = std::function<Real(const Vec2&)>;
     /// Parameters: increasing axes, unique names, one elevation array per horizon.
     /// Notes: freezes the geometry; resampling after moving sites is not allowed.
-    /// Level: Intermediate. See Also: generate_layered_mesh.
-    /// Location: vmm/geometry/horizons.hpp.
+    /// @par Level
+    /// Intermediate
+    /// @sa generate_layered_mesh
+    /// @par Location
+    /// vmm/geometry/horizons.hpp
+    /// @par Examples
+    /// ex_horizons.cpp
     [[nodiscard]] static Result<HorizonGrid> make(std::vector<Real> x, std::vector<Real> y,
         std::vector<std::string> names, std::vector<std::vector<Real>> elevations);
     /// Samples functions once at grid nodes, then uses the same affine representation.
     [[nodiscard]] static Result<HorizonGrid> sample(std::vector<Real> x, std::vector<Real> y,
         std::vector<std::string> names, std::span<const Surface> surfaces);
+    /// Evaluates the frozen affine surface; rejects points outside its grid.
+    [[nodiscard]] Result<Real> elevation(std::size_t horizon, Vec2 point) const;
     [[nodiscard]] const std::vector<Real>& x() const noexcept { return x_; }
     [[nodiscard]] const std::vector<Real>& y() const noexcept { return y_; }
     [[nodiscard]] const std::vector<std::string>& names() const noexcept { return names_; }

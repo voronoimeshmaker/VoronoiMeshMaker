@@ -4,6 +4,7 @@
 //==============================================================================
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <exception>
 #include <map>
@@ -28,7 +29,9 @@ Result<ColumnOverlay> cgal_column_overlay(std::span<const ColumnEdge> edges,
     if(grid.horizon_count()<2 || columns==0)
         return fail(ErrorCode::InvalidArgument,"empty overlay input");
     for(const auto& e:edges) {
-        if(!e.owner.valid() || e.owner.index()>=columns ||
+        if(e.a==e.b || !std::isfinite(e.a[0]) || !std::isfinite(e.a[1]) ||
+           !std::isfinite(e.b[0]) || !std::isfinite(e.b[1]) ||
+           !e.owner.valid() || e.owner.index()>=columns ||
            (e.neighbour.valid() && e.neighbour.index()>=columns))
             return fail(ErrorCode::InvalidArgument,"overlay cell id");
     }
@@ -74,9 +77,13 @@ Result<ColumnOverlay> cgal_column_overlay(std::span<const ColumnEdge> edges,
         }
         ColumnOverlay out;
         out.elevations.resize(grid.horizon_count());
+        std::map<std::pair<Real,Real>,std::size_t> rounded_ids;
         for(auto& [p,id]:ids) {
-            id=out.points.size();
-            out.points.push_back({CGAL::to_double(p.x()),CGAL::to_double(p.y())});
+            const Vec2 rounded{CGAL::to_double(p.x()),CGAL::to_double(p.y())};
+            const auto [entry,inserted]=rounded_ids.emplace(std::pair(rounded[0],rounded[1]),out.points.size());
+            id=entry->second;
+            if(!inserted) continue;
+            out.points.push_back(rounded);
             const auto interval=[](const auto& axis,const FT& q) {
                 auto it=std::upper_bound(axis.begin(),axis.end(),q,[](const FT& a,Real b){return a<FT(b);});
                 return std::min(axis.size()-2,static_cast<std::size_t>(it-axis.begin()-1));
@@ -96,6 +103,9 @@ Result<ColumnOverlay> cgal_column_overlay(std::span<const ColumnEdge> edges,
         }
         for(const auto& t:tris) {
             std::array<std::size_t,3> v{ids.at(t.p[0]),ids.at(t.p[1]),ids.at(t.p[2])};
+            // Exact intersections can map to the same representable point. Apply
+            // the same quotient to every triangle to preserve shared topology.
+            if(v[0]==v[1] || v[1]==v[2] || v[2]==v[0]) continue;
             std::rotate(v.begin(),std::min_element(v.begin(),v.end()),v.end());
             std::array<PatchId,3> patches{};
             std::array<P,3> ordered=t.p;
@@ -108,6 +118,11 @@ Result<ColumnOverlay> cgal_column_overlay(std::span<const ColumnEdge> edges,
             }
             out.triangles.push_back({v,t.column,patches});
         }
+        std::vector<bool> represented(columns,false),exact_present(columns,false);
+        for(const auto& t:tris) exact_present[t.column.index()]=true;
+        for(const auto& t:out.triangles) represented[t.column.index()]=true;
+        for(std::size_t c=0;c<columns;++c) if(exact_present[c] && !represented[c])
+            return fail(ErrorCode::InvalidPolygon,"base cell disappears at output coordinate precision");
         std::ranges::sort(out.triangles,[](const auto& a,const auto& b){
             return std::pair(a.column,a.vertices)<std::pair(b.column,b.vertices);
         });

@@ -50,4 +50,19 @@ Result<HorizonGrid> HorizonGrid::sample(std::vector<Real> x, std::vector<Real> y
     }
     return make(std::move(x),std::move(y),std::move(names),std::move(z));
 }
+Result<Real> HorizonGrid::elevation(std::size_t h, Vec2 p) const {
+    if(h>=z_.size() || !std::isfinite(p[0]) || !std::isfinite(p[1]) ||
+       p[0]<x_.front() || p[0]>x_.back() || p[1]<y_.front() || p[1]>y_.back())
+        return fail(ErrorCode::InvalidArgument,"point outside horizon grid or invalid horizon");
+    const auto index=[](const auto& a,Real q) {
+        return std::min(a.size()-2,static_cast<std::size_t>(
+            std::upper_bound(a.begin(),a.end(),q)-a.begin()-1));
+    };
+    const auto i=index(x_,p[0]),j=index(y_,p[1]);
+    const Real u=(p[0]-x_[i])/(x_[i+1]-x_[i]),v=(p[1]-y_[j])/(y_[j+1]-y_[j]);
+    const auto a=j*x_.size()+i,b=a+1,d=a+x_.size(),c=d+1;
+    const auto& z=z_[h];
+    return u>=v ? z[a]+u*(z[b]-z[a])+v*(z[c]-z[b])
+                : z[a]+v*(z[d]-z[a])+u*(z[c]-z[d]);
+}
 } // namespace vmm

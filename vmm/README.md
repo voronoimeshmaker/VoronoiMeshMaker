@@ -18,13 +18,17 @@ referência em `tests/data/golden/`.
 - **Pronta para volumes finitos**: owner/neighbour, vetores de área, distâncias,
   não ortogonalidade, skewness, intervalos de faces internas e de contorno,
   volumes internos e de contorno, adjacência CSR e padrão esparso, RCM.
+- **Colunas e horizontes**: `generate_layered_mesh` extruda uma base 2D com
+  referência facetada fixa, intervalos e subdivisões graduadas. Encontros e
+  desaparecimento parcial são suportados; `.vlayers` preserva a referência e
+  a proveniência. Não é Voronoi euclidiano 3D nem um otimizador CVT.
 - **Arquivos**: formato nativo com ida e volta exata, VTK XML (polígonos e
   poliedros) e STL (domínios 3D).
 - **Sem escrever C++**: o executável `vmm-mesh` gera a malha a partir de um
   arquivo de configuração (`vmm-mesh bloco.cfg`); no C++, `vmm::value_or_throw`
   troca a verificação de cada `Result` por exceções.
 
-Versão 1.0: API estável com versionamento semântico (DEC-041); a referência da
+Versão 1.1: API estável com versionamento semântico (DEC-041); a referência da
 API na documentação diz o que é interno.
 
 ```bash

@@ -221,6 +221,9 @@ def _page(out, name, source, command, language, comment):
     work = out / name
     work.mkdir()
     shutil.copy(source, work / source.name)
+    companion = source.with_suffix(".hgrid")
+    if companion.exists():
+        shutil.copy(companion, work / companion.name)
     output = "(exemplo não executado: VMM_EXAMPLES_BIN não definido)"
     figures = []
     if command is not None:
@@ -239,6 +242,9 @@ def _page(out, name, source, command, language, comment):
     page += ["   " + line for line in output.splitlines()] + [""]
     page += ["Código", "------", "", f":download:`Baixar {source.name} <{name}/{source.name}>`", "",
              f".. literalinclude:: {name}/{source.name}", f"   :language: {language}", ""]
+    if companion.exists():
+        page += [f":download:`Horizon grid <{name}/{companion.name}>`", "",
+                 f".. literalinclude:: {name}/{companion.name}", "   :language: text", ""]
     (out / f"{name}.rst").write_text("\n".join(page))
 
 

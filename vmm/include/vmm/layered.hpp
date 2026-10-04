@@ -14,8 +14,13 @@ namespace vmm {
 /// one cell per interval. Region identity is (base region, horizon interval).
 /// Notes: pinch-outs omit absent cells; all faces are planar. Functions sampled
 /// by HorizonGrid::sample are approximated once, not during reconstruction.
-/// Level: Intermediate. See Also: HorizonGrid, LayeredMesh.
-/// Location: vmm/layered.hpp.
+/// @par Level
+/// Intermediate
+/// @sa HorizonGrid, LayeredMesh
+/// @par Location
+/// vmm/layered.hpp
+/// @par Examples
+/// ex_horizons.cpp
 [[nodiscard]] Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base,
     const HorizonGrid& horizons, std::vector<std::vector<Real>> fractions = {});
 } // namespace vmm

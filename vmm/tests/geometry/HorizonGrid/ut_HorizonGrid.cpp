@@ -38,3 +38,18 @@ TEST(HorizonGrid, RejectsInvalidGeometry) {
     EXPECT_FALSE(HorizonGrid::sample({0,1},{0,1},{"a","b"},empty));
     EXPECT_FALSE(HorizonGrid::sample({0},{0,1},{"a","b"},empty));
 }
+
+TEST(HorizonGrid, PiecewiseAffineElevation) {
+    auto g=vmm::HorizonGrid::make({0,2},{0,2},{"a","b"},{{0,2,4,8},{10,12,14,18}});
+    ASSERT_TRUE(g);
+    EXPECT_DOUBLE_EQ(*g->elevation(0,{1.5,0.5}),3.);
+    EXPECT_DOUBLE_EQ(*g->elevation(0,{0.5,1.5}),4.);
+    EXPECT_DOUBLE_EQ(*g->elevation(0,{1,1}),4.);
+    EXPECT_DOUBLE_EQ(*g->elevation(1,{2,2}),18.);
+    EXPECT_DOUBLE_EQ(*g->elevation(0,{0,0}),0.);
+    EXPECT_FALSE(g->elevation(2,{0,0}));
+    EXPECT_FALSE(g->elevation(0,{-0.1,0}));
+    EXPECT_FALSE(g->elevation(0,{0,2.1}));
+    EXPECT_FALSE(g->elevation(0,{std::numeric_limits<double>::quiet_NaN(),0}));
+    EXPECT_FALSE(vmm::HorizonGrid{}.elevation(0,{0,0}));
+}

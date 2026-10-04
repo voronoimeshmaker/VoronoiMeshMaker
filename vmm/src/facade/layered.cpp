@@ -9,6 +9,7 @@
 #include <limits>
 #include <map>
 #include <numeric>
+#include <sstream>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -65,7 +66,12 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
     for(const auto& tri:ov.triangles) {
         const auto v=tri.vertices;
         const Real area=cross(ov.points[v[1]]-ov.points[v[0]],ov.points[v[2]]-ov.points[v[0]])/2;
-        if(!(area>0)) return fail(ErrorCode::InvalidPolygon,"rounded overlay triangle is degenerate");
+        if(!(area>0)) {
+            std::ostringstream detail; detail.precision(17);
+            detail << "rounded overlay triangle is degenerate:";
+            for(auto p:v) detail << " (" << ov.points[p][0] << "," << ov.points[p][1] << ")";
+            return fail(ErrorCode::InvalidPolygon,detail.str());
+        }
         for(std::size_t l=0;l<nl;++l) {
             std::array<Real,3> lo{},hi{},d{};
             Real sum=0;
@@ -82,7 +88,7 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
                 const Real w=area*(i==j ? 1.0/6 : 1.0/12);
                 moment[c][0]+=w*ov.points[v[i]][0]*d[j];
                 moment[c][1]+=w*ov.points[v[i]][1]*d[j];
-                moment[c][2]+=0.5*w*(hi[i]*hi[j]-lo[i]*lo[j]);
+                moment[c][2]+=0.5*w*(d[i]*hi[j]+lo[i]*d[j]);
             }
         }
     }
@@ -103,6 +109,8 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
         md.cell_input_site.push_back(SiteId::from_index(col));
         expected.push_back(volume[c]);
     }
+    for(Real v:volume) if(!std::isfinite(v) || v<0)
+        return fail(ErrorCode::InvalidArgument,"non-finite or negative integrated volume");
     if(md.sites.empty()) return fail(ErrorCode::InvalidArgument,"all intervals have zero volume");
     struct Face {
         std::vector<VertexId> vertices;

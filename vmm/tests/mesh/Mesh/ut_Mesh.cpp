@@ -128,3 +128,11 @@ TEST(Mesh, CellAdjacency) {
 }
 
 }  // namespace
+
+TEST(Mesh, FaceCentroidSmallTranslatedTriangle) {
+    const std::vector<vmm::Vec3> points{{100,100,100},{100.001,100,100},{100.001,100.001,100}};
+    const auto g=vmm::face_geometry(std::span<const vmm::Vec3>(points));
+    EXPECT_DOUBLE_EQ(g.centroid[0],100.+2.*(100.001-100.)/3.);
+    EXPECT_DOUBLE_EQ(g.centroid[1],100.+(100.001-100.)/3.);
+    EXPECT_DOUBLE_EQ(g.centroid[2],100.);
+}

@@ -533,3 +533,89 @@ msgstr "Planning and documentation"
 
 msgid "A sequência de trabalho está em ``planning/horizontes/00_sequencia.md``, com etapas P21 a P29. As decisões ainda abertas estão em ``01_requisitos.md``; o contrato futuro de tesselação e CVT está em ``T01_tesselacao_futura.md``. Exemplos de uso serão acrescentados somente depois dos testes por classe e de integração."
 msgstr "The work sequence is in ``planning/horizontes/00_sequencia.md``, covering steps P21 through P29. Open decisions are in ``01_requisitos.md``; the future tessellation and CVT contract is in ``T01_tesselacao_futura.md``. Usage examples will only be added after class and integration tests."
+
+#: guide/horizons.rst
+msgid "Colunas, horizontes e interfaces fixas"
+msgstr "Columns, horizons and fixed interfaces"
+
+#: guide/horizons.rst
+msgid "Estado da extensão"
+msgstr "Extension status"
+
+#: guide/horizons.rst
+msgid "A versão 1.1 oferece geração por colunas a partir de uma malha 2D, validada pelos testes registrados nos relatórios P27. Retesselação geral e otimizador CVT não estão implementados."
+msgstr "Version 1.1 provides column generation from a 2D mesh, validated by the tests recorded in the P27 reports. General retessellation and a CVT optimizer are not implemented."
+
+#: guide/horizons.rst
+msgid "O VMM fornece geometria, topologia e identificadores. O mohid-ng consome a malha e associa as propriedades físicas. A extrusão combina a região horizontal com o intervalo entre horizontes; subdivisões do mesmo intervalo mantêm a mesma região. Esta malha deriva de Voronoi 2D e não é necessariamente um Voronoi euclidiano 3D."
+msgstr "VMM provides geometry, topology and identifiers. mohid-ng consumes the mesh and associates physical properties. Extrusion combines the horizontal region with the interval between horizons; subdivisions of the same interval retain the same region. This mesh derives from 2D Voronoi and is not necessarily a Euclidean 3D Voronoi mesh."
+
+#: guide/horizons.rst
+msgid "Referência geométrica"
+msgstr "Geometric reference"
+
+#: guide/horizons.rst
+msgid "``HorizonGrid::make`` recebe eixos x/y estritamente crescentes, nomes únicos e cotas nodais por horizonte, ordenadas com x variando mais rapidamente. Cada retângulo usa a diagonal sudoeste–nordeste. As cotas definem superfícies afins por triângulo; ``elevation`` consulta essa representação. A grade deve cobrir toda a base."
+msgstr "``HorizonGrid::make`` accepts strictly increasing x/y axes, unique names and nodal heights per horizon, ordered with x varying fastest. Every rectangle uses the southwest–northeast diagonal. Heights define piecewise affine triangular surfaces; ``elevation`` evaluates that representation. The grid must cover the entire base."
+
+#: guide/horizons.rst
+msgid "``HorizonGrid::sample`` recebe funções z(x,y), avaliadas uma única vez nos nós. Depois disso, a referência são as cotas armazenadas, não a função original. A resolução da grade controla a aproximação inicial; mudar sítios da malha base não reamostra a superfície. Exceções lançadas pelas funções de entrada propagam para o chamador."
+msgstr "``HorizonGrid::sample`` accepts z(x,y) functions, evaluated once at the nodes. Afterwards, the stored heights are the reference, rather than the original function. Grid resolution controls the initial approximation; changing base mesh sites does not resample the surface. Exceptions thrown by input functions propagate to the caller."
+
+#: guide/horizons.rst
+msgid "Os horizontes são ordenados de baixo para cima. Igualdade permite encontros e desaparecimento parcial de intervalos, inclusive dentro de uma coluna original. Inversões e valores não finitos são rejeitados. Células de volume zero não são criadas; falhas de representabilidade são reportadas."
+msgstr "Horizons are ordered from bottom to top. Equality permits contacts and partial disappearance of intervals, including inside an original column. Inversions and non-finite values are rejected. Zero-volume cells are not created; representability failures are reported."
+
+#: guide/horizons.rst
+msgid "Geração, consultas e persistência"
+msgstr "Generation, queries and persistence"
+
+#: guide/horizons.rst
+msgid "``generate_layered_mesh`` recebe ``Mesh2D``, ``HorizonGrid`` e, opcionalmente, frações por intervalo. Cada lista deve aumentar estritamente de 0 a 1; a omissão cria uma camada por intervalo. Frações igualmente espaçadas produzem subdivisões uniformes; outras listas permitem graduação. O refinamento comum inclui a base e os triângulos da referência, com suporte a concavidades, buracos e componentes separados."
+msgstr "``generate_layered_mesh`` accepts ``Mesh2D``, ``HorizonGrid`` and optional fractions per interval. Each list must increase strictly from 0 to 1; omission creates one layer per interval. Equally spaced fractions produce uniform subdivisions; other lists allow grading. Common refinement includes the base and reference triangles, supporting concavities, holes and separate components."
+
+#: guide/horizons.rst
+msgid "``LayeredMesh::mesh`` retorna a geometria 3D. ``data`` contém grade, frações, número de colunas, coluna/camada por célula e nível por face. ``cells_in_column`` ordena células pela camada; ``vertical_neighbours`` consulta adjacência através das superfícies de subdivisão. Os sítios 3D são referências calculadas por momentos volumétricos, não geradores de Voronoi 3D."
+msgstr "``LayeredMesh::mesh`` returns the 3D geometry. ``data`` contains the grid, fractions, column count, column/layer per cell and level per face. ``cells_in_column`` sorts cells by layer; ``vertical_neighbours`` queries adjacency across subdivision surfaces. 3D sites are references computed from volume moments, not 3D Voronoi generators."
+
+#: guide/horizons.rst
+msgid "Colunas e camadas usam índices iniciados em zero. ``lateral_face`` marca faces laterais; outros níveis identificam superfícies de subdivisão. Em encontros coincidentes, uma face compartilhada pode representar vários níveis geométricos coincidentes e guarda o menor nível incidente. A renumeração de ``LayeredMesh`` preserva os metadados. Uma transformação futura que destrua colunas precisará produzir metadados coerentes com a nova topologia."
+msgstr "Columns and layers use zero-based indices. ``lateral_face`` marks lateral faces; other levels identify subdivision surfaces. At coincident contacts, a shared face may represent several coincident geometric levels and stores the smallest incident level. Renumbering ``LayeredMesh`` preserves metadata. A future transformation that destroys columns must produce metadata consistent with the new topology."
+
+#: guide/horizons.rst
+msgid "``write_layered`` e ``read_layered`` persistem a malha com metadados no formato ``VMM_LAYERS 1`` (extensão ``.vlayers``), que incorpora uma malha nativa. O formato ``.vmesh`` existente permanece compatível, mas sozinho não guarda a referência de horizontes. A saída VTU representa a geometria volumétrica."
+msgstr "``write_layered`` and ``read_layered`` persist the mesh and metadata in the ``VMM_LAYERS 1`` format (``.vlayers`` extension), which embeds a native mesh. The existing ``.vmesh`` format remains compatible but does not store the horizon reference by itself. VTU output represents volumetric geometry."
+
+#: guide/horizons.rst
+msgid "Na configuração de ``vmm-mesh``, ``dimension = 2`` define a base e a chave global ``horizons`` aponta para um arquivo relativo à configuração. ``read_horizons`` lê ``VMM_HORIZONS 1``: linhas dos eixos (quantidade seguida de valores), quantidade de horizontes, nome entre aspas e linha de cotas para cada horizonte, quantidade de listas de frações e suas linhas. A saída é 3D e inclui ``.vlayers``."
+msgstr "In ``vmm-mesh`` configuration, ``dimension = 2`` defines the base and the global ``horizons`` key points to a file relative to the configuration. ``read_horizons`` reads ``VMM_HORIZONS 1``: axis rows (count followed by values), horizon count, quoted name and height row for each horizon, fraction-list count and their rows. Output is 3D and includes ``.vlayers``."
+
+#: guide/horizons.rst
+msgid "Em 3D, o plano de cada faceta regional permanece fixo. Faces podem mudar de forma, tamanho, quantidade e conectividade dentro desse suporte. Em 2D, a reta de cada trecho permanece fixa, com subdivisão variável. Também se preservam extensão, extremos, junções e regiões incidentes; preservar apenas área ou volume não basta."
+msgstr "In 3D, the plane of each regional facet remains fixed. Faces may change shape, size, count and connectivity within that support. In 2D, the line of each segment remains fixed, with variable subdivision. Extent, endpoints, junctions and incident regions must also be preserved; preserving only area or volume is insufficient."
+
+#: guide/horizons.rst
+msgid "Esse contrato vale para qualquer CVT futuro em cada iteração. Os testes atuais mudam sítios e reconstruem malhas com a mesma referência; não executam CVT. Para superfícies facetadas, cada faceta de referência e suas junções devem permanecer fixas."
+msgstr "This contract applies to every iteration of any future CVT. Current tests change sites and rebuild meshes with the same reference; they do not execute CVT. For faceted surfaces, each reference facet and its junctions must remain fixed."
+
+#: guide/horizons.rst
+msgid "Limitações e validação"
+msgstr "Limitations and validation"
+
+#: guide/horizons.rst
+msgid "A construção exata do refinamento comum termina em coordenadas ``double``. Interseções que arredondam ao mesmo ponto são unificadas globalmente; uma coluna que desapareça por completo nessa conversão é rejeitada. Geometrias extremamente finas ou próximas de limites de precisão podem falhar. Não há garantia de escala arbitrária nem promessa de ortogonalidade 3D."
+msgstr "Exact common-refinement construction ends in ``double`` coordinates. Intersections rounding to the same point are unified globally; a column disappearing completely in this conversion is rejected. Extremely thin geometries or geometries near precision limits may fail. There is no guarantee of arbitrary scale or 3D orthogonality."
+
+#: guide/horizons.rst
+msgid "``LayeredMesh::from_data`` verifica metadados e amostras de suporte e contenção nas faces. Isso não substitui uma prova de conformidade de malhas externas arbitrariamente modificadas. Os testes do gerador verificam também invariantes geométricos e volumes integrados independentemente. A classificação do refinamento comum percorre as arestas da base para cada triângulo e pode dominar o custo em malhas grandes."
+msgstr "``LayeredMesh::from_data`` checks metadata and face samples for support and containment. This does not replace a conformity proof for arbitrarily modified external meshes. Generator tests also check geometric invariants and independently integrated volumes. Common-refinement classification scans base edges for each triangle and can dominate cost on large meshes."
+
+#: guide/horizons.rst
+msgid "A sequência e os relatórios estão em ``planning/horizontes``. Os exemplos foram adicionados após os testes de classes e integração. O contrato de transformação futura está em ``T01_tesselacao_futura.md``."
+msgstr "The sequence and reports are in ``planning/horizontes``. Examples were added after class and integration tests. The future transformation contract is in ``T01_tesselacao_futura.md``."
+
+msgid "Exemplos executáveis"
+msgstr "Executable examples"
+
+msgid "A galeria inclui ``horizons`` (C++) e ``horizons_flat`` (configuração). O caso plano produz arquivos ``.vlayers`` idênticos nas duas interfaces; o caso de terreno mostra superfícies facetadas e um encontro na borda. As cores representam regiões geométricas, sem propriedades físicas."
+msgstr "The gallery includes ``horizons`` (C++) and ``horizons_flat`` (configuration). The flat case produces identical ``.vlayers`` files through both interfaces; the terrain case shows faceted surfaces and contact at the boundary. Colors represent geometric regions, without physical properties."

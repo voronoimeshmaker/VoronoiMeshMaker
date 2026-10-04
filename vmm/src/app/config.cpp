@@ -93,7 +93,10 @@ Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::pat
 
     for (const auto& entry : config.global_.entries) {
         const auto& [key, value, line] = entry;
-        if (key == "dimension") {
+        if (key == "horizons") {
+            // Optional geometric extrusion of a 2D request; resolved in run_config.
+            continue;
+        } else if (key == "dimension") {
             if (value != "2" && value != "3") return parse_error(line, "dimension is 2 or 3");
             config.dimension_ = value == "2" ? 2 : 3;
         } else if (key == "seed") {

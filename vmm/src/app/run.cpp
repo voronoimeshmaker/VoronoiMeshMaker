@@ -27,8 +27,11 @@
 //  VoronoiMeshMaker
 //==============================================================================
 #include <vmm/app/run.hpp>
+#include <vmm/io/layered.hpp>
 #include <vmm/io/native.hpp>
 #include <vmm/io/vtu.hpp>
+#include <vmm/layered.hpp>
+#include <vmm/mesh/metrics.hpp>
 
 namespace vmm {
 
@@ -246,6 +249,39 @@ Result<MeshRequest3D> make_request_3d(const MeshConfig& config, const ConfigRegi
 }
 
 Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistries& registries) {
+    // Optional column construction composes with the unchanged 2D request.
+    if (const auto file = config.global().find("horizons")) {
+        if (config.dimension() != 2)
+            return fail(ErrorCode::ParseError, "horizons requires dimension = 2 for the horizontal base");
+        for (const auto& format : config.formats())
+            if (format != "vmesh" && format != "vtu")
+                return fail(ErrorCode::ParseError, "unknown layered output format: " + format);
+        auto spec = read_horizons(config.base_directory() / std::string(*file));
+        if (!spec) return std::unexpected(spec.error());
+        auto request = make_request_2d(config, registries);
+        if (!request) return std::unexpected(request.error());
+        auto base = generate_mesh_2d(*request);
+        if (!base) return std::unexpected(base.error());
+        auto layered = generate_layered_mesh(base->mesh, spec->first, spec->second);
+        if (!layered) return std::unexpected(layered.error());
+        struct Output { const Mesh3D& mesh; InvariantReport invariants; };
+        // Generation has already checked independent per-cell volumes.
+        const auto metrics = compute_metrics(layered->mesh());
+        InvariantReference reference;
+        reference.region_measure.assign(layered->mesh().regions().size(), 0);
+        for (CellId c : layered->mesh().cells()) {
+            reference.total_measure += metrics.cell_measure[c.index()];
+            reference.region_measure[layered->mesh().region(c).index()] += metrics.cell_measure[c.index()];
+        }
+        const auto diagnostics = check_invariants(layered->mesh(), reference);
+        auto report = write_all(config, Output{layered->mesh(), diagnostics});
+        if (!report) return std::unexpected(report.error());
+        report->dimension = 3;
+        auto path = config.output(); path += ".vlayers";
+        if (auto st = write_layered(*layered, path); !st) return std::unexpected(st.error());
+        report->written.push_back(std::move(path));
+        return report;
+    }
     // Formats are checked before the (possibly long) meshing.
     const auto known = writers<Mesh2D>();
     for (const auto& format : config.formats()) {

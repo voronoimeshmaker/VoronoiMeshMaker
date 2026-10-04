@@ -59,3 +59,8 @@ StlReadOptions
 StlWriteOptions
 ConfigEntry         # key, value, line
 ConfigRunReport     # counts, invariants, files written
+
+LayeredData        # geometry/provenance aggregate, validated by LayeredMesh
+ColumnEdge         # internal backend transport
+ColumnTriangle     # internal backend transport
+ColumnOverlay      # internal backend transport

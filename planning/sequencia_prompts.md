@@ -664,3 +664,10 @@ Os prompts completos desta fase serão escritos depois da P14, com o que for apr
 | 5.1 | 2026-09-28 | P04 detalhado: contexto das decisões da fase 1, declaração de regiões, invariantes por caso, lista mínima de formatos, tolerâncias, casos do benchmark leve e ordem das seções do entregável | DEC-011, DEC-013, DEC-015 |
 | 5.2 | 2026-09-28 | Ajustes do P05 §6: P06 (formato nativo, partição, índices, classes triviais, diretrizes); P07 (verificadores de CI, compiladores, B1–B3, cobertura); P09 (DEC-018); P12 (escritores da 0.1 e ordem); P13 (diretrizes); P14a (escritores da 0.2); REV (DEC-024); P05a com DEC-027 | DEC-018 a DEC-027 |
 | 5.3 | 2026-09-30 | P20 (facilidade de uso e API 1.0) depois do P19; P14a cancelado | DEC-039 a DEC-041 |
+
+## Continuação — colunas e horizontes (2026-10-03)
+
+A sequência posterior ao P20 está em [planning/horizontes/00_sequencia.md](horizontes/00_sequencia.md).
+O pacote P21–P29 registra requisitos confirmados, decisões pendentes, implementação planejada
+ e critérios de validação. Inclui o contrato de suporte fixo das interfaces em 2D/3D,
+inclusive para CVT futuro. É planejamento; não comprova implementação ou aprovação das pendências.

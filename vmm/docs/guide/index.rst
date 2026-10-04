@@ -9,5 +9,6 @@ Guia
    mesh
    io
    mesh3d
+   horizons
    config
    errors

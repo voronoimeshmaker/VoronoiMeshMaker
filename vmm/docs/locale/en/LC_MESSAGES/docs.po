@@ -487,3 +487,49 @@ msgstr "Without writing C++"
 
 msgid "O executável ``vmm-mesh``, instalado com a biblioteca, gera a malha a partir de um arquivo de configuração (veja :doc:`guide/config`):"
 msgstr "The ``vmm-mesh`` executable, installed with the library, generates the mesh from a configuration file (see :doc:`guide/config`):"
+
+# Columns and fixed interfaces: planning contract, 2026-10-03.
+msgid "Colunas, horizontes e interfaces fixas (planejado)"
+msgstr "Columns, horizons and fixed interfaces (planned)"
+
+msgid "Estado do recurso"
+msgstr "Feature status"
+
+msgid "Esta página registra o contrato da extensão planejada. A geração por colunas e horizontes, a retesselação geral e um otimizador CVT não são apresentados como funcionalidades disponíveis da API 1.0."
+msgstr "This page records the contract of the planned extension. Column and horizon generation, general retessellation and a CVT optimizer are not presented as available features of the 1.0 API."
+
+msgid "A geração multirregião existente constrói Voronoi por região, recorta as células e compatibiliza as interfaces. Esse refinamento comum não equivale a uma operação geral de retesselação de uma malha pronta."
+msgstr "Existing multi-region generation builds Voronoi cells per region, clips them and makes interfaces conforming. This common refinement is not a general operation for retessellating an existing mesh."
+
+msgid "Separação geométrica dos domínios"
+msgstr "Geometric separation of domains"
+
+msgid "O VMM fornece geometria, topologia e identificadores. O mohid-ng consome a malha e associa as propriedades físicas. Uma região identifica um domínio geométrico; uma camada de discretização não cria necessariamente uma região nova."
+msgstr "VMM provides geometry, topology and identifiers. mohid-ng consumes the mesh and associates physical properties. A region identifies a geometric domain; a discretization layer does not necessarily create a new region."
+
+msgid "A geração planejada compartilha uma base Voronoi 2D entre as faixas verticais. Uma transformação posterior poderá desfazer as colunas, mas não poderá deslocar as fronteiras entre regiões. Essa malha não é necessariamente um Voronoi euclidiano 3D."
+msgstr "Planned generation shares a 2D Voronoi base across vertical intervals. A later transformation may remove the column structure but must not move region boundaries. This mesh is not necessarily a three-dimensional Euclidean Voronoi mesh."
+
+msgid "Suporte fixo e faces variáveis"
+msgstr "Fixed support and variable faces"
+
+msgid "Em 3D, o plano de uma interface plana deve ficar fixo. As faces das células nessa interface podem mudar de forma, tamanho, quantidade e conectividade, sem sair do plano. Em 2D, a reta de cada trecho da interface deve ficar fixa; as arestas podem mudar sua subdivisão sem sair desse trecho."
+msgstr "In 3D, the plane of a planar interface must remain fixed. Cell faces on that interface may change shape, size, number and connectivity without leaving the plane. In 2D, the line of each interface segment must remain fixed; edges may change their subdivision without leaving that segment."
+
+msgid "Também devem ser preservados a extensão da fronteira, seus limites, as junções e o par de regiões de cada lado. Permanecer no mesmo plano ou na mesma reta infinita não basta. Os dois lados precisam compartilhar uma subdivisão conforme, sem lacunas nem sobreposições."
+msgstr "The boundary extent, its limits, junctions and the pair of regions on either side must also be preserved. Remaining on the same infinite plane or line is not sufficient. Both sides must share a conforming subdivision without gaps or overlaps."
+
+msgid "Para horizontes não planos, a representação geométrica de referência ainda deve ser definida no contrato: não se deve substituir uma superfície curva por um único plano. O erro de aproximação inicial e a preservação posterior são verificações distintas."
+msgstr "For nonplanar horizons, the reference geometric representation still needs to be defined in the contract: a curved surface must not be replaced by a single plane. Initial approximation error and subsequent preservation are separate checks."
+
+msgid "Contrato para CVT"
+msgstr "CVT contract"
+
+msgid "Qualquer CVT futuro deve manter a partição regional e seus suportes fixos a cada iteração. Mover sítios e reconstruir células pode reorganizar as faces da interface, mas não mover a interface. Devem ser verificados suporte, cobertura, pertença regional e conformidade; conservar apenas áreas ou volumes totais não demonstra essa propriedade."
+msgstr "Any future CVT must keep the regional partition and its supports fixed at every iteration. Moving sites and rebuilding cells may rearrange interface faces but must not move the interface. Support, coverage, region membership and conformity must be checked; conserving only total areas or volumes does not demonstrate this property."
+
+msgid "Planejamento e documentação"
+msgstr "Planning and documentation"
+
+msgid "A sequência de trabalho está em ``planning/horizontes/00_sequencia.md``, com etapas P21 a P29. As decisões ainda abertas estão em ``01_requisitos.md``; o contrato futuro de tesselação e CVT está em ``T01_tesselacao_futura.md``. Exemplos de uso serão acrescentados somente depois dos testes por classe e de integração."
+msgstr "The work sequence is in ``planning/horizontes/00_sequencia.md``, covering steps P21 through P29. Open decisions are in ``01_requisitos.md``; the future tessellation and CVT contract is in ``T01_tesselacao_futura.md``. Usage examples will only be added after class and integration tests."

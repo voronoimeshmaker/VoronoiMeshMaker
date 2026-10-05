@@ -2,6 +2,9 @@
 
 ## 1.1.0 — preparada para revisão, não publicada
 
+- Documentação: instanciações explícitas `extern template` não são exibidas como
+  sobrecargas adicionais. Build Sphinx reconstrói o ambiente e trata avisos como erros.
+
 - `HorizonGrid`, `LayeredMesh` e `generate_layered_mesh`: referência facetada fixa,
   encontros, desaparecimento parcial e subdivisões uniformes ou graduadas.
 - Consultas de colunas/vizinhos verticais, renumeração com proveniência e formato

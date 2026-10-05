@@ -64,3 +64,8 @@ LayeredData        # geometry/provenance aggregate, validated by LayeredMesh
 ColumnEdge         # internal backend transport
 ColumnTriangle     # internal backend transport
 ColumnOverlay      # internal backend transport
+
+CvtOptions         # optimization controls
+CvtReport          # accepted iterate diagnostics
+CvtResult          # mesh and diagnostics
+LayeredCvtDomain   # fixed partition and source region map

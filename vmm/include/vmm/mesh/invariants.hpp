@@ -82,7 +82,11 @@ struct InvariantReport {
 template <std::size_t D>
 [[nodiscard]] InvariantReport check_invariants(const Mesh<D>& mesh, const InvariantReference& reference);
 
+// Explicit instantiation declarations control linkage; the public templates above
+// are the API documentation. Do not render these as additional overloads.
+/// @cond VMM_EXPLICIT_INSTANTIATIONS
 extern template InvariantReport check_invariants(const Mesh<2>&, const InvariantReference&);
 extern template InvariantReport check_invariants(const Mesh<3>&, const InvariantReference&);
+/// @endcond
 
 }  // namespace vmm

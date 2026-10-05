@@ -88,9 +88,13 @@ template <std::size_t D>
 [[nodiscard]] QualityReport quality_report(const Mesh<D>& mesh, const Metrics<D>& metrics,
                                            const QualityLimits& limits = {});
 
+// Explicit instantiation declarations control linkage; the public templates above
+// are the API documentation. Do not render these as additional overloads.
+/// @cond VMM_EXPLICIT_INSTANTIATIONS
 extern template Metrics<2> compute_metrics(const Mesh<2>&);
 extern template Metrics<3> compute_metrics(const Mesh<3>&);
 extern template QualityReport quality_report(const Mesh<2>&, const Metrics<2>&, const QualityLimits&);
 extern template QualityReport quality_report(const Mesh<3>&, const Metrics<3>&, const QualityLimits&);
+/// @endcond
 
 }  // namespace vmm

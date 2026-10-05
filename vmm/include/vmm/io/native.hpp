@@ -55,6 +55,9 @@ template <std::size_t D>
 template <std::size_t D>
 [[nodiscard]] Result<Mesh<D>> read_native(const std::filesystem::path& path);
 
+// Explicit instantiation declarations control linkage; the public templates above
+// are the API documentation. Do not render these as additional overloads.
+/// @cond VMM_EXPLICIT_INSTANTIATIONS
 extern template Status write_native(const Mesh<2>&, std::ostream&, const NativeWriteOptions&);
 extern template Status write_native(const Mesh<3>&, std::ostream&, const NativeWriteOptions&);
 extern template Status write_native(const Mesh<2>&, const std::filesystem::path&, const NativeWriteOptions&);
@@ -63,5 +66,6 @@ extern template Result<Mesh<2>> read_native<2>(std::istream&);
 extern template Result<Mesh<3>> read_native<3>(std::istream&);
 extern template Result<Mesh<2>> read_native<2>(const std::filesystem::path&);
 extern template Result<Mesh<3>> read_native<3>(const std::filesystem::path&);
+/// @endcond
 
 }  // namespace vmm

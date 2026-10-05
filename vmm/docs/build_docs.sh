@@ -21,7 +21,7 @@ export VMM_MESH_EXE="$build/bin/vmm-mesh"
 export VMM_EXAMPLES_SOURCE="$here/../examples"
 # Sphinx runs on a copy: the gallery pages it generates stay out of the source tree (R24).
 rm -rf "$out/src" && cp -r "$here" "$out/src"
-python -m sphinx --keep-going -b html "$out/src" "$out/html"
+python -m sphinx -E -W --keep-going -b html "$out/src" "$out/html"
 # English version (catalogue in locale/en/LC_MESSAGES/docs.po).
-python -m sphinx --keep-going -b html -D language=en "$out/src" "$out/html/en"
+python -m sphinx -E -W --keep-going -b html -D language=en "$out/src" "$out/html/en"
 echo "documentation: $out/html/index.html"

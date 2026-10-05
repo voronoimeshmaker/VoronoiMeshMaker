@@ -89,3 +89,15 @@ io e reorder, backend column_overlay, testes geometry/mesh/integration,
 exemplos horizons/config e guia horizons.rst. Relatórios históricos mostram a
 sequência real, inclusive falhas encontradas e corrigidas.
 Commit, tag e publicação continuam exclusivamente com o João.
+
+## Correção posterior — avisos Sphinx, 2026-10-04
+
+Resolvidos os 16 avisos por idioma citados no item 7. A origem era a renderização
+das declarações extern template como sobrecargas; blocos de instanciação agora
+são excluídos do Doxygen, preservando as declarações genéricas públicas.
+Sem alteração de código executável ou supressão global de avisos.
+O build usa -E -W: ambiente reconstruído e avisos tratados como erros.
+Validação: 310/310 testes prévios; Sphinx pt_BR/en concluído sem avisos.
+Confirmadas no XML as declarações template de write_native, read_native,
+check_invariants, compute_metrics, quality_report e renumber.
+Log: build/docs_explicit_templates.log. Sem commit ou push.

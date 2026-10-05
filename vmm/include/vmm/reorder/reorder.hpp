@@ -97,6 +97,9 @@ struct RcmOrdering {
 template <std::size_t D>
 [[nodiscard]] Result<Mesh<D>> renumber(const Mesh<D>& mesh, const Permutation& permutation);
 
+// Explicit instantiation declarations control linkage; the public templates above
+// are the API documentation. Do not render these as additional overloads.
+/// @cond VMM_EXPLICIT_INSTANTIATIONS
 extern template Permutation LexicographicOrdering::permutation(const Mesh<2>&) const;
 extern template Permutation LexicographicOrdering::permutation(const Mesh<3>&) const;
 extern template Permutation HilbertOrdering::permutation(const Mesh<2>&) const;
@@ -105,5 +108,6 @@ extern template Permutation RcmOrdering::permutation(const Mesh<2>&) const;
 extern template Permutation RcmOrdering::permutation(const Mesh<3>&) const;
 extern template Result<Mesh<2>> renumber(const Mesh<2>&, const Permutation&);
 extern template Result<Mesh<3>> renumber(const Mesh<3>&, const Permutation&);
+/// @endcond
 
 }  // namespace vmm

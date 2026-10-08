@@ -19,4 +19,6 @@ sítios. Movimentos inválidos são reduzidos por busca de passo. Centroides for
 é estagnação, não convergência. Iterações preservam suporte e extensão das
 interfaces por recorte contra a mesma partição e validação independente.
 
-Estado: C01 em implementação. Não anunciar CVT concluído antes dos testes.
+Estado: C01–C05 concluídos em 2026-10-08 no ambiente Ubuntu-26.04-Test.
+Evidências, comandos, desempenho e limites: [01_entrega.md](01_entrega.md).
+Commit, tag e publicação permanecem com o usuário.

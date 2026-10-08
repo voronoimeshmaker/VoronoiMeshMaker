@@ -1,6 +1,6 @@
 # VoronoiMeshMaker (VMM)
 
-Biblioteca em **C++23** que gera malhas de volumes finitos de Voronoi em 2D, com
+Biblioteca em **C++23** que gera malhas de volumes finitos de Voronoi em 2D/3D, com
 várias regiões e interfaces conformes, prontas para um solver. A biblioteca está
 em [`vmm/`](vmm/README.md).
 
@@ -43,3 +43,7 @@ A versão 1.1 preparada na árvore de trabalho inclui `generate_layered_mesh`,
 referência facetada fixa e persistência `.vlayers`. Veja
 [vmm/README.md](vmm/README.md) e [relatórios](planning/horizontes/relatorios/).
 O mohid-ng consome a malha; propriedades físicas não fazem parte desta extensão.
+
+O CVT otimiza sítios em 2D/3D mantendo a partição regional fixa, incluindo
+domínios derivados dos horizontes. Veja o [guia](vmm/docs/guide/cvt.rst) e a
+[entrega do CVT](planning/cvt/01_entrega.md).

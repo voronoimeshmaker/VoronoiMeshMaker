@@ -28,6 +28,7 @@ struct CvtReport {
     std::vector<Real> energy;
     std::vector<Real> relative_displacement;
     std::size_t rejected_steps=0;
+    Real relative_residual=0;
     bool converged=false;
     bool stalled=false;
     std::string last_rejection;

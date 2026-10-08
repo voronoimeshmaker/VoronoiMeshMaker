@@ -99,6 +99,11 @@ int main(int argc, char** argv) {
                  report->boundary_faces);
     std::println("invariants: relative measure error {:.1e}, closure {:.1e}", report->invariants.total_relative_error,
                  report->invariants.max_closure);
+    if (report->cvt) {
+        const auto& cvt=*report->cvt;
+        std::println("CVT: {} accepted iterations | converged {} | stalled {} | energy {:.8e} -> {:.8e}",
+            cvt.relative_displacement.size(),cvt.converged,cvt.stalled,cvt.energy.front(),cvt.energy.back());
+    }
     for (const auto& path : report->written) std::println("wrote {}", path.string());
     return 0;
 }

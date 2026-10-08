@@ -10,5 +10,6 @@ Guia
    io
    mesh3d
    horizons
+   cvt
    config
    errors

@@ -6,7 +6,7 @@ Colunas, horizontes e interfaces fixas
 Estado da extensão
 ------------------
 
-A versão 1.1 oferece geração por colunas a partir de uma malha 2D, validada pelos testes registrados nos relatórios P27. Retesselação geral e otimizador CVT não estão implementados.
+A versão 1.1 oferece geração por colunas a partir de uma malha 2D, validada pelos testes registrados nos relatórios P27. O :doc:`otimizador CVT <cvt>` também aceita a partição volumétrica extraída dessas colunas e produz uma malha 3D geral.
 
 Separação geométrica dos domínios
 ---------------------------------
@@ -40,7 +40,7 @@ Suporte fixo e faces variáveis
 
 Em 3D, o plano de cada faceta regional permanece fixo. Faces podem mudar de forma, tamanho, quantidade e conectividade dentro desse suporte. Em 2D, a reta de cada trecho permanece fixa, com subdivisão variável. Também se preservam extensão, extremos, junções e regiões incidentes; preservar apenas área ou volume não basta.
 
-Esse contrato vale para qualquer CVT futuro em cada iteração. Os testes atuais mudam sítios e reconstruem malhas com a mesma referência; não executam CVT. Para superfícies facetadas, cada faceta de referência e suas junções devem permanecer fixas.
+Esse contrato vale em cada iteração do CVT. Os testes de CVT verificam redução de energia e preservação de interfaces, incluindo horizontes inclinados e desaparecimento parcial. Para superfícies facetadas, cada faceta de referência e suas junções permanecem fixas. O resultado CVT é ``Mesh3D`` e não conserva os metadados de colunas de ``LayeredMesh``.
 
 Limitações e validação
 ----------------------

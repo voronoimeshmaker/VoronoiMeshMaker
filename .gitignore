@@ -63,3 +63,4 @@
 /tests/Voronoi2D/Diagram/ut_Diagram
 /tests/Voronoi2D/Release/ut_Release
 /tests/Voronoi2D/Release/__pycache__/verify_xml.cpython-314.pyc
+*.gcov

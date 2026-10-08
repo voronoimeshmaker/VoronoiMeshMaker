@@ -543,8 +543,8 @@ msgid "Estado da extensão"
 msgstr "Extension status"
 
 #: guide/horizons.rst
-msgid "A versão 1.1 oferece geração por colunas a partir de uma malha 2D, validada pelos testes registrados nos relatórios P27. Retesselação geral e otimizador CVT não estão implementados."
-msgstr "Version 1.1 provides column generation from a 2D mesh, validated by the tests recorded in the P27 reports. General retessellation and a CVT optimizer are not implemented."
+msgid "A versão 1.1 oferece geração por colunas a partir de uma malha 2D, validada pelos testes registrados nos relatórios P27. O :doc:`otimizador CVT <cvt>` também aceita a partição volumétrica extraída dessas colunas e produz uma malha 3D geral."
+msgstr "Version 1.1 provides column generation from a 2D mesh, validated by the tests recorded in the P27 reports. The :doc:`CVT optimizer <cvt>` also accepts the volumetric partition extracted from these columns and produces a general 3D mesh."
 
 #: guide/horizons.rst
 msgid "O VMM fornece geometria, topologia e identificadores. O mohid-ng consome a malha e associa as propriedades físicas. A extrusão combina a região horizontal com o intervalo entre horizontes; subdivisões do mesmo intervalo mantêm a mesma região. Esta malha deriva de Voronoi 2D e não é necessariamente um Voronoi euclidiano 3D."
@@ -595,8 +595,8 @@ msgid "Em 3D, o plano de cada faceta regional permanece fixo. Faces podem mudar 
 msgstr "In 3D, the plane of each regional facet remains fixed. Faces may change shape, size, count and connectivity within that support. In 2D, the line of each segment remains fixed, with variable subdivision. Extent, endpoints, junctions and incident regions must also be preserved; preserving only area or volume is insufficient."
 
 #: guide/horizons.rst
-msgid "Esse contrato vale para qualquer CVT futuro em cada iteração. Os testes atuais mudam sítios e reconstruem malhas com a mesma referência; não executam CVT. Para superfícies facetadas, cada faceta de referência e suas junções devem permanecer fixas."
-msgstr "This contract applies to every iteration of any future CVT. Current tests change sites and rebuild meshes with the same reference; they do not execute CVT. For faceted surfaces, each reference facet and its junctions must remain fixed."
+msgid "Esse contrato vale em cada iteração do CVT. Os testes de CVT verificam redução de energia e preservação de interfaces, incluindo horizontes inclinados e desaparecimento parcial. Para superfícies facetadas, cada faceta de referência e suas junções permanecem fixas. O resultado CVT é ``Mesh3D`` e não conserva os metadados de colunas de ``LayeredMesh``."
+msgstr "This contract applies to every CVT iteration. CVT tests check energy reduction and interface preservation, including sloping horizons and pinch-outs. For faceted surfaces, each reference facet and its junctions remain fixed. The CVT result is ``Mesh3D`` and does not retain the column metadata of ``LayeredMesh``."
 
 #: guide/horizons.rst
 msgid "Limitações e validação"
@@ -619,3 +619,79 @@ msgstr "Executable examples"
 
 msgid "A galeria inclui ``horizons`` (C++) e ``horizons_flat`` (configuração). O caso plano produz arquivos ``.vlayers`` idênticos nas duas interfaces; o caso de terreno mostra superfícies facetadas e um encontro na borda. As cores representam regiões geométricas, sem propriedades físicas."
 msgstr "The gallery includes ``horizons`` (C++) and ``horizons_flat`` (configuration). The flat case produces identical ``.vlayers`` files through both interfaces; the terrain case shows faceted surfaces and contact at the boundary. Colors represent geometric regions, without physical properties."
+
+#: guide/cvt.rst
+msgid "CVT com fronteiras regionais fixas"
+msgstr "CVT with fixed regional boundaries"
+
+#: guide/cvt.rst
+msgid "O CVT implementado usa Lloyd com densidade geométrica uniforme em 2D ou 3D. A cada iteração calcula centroides, propõe novos sítios e reconstrói a malha contra a mesma partição regional. Nenhuma propriedade física do mohid-ng participa desse cálculo."
+msgstr "The implemented CVT uses Lloyd with uniform geometric density in 2D or 3D. Each iteration computes centroids, proposes new sites and rebuilds the mesh against the same regional partition. No mohid-ng physical property participates in this calculation."
+
+#: guide/cvt.rst
+msgid "API C++"
+msgstr "C++ API"
+
+#: guide/cvt.rst
+msgid "Inclua ``vmm/cvt.hpp``. ``optimize_cvt(partition, sites, options)`` aceita ``Partition2D`` com ``SiteSet`` ou ``Partition3D`` com ``SiteSet3D``. As partições e os rótulos regionais dos sítios permanecem fixos. Os sítios iniciais devem ser válidos para a partição. Pesos de diagramas de potência não são suportados."
+msgstr "Include ``vmm/cvt.hpp``. ``optimize_cvt(partition, sites, options)`` accepts ``Partition2D`` with ``SiteSet`` or ``Partition3D`` with ``SiteSet3D``. Partitions and site region labels remain fixed. Initial sites must be valid for the partition. Power-diagram weights are not supported."
+
+#: guide/cvt.rst
+msgid "``CvtOptions`` define ``max_iterations`` (50), ``max_backtracks`` (24), ``relaxation`` (1) e ``relative_tolerance`` (1e-6). A relaxação deve estar em (0,1]. A tolerância se aplica à maior distância sítio–centroide dividida pela diagonal da partição. Zero iterações reconstrói e avalia a malha inicial."
+msgstr "``CvtOptions`` sets ``max_iterations`` (50), ``max_backtracks`` (24), ``relaxation`` (1) and ``relative_tolerance`` (1e-6). Relaxation must be in (0,1]. Tolerance applies to the largest site–centroid distance divided by the partition diagonal. Zero iterations rebuilds and evaluates the initial mesh."
+
+#: guide/cvt.rst
+msgid "``CvtResult`` contém a última malha aceita e ``CvtReport``. ``energy`` inclui a energia inicial e as energias aceitas; ``relative_displacement`` contém os deslocamentos máximos aceitos. ``relative_residual`` informa o resíduo sítio–centroide. ``rejected_steps`` e ``last_rejection`` explicam reduções de passo."
+msgstr "``CvtResult`` contains the last accepted mesh and ``CvtReport``. ``energy`` includes the initial and accepted energies; ``relative_displacement`` contains accepted maximum displacements. ``relative_residual`` reports the site–centroid residual. ``rejected_steps`` and ``last_rejection`` explain step reductions."
+
+#: guide/cvt.rst
+msgid "``converged`` indica que o resíduo atingiu a tolerância; ``stalled`` indica que não houve passo admissível com redução de energia numericamente resolvida. Se ambos forem falsos, foi atingido o limite de iterações. Sucesso da função significa uma malha válida devolvida, não necessariamente convergência."
+msgstr "``converged`` means the residual reached the tolerance; ``stalled`` means no admissible step achieved a numerically resolved energy decrease. If both are false, the iteration limit was reached. Function success means that a valid mesh was returned, not necessarily convergence."
+
+#: guide/cvt.rst
+msgid "Energia e proteção geométrica"
+msgstr "Energy and geometric protection"
+
+#: guide/cvt.rst
+msgid "``cvt_energy(mesh)`` integra a distância quadrática aos sítios geradores, com densidade uniforme, por decomposição orientada em triângulos ou tetraedros. A função pressupõe geometria válida e sítios geradores reais; os centroides armazenados numa malha extrudada não tornam essa malha automaticamente Voronoi ou CVT."
+msgstr "``cvt_energy(mesh)`` integrates squared distance to generating sites, with uniform density, by oriented triangle or tetrahedron decomposition. It assumes valid geometry and actual generating sites; centroids stored in an extruded mesh do not automatically make that mesh Voronoi or CVT."
+
+#: guide/cvt.rst
+msgid "Uma proposta inválida, uma reconstrução inválida ou uma energia sem redução resolvida provoca divisão do passo por dois. Centroides fora de regiões não convexas não são aceitos diretamente. A quantidade de sítios é fixa; não há inserção ou remoção automática. Estagnação pode ocorrer e não é apresentada como convergência."
+msgstr "An invalid proposal, invalid reconstruction or energy without a resolved decrease causes the step to be halved. Centroids outside nonconvex regions are not accepted directly. The number of sites is fixed; there is no automatic insertion or removal. Stagnation can occur and is not reported as convergence."
+
+#: guide/cvt.rst
+msgid "Cada reconstrução usa os mesmos segmentos/triângulos da partição, compatibiliza interfaces e verifica volumes/áreas, fechamento e incidência. Vértices, pontos médios e centros das faces regionais são conferidos contra o suporte finito de referência. Planos, retas, limites e junções ficam fixos; a subdivisão das faces pode mudar. A amostragem adicional não substitui a conformidade garantida pela construção do backend."
+msgstr "Each reconstruction uses the same partition segments/triangles, conforms interfaces and checks volumes/areas, closure and incidence. Vertices, edge midpoints and centers of regional faces are checked against the finite reference support. Planes, lines, limits and junctions remain fixed; face subdivision may change. Additional sampling does not replace conformity established by the backend construction."
+
+#: guide/cvt.rst
+msgid "Horizontes e perda das colunas"
+msgstr "Horizons and loss of columns"
+
+#: guide/cvt.rst
+msgid "``cvt_domain(layered_mesh)`` extrai os contornos e as interfaces entre regiões, mantendo os horizontes regionais. Faces entre camadas da mesma região não são fronteiras obrigatórias. Regiões totalmente ausentes são removidas da partição compacta; ``source_region`` relaciona os novos índices aos originais. Passe essa partição e sítios 3D admissíveis a ``optimize_cvt``."
+msgstr "``cvt_domain(layered_mesh)`` extracts boundaries and interfaces between regions, retaining regional horizons. Faces between layers of the same region are not mandatory boundaries. Entirely absent regions are removed from the compact partition; ``source_region`` maps new indices to original ones. Pass this partition and admissible 3D sites to ``optimize_cvt``."
+
+#: guide/cvt.rst
+msgid "O resultado é ``Mesh3D`` geral, sem promessa de preservar colunas ou subdivisões internas dos intervalos. Ele pode ser gravado em vmesh/VTU. Não reutilize os metadados de ``LayeredMesh`` para essa topologia. O mapa célula–sítio refere-se à ordem dos sítios passados à otimização."
+msgstr "The result is a general ``Mesh3D``, with no promise to preserve columns or internal interval subdivisions. It can be written to vmesh/VTU. Do not reuse ``LayeredMesh`` metadata for this topology. The cell–site map refers to the order of sites passed to optimization."
+
+#: guide/cvt.rst
+msgid "Para otimização, use ``cvt_iterations`` (inteiro não negativo), ``cvt_tolerance`` (padrão 1e-6) e ``cvt_relaxation`` (padrão 1). Os dois últimos exigem ``cvt_iterations``. Zero iterações avalia a malha inicial; veja :doc:`cvt` para convergência, horizontes e formatos de saída."
+msgstr "For optimization, use ``cvt_iterations`` (a non-negative integer), ``cvt_tolerance`` (default 1e-6) and ``cvt_relaxation`` (default 1). The latter two require ``cvt_iterations``. Zero iterations evaluates the initial mesh; see :doc:`cvt` for convergence, horizons and output formats."
+
+#: guide/cvt.rst
+msgid "Configuração e limites"
+msgstr "Configuration and limitations"
+
+#: guide/cvt.rst
+msgid "No ``vmm-mesh``, ``cvt_iterations`` ativa a otimização; ``cvt_tolerance`` e ``cvt_relaxation`` são opcionais. Funciona em 2D, 3D e com ``horizons``. Neste último caso, novos sítios volumétricos são amostrados de forma reproduzível com ``seed``, mantendo a quantidade de células por região da extrusão. Os centroides das colunas não são reutilizados. A API C++ permite fornecer sítios explícitos à partição extraída."
+msgstr "In ``vmm-mesh``, ``cvt_iterations`` enables optimization; ``cvt_tolerance`` and ``cvt_relaxation`` are optional. It works in 2D, 3D and with ``horizons``. In the latter case, new volumetric sites are sampled reproducibly using ``seed``, retaining the extrusion cell count per region. Column centroids are not reused. The C++ API accepts explicit sites for the extracted partition."
+
+#: guide/cvt.rst
+msgid "Com CVT volumétrico, o CLI grava vmesh/VTU e informa energia e estado de convergência; não grava um novo vlayers. Use um nome de saída distinto de uma extrusão anterior para não confundir arquivos antigos. Pares inicialmente espelhados não permanecem necessariamente espelhados após a otimização."
+msgstr "With volumetric CVT, the CLI writes vmesh/VTU and reports energy and convergence status; it does not write a new vlayers file. Use a different output name from a previous extrusion to avoid confusing old files. Initially mirrored site pairs do not necessarily remain mirrored after optimization."
+
+#: guide/cvt.rst
+msgid "Não há garantia de mínimo global, ortogonalidade em interfaces, número ideal de células ou eliminação de células finas. Superfícies curvas permanecem na aproximação facetada fornecida. O custo inclui reconstrução e validação em cada tentativa; as estruturas geométricas ainda não são reutilizadas incrementalmente. O recurso se aplica às partições e sítios aceitos pelo gerador existente, não a qualquer malha poliedral externa sem referência regional."
+msgstr "There is no guarantee of a global minimum, interface orthogonality, ideal cell count or elimination of thin cells. Curved surfaces retain their supplied faceted approximation. Cost includes reconstruction and validation on every trial; geometric structures are not yet reused incrementally. The feature applies to partitions and sites accepted by the existing generator, not to any external polyhedral mesh without a regional reference."

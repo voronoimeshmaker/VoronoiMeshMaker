@@ -13,6 +13,7 @@
 //==============================================================================
 #include <cstddef>
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 //==============================================================================
@@ -20,6 +21,7 @@
 //==============================================================================
 #include <vmm/app/config.hpp>
 #include <vmm/app/registries.hpp>
+#include <vmm/cvt.hpp>
 #include <vmm/error/error.hpp>
 #include <vmm/mesh/invariants.hpp>
 #include <vmm/vmm.hpp>
@@ -53,6 +55,7 @@ struct ConfigRunReport {
     std::size_t boundary_faces = 0;
     InvariantReport invariants;
     std::vector<std::filesystem::path> written;
+    std::optional<CvtReport> cvt;
 };
 
 /// @brief Generates the mesh of a configuration and writes it in the requested formats.

@@ -93,7 +93,7 @@ Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::pat
 
     for (const auto& entry : config.global_.entries) {
         const auto& [key, value, line] = entry;
-        if (key == "horizons") {
+        if (key == "horizons" || key == "cvt_iterations" || key == "cvt_tolerance" || key == "cvt_relaxation") {
             // Optional geometric extrusion of a 2D request; resolved in run_config.
             continue;
         } else if (key == "dimension") {

@@ -24,6 +24,9 @@ referência em `tests/data/golden/`.
   a proveniência. Não é Voronoi euclidiano 3D nem um otimizador CVT.
 - **Arquivos**: formato nativo com ida e volta exata, VTK XML (polígonos e
   poliedros) e STL (domínios 3D).
+- **CVT**: Lloyd com densidade uniforme em 2D/3D sobre partição regional fixa,
+  busca de passo e relatório de convergência ou estagnação. Aceita domínios
+  extraídos de horizontes; o resultado volumétrico pode perder as colunas.
 - **Sem escrever C++**: o executável `vmm-mesh` gera a malha a partir de um
   arquivo de configuração (`vmm-mesh bloco.cfg`); no C++, `vmm::value_or_throw`
   troca a verificação de cada `Result` por exceções.

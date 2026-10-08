@@ -63,6 +63,11 @@ sobrepõem, como na API (precedência, DEC-018).
 
 **Seções**
 
+Para otimização, use ``cvt_iterations`` (inteiro não negativo),
+``cvt_tolerance`` (padrão 1e-6) e ``cvt_relaxation`` (padrão 1).
+Os dois últimos exigem ``cvt_iterations``. Zero iterações avalia a malha
+inicial; veja :doc:`cvt` para convergência, horizontes e formatos de saída.
+
 * ``[region nome]``: ``shape`` e seus parâmetros, ``sites`` e os parâmetros da
   fonte com o prefixo ``sites.``, ``medium`` (padrão: o nome da região;
   regiões com o mesmo meio o compartilham).

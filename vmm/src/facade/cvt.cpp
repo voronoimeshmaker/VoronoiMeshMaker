@@ -149,6 +149,7 @@ Result<CvtResult<Traits::dimension>> run(const typename Traits::Partition& parti
             targets[id]=metrics.cell_centroid[c.index()];
             residual=std::max(residual,norm(targets[id]-sites.positions()[id])/partition.length_scale());
         }
+        out.report.relative_residual=residual;
         if(residual<=options.relative_tolerance) { out.report.converged=true; break; }
         Real step=options.relaxation;
         bool accepted=false;
@@ -185,6 +186,7 @@ Result<CvtResult<Traits::dimension>> run(const typename Traits::Partition& parti
         Real residual=0;
         for(CellId c:out.mesh.cells())
             residual=std::max(residual,norm(metrics.cell_centroid[c.index()]-out.mesh.site(c))/partition.length_scale());
+        out.report.relative_residual=residual;
         out.report.converged=residual<=options.relative_tolerance;
     }
     return out;

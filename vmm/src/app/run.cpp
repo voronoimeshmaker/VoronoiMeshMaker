@@ -11,6 +11,7 @@
 //==============================================================================
 #include <algorithm>
 #include <charconv>
+#include <cmath>
 #include <filesystem>
 #include <format>
 #include <functional>
@@ -238,6 +239,44 @@ Result<ConfigRunReport> write_all(const MeshConfig& config, const MeshResult& re
     return report;
 }
 
+Result<std::optional<CvtOptions>> cvt_options(const MeshConfig& config) {
+    const auto iterations=config.global().find("cvt_iterations");
+    if(!iterations) {
+        if(config.global().find("cvt_tolerance") || config.global().find("cvt_relaxation"))
+            return fail(ErrorCode::ParseError,"cvt_iterations is required with CVT controls");
+        return std::optional<CvtOptions>{};
+    }
+    CvtOptions o;
+    const auto [end,error]=std::from_chars(iterations->data(),iterations->data()+iterations->size(),o.max_iterations);
+    if(error!=std::errc{} || end!=iterations->data()+iterations->size())
+        return fail(ErrorCode::ParseError,"cvt_iterations must be a non-negative integer");
+    for(auto [name,target]:{std::pair("cvt_tolerance",&o.relative_tolerance),std::pair("cvt_relaxation",&o.relaxation)}) {
+        if(const auto value=config.global().find(name)) {
+            const auto [last,ec]=std::from_chars(value->data(),value->data()+value->size(),*target);
+            if(ec!=std::errc{} || last!=value->data()+value->size())
+                return fail(ErrorCode::ParseError,std::string("invalid ")+name);
+        }
+    }
+    if(!std::isfinite(o.relative_tolerance) || o.relative_tolerance<=0 ||
+       !std::isfinite(o.relaxation) || o.relaxation<=0 || o.relaxation>1)
+        return fail(ErrorCode::ParseError,"invalid CVT tolerance or relaxation");
+    return std::optional<CvtOptions>{o};
+}
+template<class Partition,class Sites>
+Result<ConfigRunReport> run_cvt(const MeshConfig& config,const Partition& partition,
+    const Sites& sites,const CvtOptions& options,int dimension) {
+    auto optimized=optimize_cvt(partition,sites,options);
+    if(!optimized) return std::unexpected(optimized.error());
+    const auto ref=invariant_reference(partition);
+    struct Output { decltype(optimized->mesh)& mesh; InvariantReport invariants; };
+    const Output out{optimized->mesh,check_invariants(optimized->mesh,ref)};
+    auto report=write_all(config,out);
+    if(!report) return std::unexpected(report.error());
+    report->dimension=dimension;
+    report->cvt=std::move(optimized->report);
+    return report;
+}
+
 }  // namespace
 
 Result<MeshRequest2D> make_request_2d(const MeshConfig& config, const ConfigRegistries& registries) {
@@ -249,6 +288,8 @@ Result<MeshRequest3D> make_request_3d(const MeshConfig& config, const ConfigRegi
 }
 
 Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistries& registries) {
+    auto cvt=cvt_options(config);
+    if(!cvt) return std::unexpected(cvt.error());
     // Optional column construction composes with the unchanged 2D request.
     if (const auto file = config.global().find("horizons")) {
         if (config.dimension() != 2)
@@ -264,6 +305,24 @@ Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistr
         if (!base) return std::unexpected(base.error());
         auto layered = generate_layered_mesh(base->mesh, spec->first, spec->second);
         if (!layered) return std::unexpected(layered.error());
+        if(*cvt) {
+            auto domain=cvt_domain(*layered);
+            if(!domain) return std::unexpected(domain.error());
+            std::vector<RegionId> compact(layered->mesh().regions().size());
+            for(std::size_t i=0;i<domain->source_region.size();++i)
+                compact[domain->source_region[i].index()]=RegionId::from_index(i);
+            std::vector<std::size_t> counts(domain->source_region.size(),0);
+            for(CellId c:layered->mesh().cells()) ++counts[compact[layered->mesh().region(c).index()].index()];
+            std::vector<RegionSites3D> sources;
+            for(std::size_t i=0;i<counts.size();++i)
+                sources.push_back(sites_for_3d(RegionId::from_index(i),RandomCountSource3D(counts[i])));
+            SiteGenerationOptions3D seed_options; seed_options.seed=config.seed();
+            auto sites=generate_sites_3d(domain->partition,sources,seed_options);
+            if(!sites) return std::unexpected(sites.error());
+            // Restart volumetric generators reproducibly, preserving counts by region.
+            // The result is general Voronoi geometry, without stale column metadata.
+            return run_cvt(config,domain->partition,*sites,**cvt,3);
+        }
         struct Output { const Mesh3D& mesh; InvariantReport invariants; };
         // Generation has already checked independent per-cell volumes.
         const auto metrics = compute_metrics(layered->mesh());
@@ -294,12 +353,22 @@ Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistr
         if (!request) return std::unexpected(request.error());
         auto result = generate_mesh_2d(*request);
         if (!result) return std::unexpected(result.error());
+        if(*cvt) {
+            SiteSet sites;
+            for(CellId c:result->mesh.cells()) sites.add(result->mesh.site(c),result->mesh.region(c));
+            return run_cvt(config,result->partition,sites,**cvt,2);
+        }
         return write_all(config, *result);
     }
     auto request = make_request_3d(config, registries);
     if (!request) return std::unexpected(request.error());
     auto result = generate_mesh_3d(*request);
     if (!result) return std::unexpected(result.error());
+    if(*cvt) {
+        SiteSet3D sites;
+        for(CellId c:result->mesh.cells()) sites.add(result->mesh.site(c),result->mesh.region(c));
+        return run_cvt(config,result->partition,sites,**cvt,3);
+    }
     return write_all(config, *result);
 }
 

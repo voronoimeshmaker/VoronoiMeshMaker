@@ -2,6 +2,14 @@
 
 ## 1.1.0 — preparada para revisão, não publicada
 
+- CVT 2D/3D: `optimize_cvt`, energia uniforme, busca de passo, resíduo e
+  estados distintos de convergência, estagnação e limite de iterações.
+- `cvt_domain` extrai regiões de `LayeredMesh`; CVT preserva as interfaces
+  regionais e devolve `Mesh3D`, sem metadados de colunas. No CLI, sítios
+  volumétricos são reiniciados por `seed`, preservando a contagem por região.
+- Configuração: `cvt_iterations`, `cvt_tolerance` e `cvt_relaxation`;
+  guia pt/en e exemplos C++/CLI de CVT.
+
 - Documentação: instanciações explícitas `extern template` não são exibidas como
   sobrecargas adicionais. Build Sphinx reconstrói o ambiente e trata avisos como erros.
 
@@ -11,7 +19,7 @@
   `.vlayers`; composição `horizons` no `vmm-mesh`, mantendo `.vmesh` compatível.
 - Corrigida precisão do centro de faces pequenas longe da origem; conversão
   consistente de interseções exatas coincidentes em coordenadas de saída.
-- Guia pt/en e exemplos geométricos C++/CLI. Sem física nem otimizador CVT.
+- Guia pt/en e exemplos geométricos C++/CLI. Sem propriedades físicas.
 - Limites: gráficos z(x,y), precisão double e classificação do refinamento com
   custo aproximadamente quadrático em colunas; ver relatórios P27.
 

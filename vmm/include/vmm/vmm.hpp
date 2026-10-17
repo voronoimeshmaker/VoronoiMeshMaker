@@ -42,6 +42,7 @@ struct MeshRequest2D {
     SiteGenerationOptions sites;
     BuildOptions2D build;
     ValidationOptions validation;
+    bool reject_fragmented = false;  ///< return FragmentedCells when any cell has disconnected pieces
 };
 
 struct MeshResult2D {
@@ -50,6 +51,7 @@ struct MeshResult2D {
     BuildStats2D stats;
     ValidationReport validation;  ///< warnings only (errors stop the pipeline)
     InvariantReport invariants;
+    std::vector<CellId> fragmented_cells = {};  ///< stable list in the returned mesh numbering
 };
 
 /// @brief Generates a checked 2D multi-region finite-volume mesh in one call.
@@ -71,6 +73,7 @@ struct MeshRequest3D {
     std::vector<RegionSites3D> sources;
     SiteGenerationOptions3D sites;
     BuildOptions3D build;
+    bool reject_fragmented = false;  ///< return FragmentedCells when any cell has disconnected pieces
 };
 
 struct MeshResult3D {
@@ -78,6 +81,7 @@ struct MeshResult3D {
     Partition3D partition;
     BuildStats3D stats;
     InvariantReport invariants;
+    std::vector<CellId> fragmented_cells = {};  ///< stable list in the returned mesh numbering
 };
 
 /// @brief Generates a checked 3D finite-volume mesh in one call: regions and holes by precedence,

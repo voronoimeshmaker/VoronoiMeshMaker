@@ -43,7 +43,34 @@ function(vmm_verify_cgal_headers)
     target_include_directories(${cgal_target} SYSTEM BEFORE INTERFACE "${include_overlay}")
 
     include(CheckCXXSourceCompiles)
-    set(CMAKE_REQUIRED_LIBRARIES CGAL::CGAL)
+    # CMake < 3.29 cannot export aliases of imported targets into try_compile.
+    # This probe only includes version.h; do not link any CGAL target.
+    # https://cmake.org/cmake/help/v3.29/command/try_compile.html
+    set(CMAKE_REQUIRED_LIBRARIES "")
+    set(CMAKE_REQUIRED_INCLUDES "${include_overlay}")
+    set(CMAKE_REQUIRED_DEFINITIONS "")
+    set(CMAKE_REQUIRED_FLAGS "")
+    get_target_property(cgal_includes ${cgal_target} INTERFACE_INCLUDE_DIRECTORIES)
+    if(cgal_includes)
+        list(APPEND CMAKE_REQUIRED_INCLUDES ${cgal_includes})
+    endif()
+    get_target_property(cgal_definitions ${cgal_target} INTERFACE_COMPILE_DEFINITIONS)
+    if(cgal_definitions)
+        foreach(definition IN LISTS cgal_definitions)
+            list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D${definition}")
+        endforeach()
+    endif()
+    get_target_property(cgal_options ${cgal_target} INTERFACE_COMPILE_OPTIONS)
+    if(cgal_options)
+        # CGAL 6.2.1 guards floating-point flags with COMPILE_LANGUAGE.
+        # The probe is C++ only; resolve that guard before using plain flags.
+        string(REPLACE "$<$<COMPILE_LANGUAGE:CXX>:" "" cgal_options "${cgal_options}")
+        string(REPLACE ">" "" cgal_options "${cgal_options}")
+        if(cgal_options MATCHES "\\$<")
+            message(FATAL_ERROR "Unsupported CGAL probe compile options: ${cgal_options}")
+        endif()
+        string(JOIN " " CMAKE_REQUIRED_FLAGS ${cgal_options})
+    endif()
     unset(VMM_CGAL_HEADERS_MATCH CACHE)
     check_cxx_source_compiles(
         "#include <CGAL/version.h>\nstatic_assert(CGAL_VERSION_NR == ${version_number});\nint main() {}"

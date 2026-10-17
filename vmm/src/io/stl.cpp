@@ -11,13 +11,18 @@
 #include <array>
 #include <bit>
 #include <cctype>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <exception>
 #include <format>
 #include <fstream>
 #include <iterator>
+#include <limits>
+#include <new>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,12 +54,16 @@ void add_triangle(TriangleSoup& soup, const std::array<Vec3, 3>& v, std::uint32_
 Result<TriangleSoup> read_binary(const std::string& bytes, const StlReadOptions& options) {
     std::uint32_t count = 0;
     std::memcpy(&count, bytes.data() + 80, 4);
+    if (count == 0 || count > (std::numeric_limits<std::uint32_t>::max() - 1) / 3)
+        return fail(ErrorCode::ParseError, "triangle count exceeds ID range");
     TriangleSoup soup;
     const std::uint32_t patch = patch_id(soup, options.patch_name);
     for (std::uint32_t t = 0; t < count; ++t) {
         const char* record = bytes.data() + 84 + std::size_t{50} * t;
         std::array<float, 12> f{};
         std::memcpy(f.data(), record, sizeof(f));  // normal, then three vertices
+        if (!std::ranges::all_of(f, [](float x) { return std::isfinite(x); }))
+            return fail(ErrorCode::ParseError, "non-finite binary STL value");
         std::array<Vec3, 3> v;
         for (std::size_t k = 0; k < 3; ++k) v[k] = {f[3 + 3 * k], f[4 + 3 * k], f[5 + 3 * k]};
         add_triangle(soup, v, patch);
@@ -69,6 +78,9 @@ Result<TriangleSoup> read_ascii(const std::string& text, const StlReadOptions& o
     std::size_t number = 0;
     std::uint32_t patch = 0;
     bool in_solid = false;
+    bool in_facet = false;
+    bool in_loop = false;
+    bool closed_loop = false;
     std::vector<Vec3> loop;
     const auto error = [&](const std::string& what) { return fail(ErrorCode::ParseError, std::format("line {}: {}", number, what)); };
     while (std::getline(in, line)) {
@@ -84,31 +96,56 @@ Result<TriangleSoup> read_ascii(const std::string& text, const StlReadOptions& o
             patch = patch_id(soup, name.empty() ? options.patch_name : name);
             in_solid = true;
         } else if (word == "endsolid") {
-            if (!in_solid) return error("endsolid without solid");
+            if (!in_solid || in_facet) return error("endsolid without solid or unfinished facet");
             in_solid = false;
-        } else if (word == "facet" || word == "outer" || word == "endloop") {
-            if (!in_solid) return error(word + " outside a solid");
+        } else if (word == "facet") {
+            Vec3 n;
+            std::string normal, extra;
+            if (!in_solid || in_facet || !(words >> normal >> n[0] >> n[1] >> n[2]) || normal != "normal" ||
+                !std::ranges::all_of(n, [](Real x) { return std::isfinite(x); }) || (words >> extra))
+                return error("invalid facet normal");
+            in_facet = true;
+            closed_loop = false;
+        } else if (word == "outer") {
+            std::string keyword, extra;
+            if (!in_facet || in_loop || closed_loop || !(words >> keyword) || keyword != "loop" || (words >> extra))
+                return error("invalid outer loop");
+            in_loop = true;
+        } else if (word == "endloop") {
+            std::string extra;
+            if (!in_loop || loop.size() != 3 || (words >> extra)) return error("invalid endloop");
+            in_loop = false;
+            closed_loop = true;
         } else if (word == "vertex") {
             Vec3 p;
-            if (!(words >> p[0] >> p[1] >> p[2])) return error("vertex needs three numbers");
+            std::string extra;
+            if (!in_loop || loop.size() >= 3 || !(words >> p[0] >> p[1] >> p[2]) ||
+                !std::ranges::all_of(p, [](Real x) { return std::isfinite(x); }) || (words >> extra))
+                return error("vertex needs three finite numbers inside a loop");
             loop.push_back(p);
         } else if (word == "endfacet") {
-            if (loop.size() != 3) return error(std::format("facet with {} vertices", loop.size()));
+            if (!in_facet || !closed_loop || in_loop || loop.size() != 3) return error(std::format("facet with {} vertices", loop.size()));
+            std::string extra;
+            if (words >> extra) return error("extra endfacet data");
+            if (soup.points.size() > std::numeric_limits<std::uint32_t>::max() - 4)
+                return error("vertex ID range exhausted");
             add_triangle(soup, {loop[0], loop[1], loop[2]}, patch);
+            in_facet = false;
             loop.clear();
         } else {
             return error("unknown keyword '" + word + "'");
         }
     }
-    if (in_solid) return error("missing endsolid");
+    if (in_solid || in_facet || in_loop) return error("unfinished solid or facet");
     if (soup.triangles.empty()) return fail(ErrorCode::ParseError, "no facet");
     return soup;
 }
 
 }  // namespace
 
-Result<TriangleSoup> read_stl(std::istream& in, const StlReadOptions& options) {
+Result<TriangleSoup> read_stl(std::istream& in, const StlReadOptions& options) try {
     const std::string bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    if (in.bad()) return fail(ErrorCode::ParseError, "STL stream failure");
     if (bytes.size() >= 84) {
         std::uint32_t count = 0;
         std::memcpy(&count, bytes.data() + 80, 4);
@@ -117,19 +154,37 @@ Result<TriangleSoup> read_stl(std::istream& in, const StlReadOptions& options) {
     const auto first = bytes.find_first_not_of(" \t\r\n");
     if (first != std::string::npos && bytes.compare(first, 5, "solid") == 0) return read_ascii(bytes, options);
     return fail(ErrorCode::ParseError, "neither ASCII (solid ...) nor binary STL");
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
-Result<TriangleSoup> read_stl(const std::filesystem::path& path, const StlReadOptions& options) {
+Result<TriangleSoup> read_stl(const std::filesystem::path& path, const StlReadOptions& options) try {
     std::ifstream in(path, std::ios::binary);
     if (!in) return fail(ErrorCode::FileOpenFailed, path.string());
     return read_stl(in, options);
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
 Result<TriangleSurface> read_stl_surface(const std::filesystem::path& path, const StlReadOptions& options,
-                                         const SurfaceRepairOptions& repair, SurfaceRepairReport* report) {
+                                         const SurfaceRepairOptions& repair, SurfaceRepairReport* report) try {
     auto soup = read_stl(path, options);
     if (!soup) return std::unexpected(soup.error());
     return repair_surface(*soup, repair, report);
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
 Status write_stl(const TriangleSurface& s, std::ostream& out, const StlWriteOptions& options) {

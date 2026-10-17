@@ -31,3 +31,18 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mesh/vmm_mesh.cpp")
                              PROPERTIES LABELS "vmm" WILL_FAIL TRUE)
     endif()
 endif()
+
+if(VMM_BUILD_VMM_TESTS AND Python3_FOUND AND TARGET vmm_benchmark)
+    set(vmm_checksum_platform "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-CGAL${CGAL_VERSION}-$<CONFIG>-native${VMM_ENABLE_NATIVE_ARCH}-lto${VMM_ENABLE_LTO}")
+    add_test(NAME vmm/benchmark/checksum_B1
+        COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/check_benchmark_checksum.py"
+        --benchmark $<TARGET_FILE:vmm_benchmark>
+        --records "${VMM_ROOT}/tests/data/checksums.txt" --platform "${vmm_checksum_platform}")
+    set_tests_properties(vmm/benchmark/checksum_B1 PROPERTIES LABELS "vmm;slow" SKIP_RETURN_CODE 77 TIMEOUT 1800)
+endif()
+
+if(VMM_BUILD_VMM_TESTS AND Python3_FOUND AND TARGET vmm_mesh)
+    add_test(NAME vmm/tools/vmm_mesh/fragmentation
+        COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/test_mesh_cli.py" $<TARGET_FILE:vmm_mesh>)
+    set_tests_properties(vmm/tools/vmm_mesh/fragmentation PROPERTIES LABELS "vmm;ci")
+endif()

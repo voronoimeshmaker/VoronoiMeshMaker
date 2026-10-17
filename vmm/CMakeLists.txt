@@ -191,6 +191,9 @@ if(VMM_BUILD_VMM_TESTS)
                          -P "${VMM_ROOT}/cmake/ScanIncludes.cmake")
         add_test(NAME vmm/ci/requirements
                  COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/check_requirements.py" --root "${VMM_ROOT}")
+        add_test(NAME vmm/ci/requirements_negative_control
+                 COMMAND "${Python3_EXECUTABLE}" "${VMM_ROOT}/tools/ci/test_requirements.py")
+        set_tests_properties(vmm/ci/requirements_negative_control PROPERTIES LABELS "vmm;ci")
         set_tests_properties(vmm/ci/firewall_scan vmm/ci/firewall_scan_negative_control vmm/ci/requirements
                              PROPERTIES LABELS "vmm;ci")
     endif()

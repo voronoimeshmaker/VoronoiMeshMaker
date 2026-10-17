@@ -1,5 +1,11 @@
 # P27 — validação consolidada
 
+> **Estado em fb02bb7 (revisão P30, 2026-10-17):** horizontes, colunas e CVT
+> estão implementados e registrados no histórico de main. As menções abaixo a
+> CVT futuro ou a trabalho sem commit descrevem a data da entrega original;
+> não representam o estado atual. O agente desta revisão não fez commit,
+> tag ou push. Limitações e correções pendentes: A01–A05 e P30–P37.
+
 2026-10-04. Exclusivamente Ubuntu-26.04-Test, /home/jflavio/Programas/VMM.
 Sem commit, tag ou push. Logs em build/ pertencem a esta árvore.
 

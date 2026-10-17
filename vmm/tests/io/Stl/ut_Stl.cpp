@@ -8,7 +8,9 @@
 //==============================================================================
 //  C++ standard library
 //==============================================================================
+#include <cstring>
 #include <filesystem>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -21,6 +23,7 @@
 //==============================================================================
 //  VoronoiMeshMaker
 //==============================================================================
+#include "allocation_failure.hpp"
 #include <vmm/domain/shapes3d.hpp>
 #include <vmm/io/stl.hpp>
 
@@ -86,6 +89,56 @@ TEST(Stl, MalformedInput) {
     EXPECT_EQ(parse("solid a\n vertex 0 0 0\n endfacet\nendsolid a\n"), ErrorCode::ParseError);
     EXPECT_EQ(parse("solid a\n polygon\nendsolid a\n"), ErrorCode::ParseError);
     EXPECT_EQ(parse("solid a\nendsolid a\n"), ErrorCode::ParseError);  // no facet
+}
+
+
+TEST(Stl, RejectsTruncatedBinaryCountsAndNonFiniteValues) {
+    std::ostringstream out;
+    ASSERT_TRUE(vmm::write_stl(tagged_cube(), out, {true}));
+    const auto valid = out.str();
+    for (std::size_t size = 0; size < valid.size(); ++size) {
+        std::istringstream in(valid.substr(0, size));
+        EXPECT_FALSE(vmm::read_stl(in)) << size;
+    }
+    auto bytes = valid;
+    const std::uint32_t count = std::numeric_limits<std::uint32_t>::max();
+    std::memcpy(bytes.data() + 80, &count, sizeof(count));
+    std::istringstream huge(bytes);
+    EXPECT_FALSE(vmm::read_stl(huge));
+    for (const auto value : {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN()}) {
+        bytes = valid;
+        std::memcpy(bytes.data() + 84 + 12, &value, sizeof(value));
+        std::istringstream nonfinite(bytes);
+        EXPECT_FALSE(vmm::read_stl(nonfinite));
+    }
+    std::istringstream trailing(valid + "extra");
+    EXPECT_FALSE(vmm::read_stl(trailing));
+}
+
+TEST(Stl, RequiresCompleteAsciiFacets) {
+    for (const auto* body : {"vertex 0 0 0\n", "facet normal 0 0 1\n", "endloop\n", "endfacet\n",
+                             "facet normal nan 0 1\n", "outer loop\n"}) {
+        std::istringstream in(std::string("solid a\n") + body + "endsolid a\n");
+        EXPECT_FALSE(vmm::read_stl(in));
+    }
+    std::ostringstream out;
+    ASSERT_TRUE(vmm::write_stl(tagged_cube(), out));
+    std::istringstream extra(out.str() + "unexpected\n");
+    EXPECT_FALSE(vmm::read_stl(extra));
+}
+
+
+TEST(Stl, AllocationFailuresStayInsideTheReader) {
+    std::ostringstream out;
+    ASSERT_TRUE(vmm::write_stl(tagged_cube(), out));
+    const auto text = out.str();
+    for (std::size_t attempt = 0; attempt < 80; ++attempt) {
+        std::istringstream in(text);
+        vmm::test::fail_allocation_after(attempt);
+        const auto result = vmm::read_stl(in);
+        vmm::test::stop_allocation_failure();
+        if (vmm::test::allocation_failed) { EXPECT_FALSE(result); }
+    }
 }
 
 }  // namespace

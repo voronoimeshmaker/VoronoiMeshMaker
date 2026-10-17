@@ -1,0 +1,4 @@
+# P30: platform case topology-checksum (hexadecimal).
+# Values must be measured in WSL Ubuntu-26.04-Test, never copied from cloud runs.
+# Platform: OS-architecture-compiler-version-CGALversion-configuration-nativeX-ltoY.
+# Cases with counts/refinement explicitly identified; records added after measurement.

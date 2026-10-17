@@ -9,10 +9,14 @@
 //==============================================================================
 #include <algorithm>
 #include <charconv>
+#include <cmath>
+#include <exception>
 #include <format>
 #include <fstream>
 #include <iterator>
+#include <new>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -42,7 +46,7 @@ std::unexpected<Error> parse_error(std::size_t line, std::string what) {
 std::optional<Real> positive_number(std::string_view text) {
     Real value = 0;
     const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
-    if (ec != std::errc{} || end != text.data() + text.size() || !(value > 0)) return std::nullopt;
+    if (ec != std::errc{} || end != text.data() + text.size() || !(value > 0) || !std::isfinite(value)) return std::nullopt;
     return value;
 }
 
@@ -56,7 +60,7 @@ std::optional<std::string_view> ConfigSection::find(std::string_view key) const 
     return std::string_view(it->value);
 }
 
-Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::path base_directory) {
+Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::path base_directory) try {
     MeshConfig config;
     config.base_directory_ = std::move(base_directory);
     ConfigSection* current = &config.global_;
@@ -96,6 +100,8 @@ Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::pat
         if (key == "horizons" || key == "cvt_iterations" || key == "cvt_tolerance" || key == "cvt_relaxation") {
             // Optional geometric extrusion of a 2D request; resolved in run_config.
             continue;
+        } else if (key == "reject_fragmented") {
+            if (value != "true" && value != "false") return parse_error(line, "reject_fragmented is true or false");
         } else if (key == "dimension") {
             if (value != "2" && value != "3") return parse_error(line, "dimension is 2 or 3");
             config.dimension_ = value == "2" ? 2 : 3;
@@ -123,9 +129,15 @@ Result<MeshConfig> MeshConfig::parse(std::string_view text, std::filesystem::pat
         return fail(ErrorCode::ParseError, "no [region] section");
     }
     return config;
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
-Result<MeshConfig> MeshConfig::read(const std::filesystem::path& file) {
+Result<MeshConfig> MeshConfig::read(const std::filesystem::path& file) try {
     std::ifstream in(file, std::ios::binary);
     if (!in) return fail(ErrorCode::FileOpenFailed, file.string());
     const std::string text{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
@@ -134,6 +146,12 @@ Result<MeshConfig> MeshConfig::read(const std::filesystem::path& file) {
                                                                                  config.error().context())));
     if (!config->global_.find("output")) config->output_ = file.stem();
     return config;
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
 std::filesystem::path MeshConfig::output() const { return base_directory_ / output_; }

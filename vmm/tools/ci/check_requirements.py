@@ -31,12 +31,12 @@ ALLOWED_DEPS = {
     "io": {"core", "error", "geometry", "mesh"},
     "facade": {"core", "error", "geometry", "domain", "sites", "backend", "mesh", "voronoi", "reorder", "io"},
     # DEC-040: configuration files and the vmm-mesh executable, on top of the facade.
-    "app": {"core", "error", "geometry", "domain", "sites", "mesh", "voronoi", "io"},
+    "app": {"core", "error", "geometry", "domain", "sites", "mesh", "voronoi", "io", "facade"},
 }
 ALLOWED_PACKAGES = {"CGAL", "Boost", "GTest", "Python3", "Threads", "GMP", "MPFR", "TBB"}
 STD_HEADERS = set("""algorithm any array atomic bit bitset cassert cctype charconv chrono cmath compare concepts
 cstddef cstdint cstdio cstdlib cstring deque exception expected filesystem format fstream functional initializer_list
-iomanip ios iosfwd iostream istream iterator limits list map memory mutex numbers numeric optional ostream print queue
+iomanip ios iosfwd iostream istream iterator limits list map memory mutex new numbers numeric optional ostream print queue
 random ranges ratio set source_location span sstream stdexcept string string_view system_error thread tuple
 type_traits typeinfo unordered_map unordered_set utility variant vector""".split())
 
@@ -77,7 +77,7 @@ def main() -> int:
     for header in (root / "include/vmm").rglob("*.hpp"):
         module = header.relative_to(root / "include/vmm").parts[0]
         if module.endswith(".hpp"):
-            continue
+            module = "facade"
         code = strip_comments(header.read_text())
         for m in re.finditer(r"^(?:template\s*<[^>]*>\s*\n)?(?:class|struct)\s+(\w+)\s*(?:final\s*)?[{:]", code, re.M):
             name = m.group(1)
@@ -87,7 +87,7 @@ def main() -> int:
                 errors.append(f"R1 {module}/{name} has no tests/{module}/{name}/ut_{name}.cpp")
     if tests.exists():
         for d in tests.iterdir():
-            if d.is_dir() and d.name not in ("support", "data", "integration") and not (root / "include/vmm" / d.name).is_dir():
+            if d.is_dir() and d.name not in ("support", "data", "integration", "facade") and not (root / "include/vmm" / d.name).is_dir():
                 errors.append(f"R2 tests/{d.name} has no include/vmm/{d.name}")
     # R4
     graph: dict[str, set[str]] = {}
@@ -96,7 +96,8 @@ def main() -> int:
         module = rel[2] if rel[0] == "include" else rel[1]
         if module.endswith(".hpp"):
             module = "facade"
-        for dep in re.findall(r"#include\s*<vmm/(\w+)/", p.read_text()):
+        for include in re.findall(r"#include\s*<vmm/([^>]+)>", strip_comments(p.read_text())):
+            dep = include.split("/", 1)[0] if "/" in include else "facade"
             if dep != module:
                 graph.setdefault(module, set()).add(dep)
                 if dep not in ALLOWED_DEPS.get(module, set()):

@@ -24,10 +24,11 @@
 #include <vmm/app/run.hpp>
 #include <vmm/core/version.hpp>
 #include <vmm/error/catalog.hpp>
+#include <vmm/error/log.hpp>
 
 namespace {
 
-constexpr std::string_view kUsage = R"(usage: vmm-mesh [--language pt|en] [--output <base>] <configuration file>
+constexpr std::string_view kUsage = R"(usage: vmm-mesh [--quiet] [--language pt|en] [--output <base>] <configuration file>
        vmm-mesh --help | --version
 
 Generates a Voronoi finite-volume mesh from a configuration file and writes it
@@ -57,6 +58,7 @@ int main(int argc, char** argv) {
     const std::span<char*> args(argv, static_cast<std::size_t>(argc));
     std::filesystem::path file;
     std::optional<std::string> output;
+    bool quiet = false;
     for (std::size_t i = 1; i < args.size(); ++i) {
         const std::string_view arg = args[i];
         if (arg == "--help" || arg == "-h") {
@@ -67,6 +69,7 @@ int main(int argc, char** argv) {
             std::println("vmm-mesh {}", vmm::version_string);
             return 0;
         }
+        if (arg == "--quiet") { quiet = true; continue; }
         if (arg == "--language") {
             const std::string_view language = i + 1 < args.size() ? std::string_view(args[++i]) : "";
             if (language != "pt" && language != "en") return usage_error("--language takes pt or en");
@@ -83,18 +86,23 @@ int main(int argc, char** argv) {
     }
     if (file.empty()) return usage_error("no configuration file");
 
+    if (!quiet) vmm::set_log_sink([](const vmm::Error& diagnostic) {
+        std::println(stderr, "vmm-mesh: {}", diagnostic.message());
+    });
     auto config = vmm::MeshConfig::read(file);
     if (!config) {
         std::println(stderr, "vmm-mesh: {}", config.error().message());
         return 1;
     }
     if (output) config->set_output(std::filesystem::absolute(*output));
-    std::println("vmm-mesh {}: {} ({}D)", vmm::version_string, file.string(), config->dimension());
+    if (!quiet) std::println("vmm-mesh {}: {} ({}D)", vmm::version_string, file.string(), config->dimension());
     const auto report = vmm::run_config(*config);
     if (!report) {
         std::println(stderr, "vmm-mesh: {}", report.error().message());
         return 1;
     }
+    if (quiet) return 0;
+    std::println("fragmented cells {}", report->fragmented_cells);
     std::println("cells {} | internal faces {} | boundary faces {}", report->cells, report->internal_faces,
                  report->boundary_faces);
     std::println("invariants: relative measure error {:.1e}, closure {:.1e}", report->invariants.total_relative_error,

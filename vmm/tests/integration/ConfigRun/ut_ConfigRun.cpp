@@ -259,3 +259,29 @@ TEST(ConfigRun, UserRegistries) {
 }
 
 }  // namespace
+
+TEST(ConfigRun, FragmentedRiverIsVisibleAndCanBeRejected) {
+    const std::string text = "dimension = 2\n[region river]\nshape = polygon\n"
+        "xy = 0 0 10 0 10 2.1 0 2.1 0 1.1 9 1.1 9 1.0 0 1.0\n"
+        "sites = grid\nsites.spacing = 0.75\nsites.origin = 0.375 0.375\n";
+    auto config = vmm::MeshConfig::parse(text);
+    ASSERT_TRUE(config);
+    auto request = vmm::make_request_2d(*config);
+    ASSERT_TRUE(request);
+    auto result = vmm::generate_mesh_2d(*request);
+    ASSERT_TRUE(result) << result.error().message();
+    EXPECT_GT(result->fragmented_cells.size(), 0u);
+    EXPECT_EQ(result->fragmented_cells.size(), result->stats.fragmented_cells);
+    for (auto cell : result->fragmented_cells) EXPECT_LT(cell.index(), result->mesh.cell_count());
+    request->reject_fragmented = true;
+    auto rejected = vmm::generate_mesh_2d(*request);
+    ASSERT_FALSE(rejected);
+    EXPECT_EQ(rejected.error().code(), vmm::ErrorCode::FragmentedCells);
+    EXPECT_NE(rejected.error().context().find("cells:"), std::string::npos);
+    auto strict = vmm::MeshConfig::parse("reject_fragmented = true\n" + text);
+    ASSERT_TRUE(strict);
+    auto report = vmm::run_config(*strict);
+    ASSERT_FALSE(report);
+    EXPECT_EQ(report.error().code(), vmm::ErrorCode::FragmentedCells);
+    EXPECT_FALSE(vmm::MeshConfig::parse("reject_fragmented = yes\n" + text));
+}

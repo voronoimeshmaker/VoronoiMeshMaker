@@ -7,15 +7,21 @@
 //==============================================================================
 //  C++ standard library
 //==============================================================================
+#include <algorithm>
 #include <charconv>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <istream>
+#include <limits>
+#include <new>
 #include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -49,6 +55,19 @@ public:
         return false;
     }
 
+    // Seekable files can reject impossible counts before allocating. Streams
+    // without seeking stay incremental and never allocate from an input count.
+    bool count_fits(std::size_t n, std::size_t minimum_bytes = 1) {
+        if (n >= std::numeric_limits<std::uint32_t>::max()) return false;
+        auto* buffer = in_.rdbuf();
+        const auto pos = buffer->pubseekoff(0, std::ios::cur, std::ios::in);
+        if (pos == std::streampos(-1)) return true;
+        const auto end = buffer->pubseekoff(0, std::ios::end, std::ios::in);
+        if (buffer->pubseekpos(pos, std::ios::in) == std::streampos(-1)) return false;
+        return end == std::streampos(-1) ||
+               (end >= pos && n <= static_cast<std::size_t>(end - pos) / minimum_bytes);
+    }
+
     [[nodiscard]] const std::vector<std::string>& tokens() const noexcept { return tokens_; }
 
     std::unexpected<Error> error(const std::string& what) const {
@@ -66,6 +85,7 @@ public:
             if (!n) return std::unexpected(n.error());
             v.push_back(*n);
         }
+        if (keyword != "dimension" && !count_fits(v[0])) return error("count exceeds input or ID range");
         return v;
     }
 
@@ -79,7 +99,7 @@ public:
     Result<Real> to_real(const std::string& t) const {
         Real v = 0;
         const auto [p, ec] = std::from_chars(t.data(), t.data() + t.size(), v);
-        if (ec != std::errc{} || p != t.data() + t.size()) return error("bad number '" + t + "'");
+        if (ec != std::errc{} || p != t.data() + t.size() || !std::isfinite(v)) return error("bad number '" + t + "'");
         return v;
     }
 
@@ -160,7 +180,7 @@ Status write_native(const Mesh<D>& m, const std::filesystem::path& path, const N
 }
 
 template <std::size_t D>
-Result<Mesh<D>> read_native(std::istream& in) {
+Result<Mesh<D>> read_native(std::istream& in) try {
     Reader r(in);
     if (!r.next_line() || r.tokens().size() != 2 || r.tokens()[0] != "vmm-mesh") return r.error("not a vmm-mesh file");
     if (r.tokens()[1] != std::to_string(native_format_version)) {
@@ -197,14 +217,17 @@ Result<Mesh<D>> read_native(std::istream& in) {
     }
     n = r.header("points", 1);
     if (!n) return std::unexpected(n.error());
-    d.points.resize((*n)[0]);
-    for (auto& p : d.points) {
+    if (!r.count_fits((*n)[0], 2 * D)) return r.error("point count exceeds input size");
+    d.points.reserve(std::min((*n)[0], std::size_t{4096}));
+    for (std::size_t point = 0; point < (*n)[0]; ++point) {
+        Vec<D> p{};
         if (auto ok = r.row(D); !ok) return std::unexpected(ok.error());
         for (std::size_t k = 0; k < D; ++k) {
             auto x = r.to_real(r.tokens()[k]);
             if (!x) return std::unexpected(x.error());
             p[k] = *x;
         }
+        d.points.push_back(p);
     }
     n = r.header("faces", 2);
     if (!n) return std::unexpected(n.error());
@@ -217,6 +240,7 @@ Result<Mesh<D>> read_native(std::istream& in) {
         if (!r.next_line() || r.tokens().empty()) return r.error("face row expected");
         auto nv = r.to_size(r.tokens()[0]);
         if (!nv) return std::unexpected(nv.error());
+        if (*nv > r.tokens().size()) return r.error("vertex count exceeds face row");
         const std::size_t expected = 1 + *nv + 1 + (f < ni ? 1 : 0);
         if (r.tokens().size() != expected) return r.error(std::format("face {}: {} value(s) expected", f, expected));
         std::vector<VertexId> verts;
@@ -243,6 +267,7 @@ Result<Mesh<D>> read_native(std::istream& in) {
         if (!reg) return std::unexpected(reg.error());
         auto site = r.to_size(r.tokens()[1]);
         if (!site) return std::unexpected(site.error());
+        if (*site >= SiteId::invalid().index()) return r.error("site ID out of range");
         Vec<D> x{};
         for (std::size_t k = 0; k < D; ++k) {
             auto v = r.to_real(r.tokens()[2 + k]);
@@ -262,16 +287,29 @@ Result<Mesh<D>> read_native(std::istream& in) {
         d.neighbour.push_back(CellId::from_index(nb));
     }
     if (!r.next_line() || r.tokens().size() != 1 || r.tokens()[0] != "end") return r.error("'end' expected");
+    if (r.next_line()) return r.error("unexpected data after end");
     auto mesh = Mesh<D>::from_data(std::move(d));
     if (!mesh) return fail(ErrorCode::InconsistentData, mesh.error().context());
     return mesh;
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
 template <std::size_t D>
-Result<Mesh<D>> read_native(const std::filesystem::path& path) {
+Result<Mesh<D>> read_native(const std::filesystem::path& path) try {
     std::ifstream in(path);
     if (!in) return fail(ErrorCode::FileOpenFailed, path.string());
     return read_native<D>(in);
+} catch (const std::bad_alloc&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::length_error&) {
+    return fail(ErrorCode::ResourceExhausted);
+} catch (const std::exception&) {
+    return fail(ErrorCode::ParseError);
 }
 
 template Status write_native(const Mesh<2>&, std::ostream&, const NativeWriteOptions&);

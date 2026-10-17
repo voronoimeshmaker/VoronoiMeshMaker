@@ -519,6 +519,7 @@ Result<Build3D> build_mesh_3d(const Partition3D& partition, const SiteSet3D& sit
                 if (c.local) ++st.local_clips;
                 if (c.components > 1) {
                     ++st.fragmented_cells;
+                    out.fragmented_cells.push_back(CellId{gi});
                     log(Error(ErrorCode::InvariantViolated, "cell made of several pieces (kept whole)", CellId{gi},
                               Severity::Warning));
                 }

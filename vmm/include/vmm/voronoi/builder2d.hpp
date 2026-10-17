@@ -57,6 +57,7 @@ struct Build2D {
     Mesh2D mesh;
     BuildStats2D stats;
     std::vector<Real> cell_polygon_area;  ///< shoelace area of each cell (independent check)
+    std::vector<CellId> fragmented_cells = {};  ///< canonical cell IDs, DEC-035
 };
 
 /// @brief Builds the conforming multi-region Voronoi mesh of a partition.

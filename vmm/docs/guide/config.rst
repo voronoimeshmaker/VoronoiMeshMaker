@@ -136,3 +136,30 @@ nos registros abertos de ``ConfigRegistries`` e passam a valer nos arquivos:
    });
    const auto config = vmm::value_or_throw(vmm::MeshConfig::read("malha.cfg"));
    const auto report = vmm::value_or_throw(vmm::run_config(config, registries));
+
+Células fragmentadas
+-------------------
+
+Em domínios não convexos, uma célula pode ter vários pedaços desconexos.
+O comportamento padrão mantém esses pedaços juntos (DEC-035). O executável
+imprime os avisos em stderr e a contagem no resumo. Para rejeitar o resultado
+antes de gravar arquivos, use a chave global ``reject_fragmented = true``;
+``false`` mantém o padrão. A falha usa ``FragmentedCells`` (VMM-404), com os IDs
+no contexto. ``--quiet`` suprime avisos e o resumo, mas preserva erros e o código
+de saída.
+
+Na API C++, ``MeshRequest2D`` e ``MeshRequest3D`` têm ``reject_fragmented``;
+os resultados expõem ``fragmented_cells`` com IDs na numeração da malha retornada.
+O CVT informa a lista do último iterado aceito. Nas colunas, a indicação é
+propagada da fragmentação da base; ela não é uma análise volumétrica independente
+após desaparecimento de camadas.
+
+Fragmented cells (English)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Disconnected pieces are kept together by default. Set the global key
+``reject_fragmented = true`` to reject fragmented meshes before writing files.
+The CLI prints warnings to stderr; ``--quiet`` suppresses warnings and progress,
+but keeps fatal errors and the exit status. The C++ request flag is additive,
+and the result list uses canonical cell IDs. CVT reports its last accepted
+iterate; layered output propagates the base classification.

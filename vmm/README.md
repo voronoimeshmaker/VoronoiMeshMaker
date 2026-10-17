@@ -31,7 +31,7 @@ referência em `tests/data/golden/`.
   arquivo de configuração (`vmm-mesh bloco.cfg`); no C++, `vmm::value_or_throw`
   troca a verificação de cada `Result` por exceções.
 
-Versão 1.1: API estável com versionamento semântico (DEC-041); a referência da
+Versão 1.1 em desenvolvimento (`1.1.0-dev`): API 1.0 estável com versionamento semântico (DEC-041); a referência da
 API na documentação diz o que é interno.
 
 ```bash

@@ -21,6 +21,7 @@
 //==============================================================================
 //  VoronoiMeshMaker
 //==============================================================================
+#include "allocation_failure.hpp"
 #include <vmm/app/config.hpp>
 
 namespace {
@@ -147,6 +148,29 @@ TEST(MeshConfig, OutputKeyWinsOverTheFileName) {
     std::filesystem::remove(file);
     ASSERT_TRUE(c) << c.error().message();
     EXPECT_EQ(c->output(), file.parent_path() / "named");
+}
+
+
+TEST(MeshConfig, RejectsEmptyNonFiniteAndOversizedNumericInput) {
+    expect_error("", "dimension");
+    for (const auto* value : {"nan", "inf", "-inf", "1e999"}) {
+        expect_error(std::string("dimension = 2\ntolerance = ") + value + "\n[region a]\n", "positive number");
+    }
+    expect_error("dimension = 2\nseed = 18446744073709551616\n[region a]\n", "non-negative integer");
+    expect_error(std::string(kMinimal) + "extra\n", "expected 'key = value'");
+}
+
+
+TEST(MeshConfig, AllocationFailuresStayInsideTheParser) {
+    for (std::size_t attempt = 0; attempt < 30; ++attempt) {
+        vmm::test::fail_allocation_after(attempt);
+        const auto result = MeshConfig::parse(kMinimal);
+        vmm::test::stop_allocation_failure();
+        if (vmm::test::allocation_failed) {
+            ASSERT_FALSE(result);
+            EXPECT_EQ(result.error().code(), vmm::ErrorCode::ResourceExhausted);
+        }
+    }
 }
 
 }  // namespace

@@ -43,11 +43,13 @@ enum class ErrorCode : std::uint32_t {
     FragmentWithoutNeighbour = 401,
     InterfaceNotConforming = 402,
     UnresolvedLabel = 403,
+    FragmentedCells = 404,
     // io (5xx)
     FileOpenFailed = 500,
     ParseError = 501,
     UnsupportedVersion = 502,
     InconsistentData = 503,
+    ResourceExhausted = 504,
     // backend (6xx)
     BackendFailure = 600,
     // internal (9xx)

@@ -69,3 +69,6 @@ CvtOptions         # optimization controls
 CvtReport          # accepted iterate diagnostics
 CvtResult          # mesh and diagnostics
 LayeredCvtDomain   # fixed partition and source region map
+
+MeshRequest3D      # facade input aggregate
+MeshResult3D       # facade output aggregate

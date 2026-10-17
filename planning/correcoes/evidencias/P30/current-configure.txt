@@ -1,0 +1,33 @@
+Data: 2026-10-17; WSL Ubuntu-26.04-Test
+SHA256 log completo: c04d9d1610989a486b6e95eedac53dc6342646741cee22d11e9030af79c426df
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Targeting Ninja
+-- Using /usr/bin/c++ compiler.
+-- Boost include dirs: /usr/local/include
+-- Boost libraries:    
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Using gcc version 4 or later. Adding -frounding-math
+-- Performing Test VMM_CGAL_HEADERS_MATCH
+-- Performing Test VMM_CGAL_HEADERS_MATCH - Success
+-- VMM CGAL: 6.2.1; headers /usr/local/include/CGAL; version number 1060211000
+-- vmm: compiler GNU 15.2.0; CMake 4.4.4
+-- vmm: CGAL 6.2.1 (/usr/local/lib/cmake/CGAL, NR 1060211000); Boost 1.92.0
+-- vmm: build type Release; LTO OFF; native arch OFF
+-- Found GTest: /usr/lib/x86_64-linux-gnu/cmake/GTest/GTestConfig.cmake (found suitable version "1.17.0", minimum required is "1.14")
+-- Found Python3: /usr/bin/python3.14 (found version "3.14.4") found components: Interpreter
+-- VoronoiMeshMaker configuration complete
+-- Build type          : Release
+-- C++ standard        : 23
+-- Build examples      : ON
+-- Build tests         : ON
+-- Install prefix      : /usr/local
+-- Configuring done (4.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jflavio/Programas/VMM/build/p30-current

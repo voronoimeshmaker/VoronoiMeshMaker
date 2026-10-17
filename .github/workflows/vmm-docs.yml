@@ -8,6 +8,8 @@ name: vmm-docs
 on:
   push:
     branches: [main]
+    tags: ["v*"]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -16,7 +18,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -57,11 +59,17 @@ jobs:
           exit $status
       - name: Documentation (test gate, Doxygen, Sphinx pt and en, gallery)
         run: bash vmm/docs/build_docs.sh build $HOME/docs-venv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation-${{ github.sha }}
+          path: build/vmm_docs/html
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         with:
           path: build/vmm_docs/html
 
   deploy:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-24.04
     environment:

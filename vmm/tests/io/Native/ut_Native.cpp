@@ -21,6 +21,7 @@
 //==============================================================================
 //  VoronoiMeshMaker
 //==============================================================================
+#include "allocation_failure.hpp"
 #include "random_mesh.hpp"
 #include "simple_meshes.hpp"
 #include <vmm/io/native.hpp>
@@ -131,6 +132,57 @@ TEST(Native, ParseErrors) {
 TEST(Native, ThreeDimensionalHeader) {
     std::stringstream s(valid_text());
     EXPECT_EQ(vmm::read_native<3>(s).error().code(), vmm::ErrorCode::InconsistentData);
+}
+
+
+TEST(Native, RejectsHostileCountsAndTrailingData) {
+    const auto text = valid_text();
+    for (const auto& section : {"media 1", "regions 1", "patches 1", "points 6", "faces 7", "cells 2"}) {
+        const std::string header(section);
+        EXPECT_EQ(read_error(replace(text, header, header.substr(0, header.find(' ')) + " 4000000000000")),
+                  vmm::ErrorCode::ParseError) << section;
+    }
+    EXPECT_EQ(read_error(text + "extra\n"), vmm::ErrorCode::ParseError);
+    EXPECT_EQ(read_error(replace(text, "0 1 0.5 0.5", "0 4294967296 0.5 0.5")), vmm::ErrorCode::ParseError);
+    EXPECT_EQ(read_error(replace(text, "2 1 4 0 1", "18446744073709551615 1 4 0 1")), vmm::ErrorCode::ParseError);
+    for (const auto* value : {"nan", "inf", "-inf"}) {
+        EXPECT_EQ(read_error(replace(text, "0 1 0.5 0.5", std::string("0 1 ") + value + " 0.5")),
+                  vmm::ErrorCode::ParseError);
+    }
+}
+
+TEST(Native, RejectsEveryTruncatedSection) {
+    const auto text = valid_text();
+    for (std::size_t end = 0; end < text.find("end"); ++end) {
+        EXPECT_NE(read_error(text.substr(0, end)), vmm::ErrorCode{}) << end;
+    }
+}
+
+TEST(Native, ConvertsStreamExceptions) {
+    std::stringstream in;
+    in.exceptions(std::ios::badbit | std::ios::failbit);
+    EXPECT_NO_THROW({
+        const auto result = vmm::read_native<2>(in);
+        EXPECT_FALSE(result);
+        EXPECT_EQ(result.error().code(), vmm::ErrorCode::ParseError);
+    });
+}
+
+
+TEST(Native, AllocationFailuresStayInsideTheReader) {
+    const auto text = valid_text();
+    std::size_t failures = 0;
+    for (std::size_t attempt = 0; attempt < 80; ++attempt) {
+        std::istringstream in(text);
+        vmm::test::fail_allocation_after(attempt);
+        const auto result = vmm::read_native<2>(in);
+        vmm::test::stop_allocation_failure();
+        if (vmm::test::allocation_failed) {
+            ++failures;
+            EXPECT_FALSE(result);
+        }
+    }
+    EXPECT_GT(failures, 0u);
 }
 
 }  // namespace

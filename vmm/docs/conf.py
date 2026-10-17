@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent / "_ext"))
 project = "VoronoiMeshMaker"
 author = "VoronoiMeshMaker Team"
 copyright = "2026, VoronoiMeshMaker Team"
-release = "1.1.0"
+release = "1.1.0-dev"
 language = "pt_BR"
 
 extensions = ["breathe", "myst_parser", "sphinx_design", "sphinx.ext.mathjax", "vmm_gallery"]
@@ -31,6 +31,11 @@ html_theme_options = {
     "navigation_depth": 3,
     "show_toc_level": 2,
 }
+
+if "-" in release:
+    html_theme_options["announcement"] = (
+        "Versão em desenvolvimento / Development version: " + release
+    )
 
 breathe_projects = {"vmm": os.environ.get("VMM_DOXYGEN_XML", str(Path(__file__).parent / "_build" / "doxygen" / "xml"))}
 breathe_default_project = "vmm"

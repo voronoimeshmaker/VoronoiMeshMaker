@@ -34,7 +34,7 @@ struct CvtReport {
     std::string last_rejection;
 };
 template<std::size_t D>
-struct CvtResult { Mesh<D> mesh; CvtReport report; };
+struct CvtResult { Mesh<D> mesh; CvtReport report; std::vector<CellId> fragmented_cells = {}; };
 /// @brief Integrates squared distance to the generating sites, with uniform density.
 /// @note The mesh must contain oriented planar faces and actual Voronoi generators.
 template<std::size_t D>

@@ -266,3 +266,27 @@ TEST(LayeredIntegration, InvalidExtrusionGeometry) {
     auto mesh=vmm::Mesh2D::from_data(bad); ASSERT_TRUE(mesh);
     EXPECT_FALSE(vmm::generate_layered_mesh(*mesh,*h));
 }
+
+TEST(LayeredIntegration, ReaderLimitsTrailingInputAndExceptions) {
+    const std::string spec = "VMM_HORIZONS 1\n2 0 1\n2 0 1\n2\n\"a\"\n4 0 0 0 0\n\"b\"\n4 1 1 1 1\n1\n2 0 1\n";
+    std::istringstream valid(spec);
+    ASSERT_TRUE(vmm::read_horizons(valid));
+    for (std::size_t end = 0; end < spec.size() - 2; ++end) {
+        std::istringstream truncated(spec.substr(0, end));
+        EXPECT_FALSE(vmm::read_horizons(truncated)) << end;
+    }
+    for (const auto* extra : {"unexpected", "nan", "inf"}) {
+        std::istringstream trailing(spec + extra);
+        EXPECT_FALSE(vmm::read_horizons(trailing));
+    }
+    for (const auto* count : {"4000000000000", "4294967295", "-1"}) {
+        std::istringstream huge(std::string("VMM_HORIZONS 1\n") + count + " 0 1\n");
+        EXPECT_FALSE(vmm::read_horizons(huge));
+        std::istringstream layered(std::string("VMM_LAYERS 1\n") + count + " 0 1\n");
+        EXPECT_FALSE(vmm::read_layered(layered));
+    }
+    std::istringstream broken;
+    broken.exceptions(std::ios::failbit | std::ios::badbit);
+    EXPECT_NO_THROW(EXPECT_FALSE(vmm::read_horizons(broken)));
+    EXPECT_NO_THROW(EXPECT_FALSE(vmm::read_layered(broken)));
+}

@@ -1,0 +1,19 @@
+Data: 2026-10-17; WSL Ubuntu-26.04-Test
+SHA256 log completo: 376536b494683cf33e562f606ca413bfd6622b99170968980dfdbbcfeb274a36
+Test project /home/jflavio/Programas/VMM/build
+    Start  54: vmm/core/Version/Version.EqualsTheCMakeProject
+1/4 Test  #54: vmm/core/Version/Version.EqualsTheCMakeProject .....   Passed    0.00 sec
+    Start  55: vmm/core/Version/Version.StringMatchesTheNumbers
+2/4 Test  #55: vmm/core/Version/Version.StringMatchesTheNumbers ...   Passed    0.00 sec
+    Start 316: vmm/ci/requirements
+3/4 Test #316: vmm/ci/requirements ................................   Passed    0.06 sec
+    Start 317: vmm/ci/requirements_negative_control
+4/4 Test #317: vmm/ci/requirements_negative_control ...............   Passed    0.10 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+ci     =   0.16 sec*proc (2 tests)
+vmm    =   0.16 sec*proc (4 tests)
+
+Total Test time (real) =   0.18 sec

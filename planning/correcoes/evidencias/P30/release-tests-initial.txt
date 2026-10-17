@@ -1,0 +1,687 @@
+Test project /home/jflavio/Programas/VMM/build
+        Start 212: vmm/integration/RandomConfigurations/RandomConfigurations.InvariantsOnAThousandConfigurations
+        Start 162: vmm/integration/AnchorA3/AnchorA3.SoilBlockWithRiver
+        Start 207: vmm/integration/MultiRegion3D/MultiRegion3D.MirroredPairsMakeInterfaceFacesOrthogonal
+  1/337 Test #207: vmm/integration/MultiRegion3D/MultiRegion3D.MirroredPairsMakeInterfaceFacesOrthogonal ...........   Passed   11.08 sec
+        Start 206: vmm/integration/MultiRegion3D/MultiRegion3D.InputOrderGivesTheSameMesh
+  2/337 Test #206: vmm/integration/MultiRegion3D/MultiRegion3D.InputOrderGivesTheSameMesh ..........................   Passed    6.26 sec
+        Start 204: vmm/integration/MultiRegion3D/MultiRegion3D.SphereInACubeAndAHole
+  3/337 Test #204: vmm/integration/MultiRegion3D/MultiRegion3D.SphereInACubeAndAHole ...............................   Passed    3.87 sec
+        Start 331: vmm/tools/vmm_mesh/layers3d
+  4/337 Test #331: vmm/tools/vmm_mesh/layers3d .....................................................................   Passed    3.80 sec
+        Start 223: vmm/integration/Voronoi3D/Voronoi3D.ScaleDoesNotChangeTheTopology
+  5/337 Test #223: vmm/integration/Voronoi3D/Voronoi3D.ScaleDoesNotChangeTheTopology ...............................   Passed    2.94 sec
+        Start 205: vmm/integration/MultiRegion3D/MultiRegion3D.CoplanarHalvesAndThreeLayers
+  6/337 Test #162: vmm/integration/AnchorA3/AnchorA3.SoilBlockWithRiver ............................................   Passed   30.24 sec
+        Start 325: vmm/ci/firewall_scan
+  7/337 Test #205: vmm/integration/MultiRegion3D/MultiRegion3D.CoplanarHalvesAndThreeLayers ........................   Passed    2.74 sec
+        Start 214: vmm/integration/StlDomain/StlDomain.AsciiTerrainKeepsPatches
+  8/337 Test #325: vmm/ci/firewall_scan ............................................................................   Passed    2.29 sec
+        Start 213: vmm/integration/StlDomain/StlDomain.BinaryTerrain
+  9/337 Test #214: vmm/integration/StlDomain/StlDomain.AsciiTerrainKeepsPatches ....................................   Passed    2.29 sec
+        Start 216: vmm/integration/Voronoi3D/Voronoi3D.SphereCurvedBoundary
+ 10/337 Test #212: vmm/integration/RandomConfigurations/RandomConfigurations.InvariantsOnAThousandConfigurations ...   Passed   34.01 sec
+        Start 222: vmm/integration/Voronoi3D/Voronoi3D.InputOrderGivesTheSameMeshBitForBit
+ 11/337 Test #213: vmm/integration/StlDomain/StlDomain.BinaryTerrain ...............................................   Passed    2.06 sec
+        Start 203: vmm/integration/MultiRegion3D/MultiRegion3D.CubeWithACore
+ 12/337 Test #216: vmm/integration/Voronoi3D/Voronoi3D.SphereCurvedBoundary ........................................   Passed    1.87 sec
+        Start 165: vmm/integration/Anchors/Anchors.A2
+ 13/337 Test #222: vmm/integration/Voronoi3D/Voronoi3D.InputOrderGivesTheSameMeshBitForBit .........................   Passed    1.60 sec
+        Start 217: vmm/integration/Voronoi3D/Voronoi3D.NonConvexLShape
+ 14/337 Test #203: vmm/integration/MultiRegion3D/MultiRegion3D.CubeWithACore .......................................   Passed    1.54 sec
+        Start 218: vmm/integration/Voronoi3D/Voronoi3D.SharpThreeDegreeWedge
+ 15/337 Test #165: vmm/integration/Anchors/Anchors.A2 ..............................................................   Passed    1.57 sec
+        Start 215: vmm/integration/Voronoi3D/Voronoi3D.CubeRandomSites
+ 16/337 Test #217: vmm/integration/Voronoi3D/Voronoi3D.NonConvexLShape .............................................   Passed    1.14 sec
+        Start 219: vmm/integration/Voronoi3D/Voronoi3D.CellsSpanningSeveralSpikesStayWhole
+ 17/337 Test #218: vmm/integration/Voronoi3D/Voronoi3D.SharpThreeDegreeWedge .......................................   Passed    1.00 sec
+        Start 224: vmm/integration/Voronoi3D/Voronoi3D.FacadeNativeRoundTripAndVtu
+ 18/337 Test #215: vmm/integration/Voronoi3D/Voronoi3D.CubeRandomSites .............................................   Passed    0.99 sec
+        Start 329: vmm/tools/vmm_mesh/cvt_horizons
+ 19/337 Test #219: vmm/integration/Voronoi3D/Voronoi3D.CellsSpanningSeveralSpikesStayWhole .........................   Passed    0.78 sec
+        Start 326: vmm/ci/firewall_scan_negative_control
+ 20/337 Test #326: vmm/ci/firewall_scan_negative_control ...........................................................   Passed    0.33 sec
+        Start  17: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.BuiltinSources
+ 21/337 Test #224: vmm/integration/Voronoi3D/Voronoi3D.FacadeNativeRoundTripAndVtu .................................   Passed    0.77 sec
+        Start 220: vmm/integration/Voronoi3D/Voronoi3D.CartesianGridCosphericalSites
+ 22/337 Test #329: vmm/tools/vmm_mesh/cvt_horizons .................................................................   Passed    0.62 sec
+        Start 321: vmm/voronoi/Builder3D/Builder3D.StatisticsAndInputMap
+ 23/337 Test #220: vmm/integration/Voronoi3D/Voronoi3D.CartesianGridCosphericalSites ...............................   Passed    0.23 sec
+        Start 318: vmm/voronoi/Builder2D/Builder2D.AnchorA1
+ 24/337 Test  #17: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.BuiltinSources ................................   Passed    0.29 sec
+        Start 188: vmm/integration/Facade/Facade.AnchorA1EndToEnd
+ 25/337 Test #321: vmm/voronoi/Builder3D/Builder3D.StatisticsAndInputMap ...........................................   Passed    0.14 sec
+        Start 211: vmm/integration/Oracle/Oracle.O4UnitRandom
+ 26/337 Test #318: vmm/voronoi/Builder2D/Builder2D.AnchorA1 ........................................................   Passed    0.12 sec
+        Start 328: vmm/ci/requirements_negative_control
+ 27/337 Test #188: vmm/integration/Facade/Facade.AnchorA1EndToEnd ..................................................   Passed    0.11 sec
+        Start 332: vmm/tools/vmm_mesh/soil2d
+ 28/337 Test #211: vmm/integration/Oracle/Oracle.O4UnitRandom ......................................................   Passed    0.11 sec
+        Start 221: vmm/integration/Voronoi3D/Voronoi3D.SitesVeryCloseToTheBoundary
+ 29/337 Test #332: vmm/tools/vmm_mesh/soil2d .......................................................................   Passed    0.10 sec
+        Start 317: vmm/voronoi/Builder2D/Builder2D.ScaleAndOrderInvariance
+ 30/337 Test #328: vmm/ci/requirements_negative_control ............................................................   Passed    0.15 sec
+        Start 283: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.DenserWhereTheSpacingIsSmaller
+ 31/337 Test #221: vmm/integration/Voronoi3D/Voronoi3D.SitesVeryCloseToTheBoundary .................................   Passed    0.12 sec
+        Start 322: vmm/voronoi/Builder3D/Builder3D.WithoutTheFastPathTheMeshIsTheSame
+ 32/337 Test #283: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.DenserWhereTheSpacingIsSmaller ..........   Passed    0.07 sec
+        Start 298: vmm/sites/InterfacePairs3D/InterfacePairs3D.SitesGeneratedWithPairs
+ 33/337 Test #317: vmm/voronoi/Builder2D/Builder2D.ScaleAndOrderInvariance .........................................   Passed    0.12 sec
+        Start 184: vmm/integration/Cvt/Cvt.SpatialSitesKeepInternalPlaneAndCurvedBoundary
+ 34/337 Test #322: vmm/voronoi/Builder3D/Builder3D.WithoutTheFastPathTheMeshIsTheSame ..............................   Passed    0.07 sec
+        Start 190: vmm/integration/Facade/Facade.ErrorsFromEachStage
+ 35/337 Test #298: vmm/sites/InterfacePairs3D/InterfacePairs3D.SitesGeneratedWithPairs .............................   Passed    0.06 sec
+        Start 166: vmm/integration/ConfigRun/ConfigRun.RequestEqualsTheCppApi
+ 36/337 Test #190: vmm/integration/Facade/Facade.ErrorsFromEachStage ...............................................   Passed    0.04 sec
+        Start 315: vmm/voronoi/Builder2D/Builder2D.FastPathDoesNotChangeTheMesh
+ 37/337 Test #315: vmm/voronoi/Builder2D/Builder2D.FastPathDoesNotChangeTheMesh ....................................   Passed    0.04 sec
+        Start 171: vmm/integration/ConfigRun/ConfigRun.RunWritesTheRequestedFiles
+ 38/337 Test #166: vmm/integration/ConfigRun/ConfigRun.RequestEqualsTheCppApi ......................................   Passed    0.05 sec
+        Start 307: vmm/sites/SiteSet3D/SiteSet3D.GenerateIsDeterministic
+ 39/337 Test #184: vmm/integration/Cvt/Cvt.SpatialSitesKeepInternalPlaneAndCurvedBoundary ..........................   Passed    0.10 sec
+        Start 208: vmm/integration/Oracle/Oracle.O1Random
+ 40/337 Test #307: vmm/sites/SiteSet3D/SiteSet3D.GenerateIsDeterministic ...........................................   Passed    0.03 sec
+        Start 164: vmm/integration/Anchors/Anchors.A1WithAirHasTripleJunctions
+ 41/337 Test #171: vmm/integration/ConfigRun/ConfigRun.RunWritesTheRequestedFiles ..................................   Passed    0.03 sec
+        Start 280: vmm/reorder/RcmOrdering/RcmOrdering.ReducesBandwidth
+ 42/337 Test #208: vmm/integration/Oracle/Oracle.O1Random ..........................................................   Passed    0.03 sec
+        Start 299: vmm/sites/InterfacePairs3D/InterfacePairs3D.CurvedInterfaceAndErrors
+ 43/337 Test #164: vmm/integration/Anchors/Anchors.A1WithAirHasTripleJunctions .....................................   Passed    0.02 sec
+        Start 163: vmm/integration/Anchors/Anchors.A1
+ 44/337 Test #299: vmm/sites/InterfacePairs3D/InterfacePairs3D.CurvedInterfaceAndErrors ............................   Passed    0.02 sec
+        Start  32: vmm/backend/Cgal3D/Cgal3D.PartitionByPrecedence
+ 45/337 Test #280: vmm/reorder/RcmOrdering/RcmOrdering.ReducesBandwidth ............................................   Passed    0.02 sec
+        Start 210: vmm/integration/Oracle/Oracle.O3Hexagonal
+ 46/337 Test #163: vmm/integration/Anchors/Anchors.A1 ..............................................................   Passed    0.02 sec
+        Start 296: vmm/sites/InterfacePairs/InterfacePairs.ThinRegionStillGetsSites
+ 47/337 Test  #32: vmm/backend/Cgal3D/Cgal3D.PartitionByPrecedence .................................................   Passed    0.02 sec
+        Start 314: vmm/voronoi/Builder2D/Builder2D.SquareWithHoleE1
+ 48/337 Test #210: vmm/integration/Oracle/Oracle.O3Hexagonal .......................................................   Passed    0.02 sec
+        Start  26: vmm/backend/Cgal/Cgal.RandomLayersPreserveTotalArea
+ 49/337 Test #296: vmm/sites/InterfacePairs/InterfacePairs.ThinRegionStillGetsSites ................................   Passed    0.02 sec
+        Start 273: vmm/reorder/HilbertOrdering/HilbertOrdering.LocalityBeatsRandomOrder
+ 50/337 Test #314: vmm/voronoi/Builder2D/Builder2D.SquareWithHoleE1 ................................................   Passed    0.01 sec
+        Start 209: vmm/integration/Oracle/Oracle.O2Cartesian
+ 51/337 Test  #26: vmm/backend/Cgal/Cgal.RandomLayersPreserveTotalArea .............................................   Passed    0.02 sec
+        Start 316: vmm/voronoi/Builder2D/Builder2D.SquareWithHoleE2MirrorPairs
+ 52/337 Test #273: vmm/reorder/HilbertOrdering/HilbertOrdering.LocalityBeatsRandomOrder ............................   Passed    0.01 sec
+        Start 310: vmm/sites/UniformRandomSource/UniformRandomSource.SpacingMarginDeterminism
+ 53/337 Test #209: vmm/integration/Oracle/Oracle.O2Cartesian .......................................................   Passed    0.01 sec
+        Start  14: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.BuiltinSources
+ 54/337 Test #316: vmm/voronoi/Builder2D/Builder2D.SquareWithHoleE2MirrorPairs .....................................   Passed    0.01 sec
+        Start 319: vmm/voronoi/Builder2D/Builder2D.CocircularGridCollapsesDegenerateFaces
+ 55/337 Test #310: vmm/sites/UniformRandomSource/UniformRandomSource.SpacingMarginDeterminism ......................   Passed    0.01 sec
+        Start 270: vmm/mesh/Metrics/Metrics.HexagonalIsAnalytic
+ 56/337 Test  #14: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.BuiltinSources ................................   Passed    0.01 sec
+        Start 278: vmm/reorder/Permutation/Permutation.RenumberRoundTrip
+ 57/337 Test #319: vmm/voronoi/Builder2D/Builder2D.CocircularGridCollapsesDegenerateFaces ..........................   Passed    0.01 sec
+        Start 242: vmm/io/Vtu/Vtu.CellLoopsMatchCellAreas
+ 58/337 Test #270: vmm/mesh/Metrics/Metrics.HexagonalIsAnalytic ....................................................   Passed    0.01 sec
+        Start 295: vmm/sites/InterfacePairs/InterfacePairs.GenerateSitesWithPairsExcludesNearbySites
+ 59/337 Test #278: vmm/reorder/Permutation/Permutation.RenumberRoundTrip ...........................................   Passed    0.01 sec
+        Start 275: vmm/reorder/LexicographicOrdering/LexicographicOrdering.SitesSorted
+ 60/337 Test #242: vmm/io/Vtu/Vtu.CellLoopsMatchCellAreas ..........................................................   Passed    0.01 sec
+        Start 100: vmm/domain/Sphere/Sphere.VolumeConvergesWithSubdivisions
+ 61/337 Test #295: vmm/sites/InterfacePairs/InterfacePairs.GenerateSitesWithPairsExcludesNearbySites ...............   Passed    0.01 sec
+        Start 271: vmm/mesh/Metrics/Metrics.QualityReport
+ 62/337 Test #275: vmm/reorder/LexicographicOrdering/LexicographicOrdering.SitesSorted .............................   Passed    0.01 sec
+        Start 312: vmm/sites/UniformRandomSource3D/UniformRandomSource3D.SpacingAndMargin
+ 63/337 Test #100: vmm/domain/Sphere/Sphere.VolumeConvergesWithSubdivisions ........................................   Passed    0.01 sec
+        Start 285: vmm/sites/AdaptiveQuadtreeSource/AdaptiveQuadtreeSource.DensityFollowsTheSpacing
+ 64/337 Test #271: vmm/mesh/Metrics/Metrics.QualityReport ..........................................................   Passed    0.01 sec
+        Start 274: vmm/reorder/IdentityOrdering/IdentityOrdering.IsIdentity
+ 65/337 Test #312: vmm/sites/UniformRandomSource3D/UniformRandomSource3D.SpacingAndMargin ..........................   Passed    0.01 sec
+ 66/337 Test #274: vmm/reorder/IdentityOrdering/IdentityOrdering.IsIdentity ........................................   Passed    0.00 sec
+        Start 269: vmm/mesh/Metrics/Metrics.CartesianIsAnalytic
+        Start 330: vmm/tools/vmm_mesh/horizons_flat
+ 67/337 Test #285: vmm/sites/AdaptiveQuadtreeSource/AdaptiveQuadtreeSource.DensityFollowsTheSpacing ................   Passed    0.01 sec
+        Start  70: vmm/domain/Ellipse/Ellipse.AreaConvergesToPiAB
+ 68/337 Test #269: vmm/mesh/Metrics/Metrics.CartesianIsAnalytic ....................................................   Passed    0.01 sec
+        Start 170: vmm/integration/ConfigRun/ConfigRun.BackgroundFillsTheVoid2D
+ 69/337 Test #330: vmm/tools/vmm_mesh/horizons_flat ................................................................   Passed    0.01 sec
+ 70/337 Test  #70: vmm/domain/Ellipse/Ellipse.AreaConvergesToPiAB ..................................................   Passed    0.01 sec
+        Start 320: vmm/voronoi/Builder2D/Builder2D.Errors
+        Start 187: vmm/integration/CvtApi/CvtApi.SpatialControlsAndResidual
+ 71/337 Test #170: vmm/integration/ConfigRun/ConfigRun.BackgroundFillsTheVoid2D ....................................   Passed    0.00 sec
+        Start 243: vmm/io/Vtu/Vtu.WritesAWellFormedFile
+ 72/337 Test #320: vmm/voronoi/Builder2D/Builder2D.Errors ..........................................................   Passed    0.01 sec
+        Start 247: vmm/mesh/CellFaceIndex/CellFaceIndex.ThreeByThreeHasOneInternalCell
+ 73/337 Test #187: vmm/integration/CvtApi/CvtApi.SpatialControlsAndResidual ........................................   Passed    0.01 sec
+        Start 327: vmm/ci/requirements
+ 74/337 Test #247: vmm/mesh/CellFaceIndex/CellFaceIndex.ThreeByThreeHasOneInternalCell .............................   Passed    0.00 sec
+        Start 290: vmm/sites/ExplicitSites/ExplicitSites.KeepsOnlyInsidePoints
+ 75/337 Test #243: vmm/io/Vtu/Vtu.WritesAWellFormedFile ............................................................   Passed    0.01 sec
+        Start 303: vmm/sites/RandomCountSource3D/RandomCountSource3D.Failures
+ 76/337 Test #290: vmm/sites/ExplicitSites/ExplicitSites.KeepsOnlyInsidePoints .....................................   Passed    0.00 sec
+        Start 104: vmm/domain/ValidationReport/ValidationReport.AddSortsBySeverity
+ 77/337 Test #303: vmm/sites/RandomCountSource3D/RandomCountSource3D.Failures ......................................   Passed    0.00 sec
+        Start 304: vmm/sites/SiteSet/SiteSet.AddAppendCount
+ 78/337 Test #104: vmm/domain/ValidationReport/ValidationReport.AddSortsBySeverity .................................   Passed    0.00 sec
+        Start 167: vmm/integration/ConfigRun/ConfigRun.GlobalOptionsReachTheRequest
+ 79/337 Test #304: vmm/sites/SiteSet/SiteSet.AddAppendCount ........................................................   Passed    0.00 sec
+        Start  84: vmm/domain/PolygonShape/PolygonShape.InvalidPolygon
+ 80/337 Test #167: vmm/integration/ConfigRun/ConfigRun.GlobalOptionsReachTheRequest ................................   Passed    0.00 sec
+        Start  97: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.BuiltinShapes
+ 81/337 Test  #84: vmm/domain/PolygonShape/PolygonShape.InvalidPolygon .............................................   Passed    0.00 sec
+        Start 261: vmm/mesh/LayeredMesh/LayeredMesh.RejectsDuplicateFaceAndGap
+ 82/337 Test  #97: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.BuiltinShapes ........................................   Passed    0.00 sec
+        Start 297: vmm/sites/InterfacePairs3D/InterfacePairs3D.MirroredAcrossAFlatInterface
+ 83/337 Test #261: vmm/mesh/LayeredMesh/LayeredMesh.RejectsDuplicateFaceAndGap .....................................   Passed    0.00 sec
+        Start   1: vmm/app/ConfigRegistries/ConfigRegistries.BuiltinsOfEveryRegistry
+ 84/337 Test   #1: vmm/app/ConfigRegistries/ConfigRegistries.BuiltinsOfEveryRegistry ...............................   Passed    0.00 sec
+        Start 225: vmm/integration/Voronoi3D/Voronoi3D.FacadeErrors
+ 85/337 Test #297: vmm/sites/InterfacePairs3D/InterfacePairs3D.MirroredAcrossAFlatInterface ........................   Passed    0.00 sec
+        Start 172: vmm/integration/ConfigRun/ConfigRun.RunErrors
+ 86/337 Test #225: vmm/integration/Voronoi3D/Voronoi3D.FacadeErrors ................................................   Passed    0.00 sec
+        Start 179: vmm/integration/Cvt/Cvt.MultipleSitesAndFixedObliqueRegions
+ 87/337 Test #172: vmm/integration/ConfigRun/ConfigRun.RunErrors ...................................................   Passed    0.00 sec
+        Start  90: vmm/domain/ShapeOutline/ShapeOutline.RejectsInvalidInput
+ 88/337 Test  #90: vmm/domain/ShapeOutline/ShapeOutline.RejectsInvalidInput ........................................   Passed    0.00 sec
+        Start  72: vmm/domain/Extrusion/Extrusion.LShapedPrism
+ 89/337 Test  #72: vmm/domain/Extrusion/Extrusion.LShapedPrism .....................................................   Passed    0.00 sec
+        Start 183: vmm/integration/Cvt/Cvt.ConfigVolumetricAndLayeredOutputs
+ 90/337 Test #179: vmm/integration/Cvt/Cvt.MultipleSitesAndFixedObliqueRegions .....................................   Passed    0.01 sec
+        Start 287: vmm/sites/CartesianGridSource/CartesianGridSource.Lattice
+ 91/337 Test #287: vmm/sites/CartesianGridSource/CartesianGridSource.Lattice .......................................   Passed    0.00 sec
+        Start  62: vmm/domain/Cylinder/Cylinder.VolumeAndPatches
+ 92/337 Test #183: vmm/integration/Cvt/Cvt.ConfigVolumetricAndLayeredOutputs .......................................   Passed    0.01 sec
+ 93/337 Test  #62: vmm/domain/Cylinder/Cylinder.VolumeAndPatches ...................................................   Passed    0.00 sec
+        Start 249: vmm/mesh/InvariantReport/InvariantReport.CorrectMeshPasses
+        Start  59: vmm/domain/Cuboid/Cuboid.SurfaceMeasuresAndPatches
+ 94/337 Test #249: vmm/mesh/InvariantReport/InvariantReport.CorrectMeshPasses ......................................   Passed    0.00 sec
+        Start 150: vmm/geometry/SegmentIndex2/SegmentIndex2.EmptyIndexTouchesNothing
+ 95/337 Test  #59: vmm/domain/Cuboid/Cuboid.SurfaceMeasuresAndPatches ..............................................   Passed    0.00 sec
+        Start 293: vmm/sites/HexagonalGridSource/HexagonalGridSource.Lattice
+ 96/337 Test #150: vmm/geometry/SegmentIndex2/SegmentIndex2.EmptyIndexTouchesNothing ...............................   Passed    0.00 sec
+        Start  65: vmm/domain/Declaration2D/Declaration2D.LayersKeepOrderAndRegions
+ 97/337 Test #293: vmm/sites/HexagonalGridSource/HexagonalGridSource.Lattice .......................................   Passed    0.00 sec
+        Start 288: vmm/sites/CartesianGridSource3D/CartesianGridSource3D.LatticeInsideTheCube
+ 98/337 Test  #65: vmm/domain/Declaration2D/Declaration2D.LayersKeepOrderAndRegions ................................   Passed    0.00 sec
+        Start  35: vmm/backend/Cgal3D/Cgal3D.ClipCellAgainstTheCube
+ 99/337 Test #288: vmm/sites/CartesianGridSource3D/CartesianGridSource3D.LatticeInsideTheCube ......................   Passed    0.00 sec
+        Start  58: vmm/domain/Circle/Circle.VerticesOnTheCircle
+100/337 Test  #35: vmm/backend/Cgal3D/Cgal3D.ClipCellAgainstTheCube ................................................   Passed    0.00 sec
+101/337 Test  #58: vmm/domain/Circle/Circle.VerticesOnTheCircle ....................................................   Passed    0.00 sec
+        Start  36: vmm/backend/Cgal3D/Cgal3D.CoplanarFacesFallBackToTheWholeRegion
+        Start  23: vmm/backend/Cgal/Cgal.ShapeHoleIsNotAVoid
+102/337 Test  #23: vmm/backend/Cgal/Cgal.ShapeHoleIsNotAVoid .......................................................   Passed    0.00 sec
+        Start 112: vmm/error/Catalog/Catalog.UnknownCodeHasNoEntry
+103/337 Test  #36: vmm/backend/Cgal3D/Cgal3D.CoplanarFacesFallBackToTheWholeRegion .................................   Passed    0.00 sec
+        Start 120: vmm/error/Exception/Exception.HoldsTheErrorAndEnglishText
+104/337 Test #112: vmm/error/Catalog/Catalog.UnknownCodeHasNoEntry .................................................   Passed    0.00 sec
+        Start 173: vmm/integration/ConfigRun/ConfigRun.UserRegistries
+105/337 Test #120: vmm/error/Exception/Exception.HoldsTheErrorAndEnglishText .......................................   Passed    0.00 sec
+        Start 145: vmm/geometry/RepairSurface/RepairSurface.Failures
+106/337 Test #173: vmm/integration/ConfigRun/ConfigRun.UserRegistries ..............................................   Passed    0.00 sec
+        Start  80: vmm/domain/Partition3D/Partition3D.Measures
+107/337 Test #145: vmm/geometry/RepairSurface/RepairSurface.Failures ...............................................   Passed    0.00 sec
+        Start  94: vmm/domain/ShapeRegistry/ShapeRegistry.BuiltinShapes
+108/337 Test  #80: vmm/domain/Partition3D/Partition3D.Measures .....................................................   Passed    0.00 sec
+        Start 117: vmm/error/Error/Error.MessageEntities
+109/337 Test #117: vmm/error/Error/Error.MessageEntities ...........................................................   Passed    0.00 sec
+        Start  53: vmm/core/Vec/Vec.Arithmetic
+110/337 Test  #94: vmm/domain/ShapeRegistry/ShapeRegistry.BuiltinShapes ............................................   Passed    0.00 sec
+        Start  69: vmm/domain/Declaration3D/Declaration3D.Holes
+111/337 Test  #53: vmm/core/Vec/Vec.Arithmetic .....................................................................   Passed    0.00 sec
+        Start 301: vmm/sites/RandomCountSource/RandomCountSource.ImpossibleMarginFails
+112/337 Test  #69: vmm/domain/Declaration3D/Declaration3D.Holes ....................................................   Passed    0.00 sec
+        Start 130: vmm/geometry/Box2/Box2.ContainsOverlapsInflated
+113/337 Test #301: vmm/sites/RandomCountSource/RandomCountSource.ImpossibleMarginFails .............................   Passed    0.00 sec
+        Start 292: vmm/sites/ExplicitSites3D/ExplicitSites3D.KeepsTheSitesInside
+114/337 Test #130: vmm/geometry/Box2/Box2.ContainsOverlapsInflated .................................................   Passed    0.00 sec
+        Start 309: vmm/sites/SiteSet3D/SiteSet3D.ValidateSites
+115/337 Test #292: vmm/sites/ExplicitSites3D/ExplicitSites3D.KeepsTheSitesInside ...................................   Passed    0.00 sec
+        Start  86: vmm/domain/Rectangle/Rectangle.DegenerateIsRejected
+116/337 Test #309: vmm/sites/SiteSet3D/SiteSet3D.ValidateSites .....................................................   Passed    0.00 sec
+        Start 109: vmm/domain/ValidationReport/ValidationReport.SliverWarningOrError
+117/337 Test  #86: vmm/domain/Rectangle/Rectangle.DegenerateIsRejected .............................................   Passed    0.00 sec
+        Start 276: vmm/reorder/Permutation/Permutation.FromOrderAndInverse
+118/337 Test #109: vmm/domain/ValidationReport/ValidationReport.SliverWarningOrError ...............................   Passed    0.00 sec
+        Start   4: vmm/app/ConfigSection/ConfigSection.FindsTheValueOfAKey
+119/337 Test #276: vmm/reorder/Permutation/Permutation.FromOrderAndInverse .........................................   Passed    0.00 sec
+        Start  87: vmm/domain/RegularNGon/RegularNGon.SquareAsFourGon
+120/337 Test   #4: vmm/app/ConfigSection/ConfigSection.FindsTheValueOfAKey .........................................   Passed    0.00 sec
+        Start 131: vmm/geometry/Box3/Box3.DefaultIsEmpty
+121/337 Test  #87: vmm/domain/RegularNGon/RegularNGon.SquareAsFourGon ..............................................   Passed    0.00 sec
+        Start 137: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.OrientationIsNormalised
+122/337 Test #131: vmm/geometry/Box3/Box3.DefaultIsEmpty ...........................................................   Passed    0.00 sec
+        Start  31: vmm/backend/Cgal3D/Cgal3D.BuildPartitionErrors
+123/337 Test #137: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.OrientationIsNormalised ........................   Passed    0.00 sec
+        Start 102: vmm/domain/Sphere/Sphere.RejectsInvalidParameters
+124/337 Test #102: vmm/domain/Sphere/Sphere.RejectsInvalidParameters ...............................................   Passed    0.00 sec
+        Start 308: vmm/sites/SiteSet3D/SiteSet3D.GenerateErrors
+125/337 Test  #31: vmm/backend/Cgal3D/Cgal3D.BuildPartitionErrors ..................................................   Passed    0.00 sec
+        Start 154: vmm/geometry/TriangleSurface/TriangleSurface.TetrahedronMeasures
+126/337 Test #308: vmm/sites/SiteSet3D/SiteSet3D.GenerateErrors ....................................................   Passed    0.00 sec
+        Start  29: vmm/backend/Cgal3D/Cgal3D.FactoryIsComplete
+127/337 Test #154: vmm/geometry/TriangleSurface/TriangleSurface.TetrahedronMeasures ................................   Passed    0.00 sec
+        Start 294: vmm/sites/InterfacePairs/InterfacePairs.PairsAreMirroredAndInsideTheirRegions
+128/337 Test  #29: vmm/backend/Cgal3D/Cgal3D.FactoryIsComplete .....................................................   Passed    0.00 sec
+        Start 147: vmm/geometry/Ring/Ring.Centroid
+129/337 Test #294: vmm/sites/InterfacePairs/InterfacePairs.PairsAreMirroredAndInsideTheirRegions ...................   Passed    0.00 sec
+        Start  19: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.UserSources
+130/337 Test #147: vmm/geometry/Ring/Ring.Centroid .................................................................   Passed    0.00 sec
+        Start  41: vmm/core/Csr/Csr.AdjacencyIsSortedSymmetricAndDeduplicated
+131/337 Test  #19: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.UserSources ...................................   Passed    0.00 sec
+        Start 324: vmm/voronoi/Builder3D/Builder3D.Errors
+132/337 Test  #41: vmm/core/Csr/Csr.AdjacencyIsSortedSymmetricAndDeduplicated ......................................   Passed    0.00 sec
+        Start 141: vmm/geometry/RepairSurface/RepairSurface.WeldsAnStlSoup
+133/337 Test #324: vmm/voronoi/Builder3D/Builder3D.Errors ..........................................................   Passed    0.00 sec
+        Start 311: vmm/sites/UniformRandomSource/UniformRandomSource.OptionsAndErrors
+134/337 Test #141: vmm/geometry/RepairSurface/RepairSurface.WeldsAnStlSoup .........................................   Passed    0.00 sec
+        Start  50: vmm/core/Tolerance/Tolerance.RejectsInvalidScales
+135/337 Test #311: vmm/sites/UniformRandomSource/UniformRandomSource.OptionsAndErrors ..............................   Passed    0.00 sec
+        Start 305: vmm/sites/SiteSet/SiteSet.ValidationCatchesBadSites
+136/337 Test  #50: vmm/core/Tolerance/Tolerance.RejectsInvalidScales ...............................................   Passed    0.00 sec
+        Start  30: vmm/backend/Cgal3D/Cgal3D.BuildPartition
+137/337 Test #305: vmm/sites/SiteSet/SiteSet.ValidationCatchesBadSites .............................................   Passed    0.00 sec
+        Start 106: vmm/domain/ValidationReport/ValidationReport.VoidAndBackground
+138/337 Test  #30: vmm/backend/Cgal3D/Cgal3D.BuildPartition ........................................................   Passed    0.00 sec
+        Start 246: vmm/mesh/CellFaceIndex/CellFaceIndex.TwoSquares
+139/337 Test #106: vmm/domain/ValidationReport/ValidationReport.VoidAndBackground ..................................   Passed    0.00 sec
+        Start 189: vmm/integration/Facade/Facade.VoidStopsThePipeline
+140/337 Test #246: vmm/mesh/CellFaceIndex/CellFaceIndex.TwoSquares .................................................   Passed    0.00 sec
+        Start  76: vmm/domain/Partition2D/Partition2D.Classification
+141/337 Test #189: vmm/integration/Facade/Facade.VoidStopsThePipeline ..............................................   Passed    0.00 sec
+        Start 103: vmm/domain/SurfaceShape/SurfaceShape.ReturnsTheSurface
+142/337 Test  #76: vmm/domain/Partition2D/Partition2D.Classification ...............................................   Passed    0.00 sec
+        Start 152: vmm/geometry/SegmentIndex2/SegmentIndex2.AgreesWithBruteForce
+143/337 Test #103: vmm/domain/SurfaceShape/SurfaceShape.ReturnsTheSurface ..........................................   Passed    0.00 sec
+        Start 281: vmm/reorder/RcmOrdering/RcmOrdering.DisconnectedComponents
+144/337 Test #327: vmm/ci/requirements .............................................................................   Passed    0.08 sec
+145/337 Test #152: vmm/geometry/SegmentIndex2/SegmentIndex2.AgreesWithBruteForce ...................................   Passed    0.00 sec
+        Start  75: vmm/domain/MediumRegistry/MediumRegistry.AddFindNames
+        Start  20: vmm/backend/Cgal/Cgal.BackendIsCompleteAndReportsVersions
+146/337 Test #281: vmm/reorder/RcmOrdering/RcmOrdering.DisconnectedComponents ......................................   Passed    0.00 sec
+        Start  46: vmm/core/Random/Random.UniformIsInHalfOpenUnitInterval
+147/337 Test  #75: vmm/domain/MediumRegistry/MediumRegistry.AddFindNames ...........................................   Passed    0.00 sec
+        Start 291: vmm/sites/ExplicitSites/ExplicitSites.GenerateSitesEndToEnd
+148/337 Test  #20: vmm/backend/Cgal/Cgal.BackendIsCompleteAndReportsVersions .......................................   Passed    0.00 sec
+        Start  22: vmm/backend/Cgal/Cgal.AnchorA1
+149/337 Test  #46: vmm/core/Random/Random.UniformIsInHalfOpenUnitInterval ..........................................   Passed    0.00 sec
+        Start 105: vmm/domain/ValidationReport/ValidationReport.CleanDomainPasses
+150/337 Test #291: vmm/sites/ExplicitSites/ExplicitSites.GenerateSitesEndToEnd .....................................   Passed    0.00 sec
+        Start 302: vmm/sites/RandomCountSource3D/RandomCountSource3D.ExactCount
+151/337 Test  #22: vmm/backend/Cgal/Cgal.AnchorA1 ..................................................................   Passed    0.00 sec
+        Start 108: vmm/domain/ValidationReport/ValidationReport.FragmentedRegionIsAWarning
+152/337 Test #105: vmm/domain/ValidationReport/ValidationReport.CleanDomainPasses ..................................   Passed    0.00 sec
+        Start 168: vmm/integration/ConfigRun/ConfigRun.ErrorsNameTheLineAndSection
+153/337 Test #302: vmm/sites/RandomCountSource3D/RandomCountSource3D.ExactCount ....................................   Passed    0.00 sec
+        Start  25: vmm/backend/Cgal/Cgal.PartitionIsDeterministic
+154/337 Test #108: vmm/domain/ValidationReport/ValidationReport.FragmentedRegionIsAWarning .........................   Passed    0.00 sec
+        Start 191: vmm/integration/Facade/Facade.SiteAndValidationErrors
+155/337 Test #168: vmm/integration/ConfigRun/ConfigRun.ErrorsNameTheLineAndSection .................................   Passed    0.00 sec
+        Start 127: vmm/error/Log/Log.SinkReceivesDiagnosticsUntilRemoved
+156/337 Test  #25: vmm/backend/Cgal/Cgal.PartitionIsDeterministic ..................................................   Passed    0.00 sec
+        Start 306: vmm/sites/SiteSet3D/SiteSet3D.AddAppendCount
+157/337 Test #191: vmm/integration/Facade/Facade.SiteAndValidationErrors ...........................................   Passed    0.00 sec
+        Start  28: vmm/backend/Cgal/Cgal.ClipLabelsEveryEdge
+158/337 Test #127: vmm/error/Log/Log.SinkReceivesDiagnosticsUntilRemoved ...........................................   Passed    0.00 sec
+159/337 Test #306: vmm/sites/SiteSet3D/SiteSet3D.AddAppendCount ....................................................   Passed    0.00 sec
+        Start  67: vmm/domain/Declaration3D/Declaration3D.RegionsFromShapes
+        Start  37: vmm/backend/Cgal3D/Cgal3D.ClipCellErrors
+160/337 Test  #28: vmm/backend/Cgal/Cgal.ClipLabelsEveryEdge .......................................................   Passed    0.00 sec
+        Start 107: vmm/domain/ValidationReport/ValidationReport.EmptiedRegion
+161/337 Test  #67: vmm/domain/Declaration3D/Declaration3D.RegionsFromShapes ........................................   Passed    0.00 sec
+        Start 323: vmm/voronoi/Builder3D/Builder3D.InvariantReference
+162/337 Test  #37: vmm/backend/Cgal3D/Cgal3D.ClipCellErrors ........................................................   Passed    0.00 sec
+        Start 248: vmm/mesh/IdRange/IdRange.IteratesConsecutiveIds
+163/337 Test #107: vmm/domain/ValidationReport/ValidationReport.EmptiedRegion ......................................   Passed    0.00 sec
+        Start 333: vmm/tools/vmm_mesh/version
+164/337 Test #323: vmm/voronoi/Builder3D/Builder3D.InvariantReference ..............................................   Passed    0.00 sec
+165/337 Test #248: vmm/mesh/IdRange/IdRange.IteratesConsecutiveIds .................................................   Passed    0.00 sec
+        Start  64: vmm/domain/Cylinder/Cylinder.RejectsInvalidParameters
+        Start  88: vmm/domain/ShapeOutline/ShapeOutline.ClockwiseRingIsReversedWithItsTags
+166/337 Test #333: vmm/tools/vmm_mesh/version ......................................................................   Passed    0.00 sec
+167/337 Test  #64: vmm/domain/Cylinder/Cylinder.RejectsInvalidParameters ...........................................   Passed    0.00 sec
+        Start  27: vmm/backend/Cgal/Cgal.DelaunayPairsOfASquare
+        Start  21: vmm/backend/Cgal/Cgal.SquareWithHoleAndLInterface
+168/337 Test  #88: vmm/domain/ShapeOutline/ShapeOutline.ClockwiseRingIsReversedWithItsTags .........................   Passed    0.00 sec
+        Start  66: vmm/domain/Declaration2D/Declaration2D.Errors
+169/337 Test  #27: vmm/backend/Cgal/Cgal.DelaunayPairsOfASquare ....................................................   Passed    0.00 sec
+        Start  18: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.ParameterErrors
+170/337 Test  #21: vmm/backend/Cgal/Cgal.SquareWithHoleAndLInterface ...............................................   Passed    0.00 sec
+171/337 Test  #66: vmm/domain/Declaration2D/Declaration2D.Errors ...................................................   Passed    0.00 sec
+        Start  24: vmm/backend/Cgal/Cgal.EmptyDeclarationFails
+        Start  33: vmm/backend/Cgal3D/Cgal3D.PrepareAndTouchesBoundary
+172/337 Test  #18: vmm/app/SiteSourceRegistry3D/SiteSourceRegistry3D.ParameterErrors ...............................   Passed    0.00 sec
+        Start  15: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.ParameterErrors
+173/337 Test  #24: vmm/backend/Cgal/Cgal.EmptyDeclarationFails .....................................................   Passed    0.00 sec
+        Start  16: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.UserSources
+174/337 Test  #33: vmm/backend/Cgal3D/Cgal3D.PrepareAndTouchesBoundary .............................................   Passed    0.00 sec
+        Start 289: vmm/sites/CartesianGridSource3D/CartesianGridSource3D.InvalidParameters
+175/337 Test  #15: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.ParameterErrors ...............................   Passed    0.00 sec
+        Start  71: vmm/domain/Ellipse/Ellipse.MinimumSegmentsAndInvalidAxes
+176/337 Test  #16: vmm/app/SiteSourceRegistry2D/SiteSourceRegistry2D.UserSources ...................................   Passed    0.00 sec
+177/337 Test #289: vmm/sites/CartesianGridSource3D/CartesianGridSource3D.InvalidParameters .........................   Passed    0.00 sec
+        Start 272: vmm/mesh/Metrics/Metrics.WithinLimitsEachCondition
+        Start 253: vmm/mesh/InvariantReport/InvariantReport.ThreeDimensionalMeshes
+178/337 Test  #71: vmm/domain/Ellipse/Ellipse.MinimumSegmentsAndInvalidAxes ........................................   Passed    0.00 sec
+        Start 161: vmm/geometry/TriangleSurface/TriangleSurface.DistanceToTriangleRegions
+179/337 Test #272: vmm/mesh/Metrics/Metrics.WithinLimitsEachCondition ..............................................   Passed    0.00 sec
+180/337 Test #253: vmm/mesh/InvariantReport/InvariantReport.ThreeDimensionalMeshes .................................   Passed    0.00 sec
+        Start  98: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.MissingParametersAndUnknownNames
+        Start 277: vmm/reorder/Permutation/Permutation.RejectsNonBijections
+181/337 Test #161: vmm/geometry/TriangleSurface/TriangleSurface.DistanceToTriangleRegions ..........................   Passed    0.00 sec
+        Start  38: vmm/backend/Cgal3D/Cgal3D.LabelHelpers
+182/337 Test  #98: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.MissingParametersAndUnknownNames .....................   Passed    0.00 sec
+183/337 Test #277: vmm/reorder/Permutation/Permutation.RejectsNonBijections ........................................   Passed    0.00 sec
+        Start 115: vmm/error/Error/Error.CarriesCodeCategoryContextEntityAndLocation
+        Start 133: vmm/geometry/Box3/Box3.InflatedContainsOverlaps
+184/337 Test  #38: vmm/backend/Cgal3D/Cgal3D.LabelHelpers ..........................................................   Passed    0.00 sec
+        Start 268: vmm/mesh/Metrics/Metrics.TwoSquares
+185/337 Test #115: vmm/error/Error/Error.CarriesCodeCategoryContextEntityAndLocation ...............................   Passed    0.00 sec
+186/337 Test #133: vmm/geometry/Box3/Box3.InflatedContainsOverlaps .................................................   Passed    0.00 sec
+        Start 169: vmm/integration/ConfigRun/ConfigRun.DimensionMustMatch
+        Start  93: vmm/domain/ShapeOutline/ShapeOutline.RejectsHolesTouchingTheOuterRingOrEachOther
+187/337 Test #268: vmm/mesh/Metrics/Metrics.TwoSquares .............................................................   Passed    0.00 sec
+        Start 181: vmm/integration/Cvt/Cvt.ConfigRunsAndRejectsInvalidOptions
+188/337 Test #169: vmm/integration/ConfigRun/ConfigRun.DimensionMustMatch ..........................................   Passed    0.00 sec
+189/337 Test  #93: vmm/domain/ShapeOutline/ShapeOutline.RejectsHolesTouchingTheOuterRingOrEachOther ................   Passed    0.00 sec
+        Start  74: vmm/domain/Extrusion/Extrusion.RejectsHolesAndBadHeights
+        Start 245: vmm/io/Vtu/Vtu.OpenCellIsReported
+190/337 Test  #74: vmm/domain/Extrusion/Extrusion.RejectsHolesAndBadHeights ........................................   Passed    0.00 sec
+        Start  34: vmm/backend/Cgal3D/Cgal3D.DelaunayPairsAndCircumcentre
+191/337 Test #245: vmm/io/Vtu/Vtu.OpenCellIsReported ...............................................................   Passed    0.00 sec
+        Start 142: vmm/geometry/RepairSurface/RepairSurface.WeldsWithinTheTolerance
+192/337 Test  #34: vmm/backend/Cgal3D/Cgal3D.DelaunayPairsAndCircumcentre ..........................................   Passed    0.00 sec
+        Start 300: vmm/sites/RandomCountSource/RandomCountSource.CountAndMargin
+193/337 Test #181: vmm/integration/Cvt/Cvt.ConfigRunsAndRejectsInvalidOptions ......................................   Passed    0.00 sec
+194/337 Test #142: vmm/geometry/RepairSurface/RepairSurface.WeldsWithinTheTolerance ................................   Passed    0.00 sec
+        Start   2: vmm/app/ConfigRegistries/ConfigRegistries.StlShapeReadsAFile
+        Start 121: vmm/error/Exception/Exception.RaiseThrowsFatalWithLocation
+195/337 Test #300: vmm/sites/RandomCountSource/RandomCountSource.CountAndMargin ....................................   Passed    0.00 sec
+        Start   3: vmm/app/ConfigRegistries/ConfigRegistries.ExtrusionShape
+196/337 Test   #2: vmm/app/ConfigRegistries/ConfigRegistries.StlShapeReadsAFile ....................................   Passed    0.00 sec
+197/337 Test #121: vmm/error/Exception/Exception.RaiseThrowsFatalWithLocation ......................................   Passed    0.00 sec
+        Start 140: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.DefaultIsEmpty
+        Start 244: vmm/io/Vtu/Vtu.WritesPolyhedra
+198/337 Test   #3: vmm/app/ConfigRegistries/ConfigRegistries.ExtrusionShape ........................................   Passed    0.00 sec
+199/337 Test #140: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.DefaultIsEmpty .................................   Passed    0.00 sec
+        Start 116: vmm/error/Error/Error.MessageInBothLanguages
+        Start 128: vmm/geometry/Box2/Box2.DefaultIsEmpty
+200/337 Test #244: vmm/io/Vtu/Vtu.WritesPolyhedra ..................................................................   Passed    0.00 sec
+        Start 334: vmm/tools/vmm_mesh/no_file
+201/337 Test #116: vmm/error/Error/Error.MessageInBothLanguages ....................................................   Passed    0.00 sec
+202/337 Test #128: vmm/geometry/Box2/Box2.DefaultIsEmpty ...........................................................   Passed    0.00 sec
+        Start  83: vmm/domain/PolygonShape/PolygonShape.TrapezoidWithTagsAndHole
+        Start  63: vmm/domain/Cylinder/Cylinder.FewSegmentsAreRaisedToEight
+203/337 Test #334: vmm/tools/vmm_mesh/no_file ......................................................................   Passed    0.00 sec
+        Start  40: vmm/core/Csr/Csr.PushRowAndRowView
+204/337 Test  #83: vmm/domain/PolygonShape/PolygonShape.TrapezoidWithTagsAndHole ...................................   Passed    0.00 sec
+205/337 Test  #63: vmm/domain/Cylinder/Cylinder.FewSegmentsAreRaisedToEight ........................................   Passed    0.00 sec
+        Start 336: vmm/tools/vmm_mesh/missing_file
+        Start  60: vmm/domain/Cuboid/Cuboid.UntaggedFacesShareOnePatch
+206/337 Test  #40: vmm/core/Csr/Csr.PushRowAndRowView ..............................................................   Passed    0.00 sec
+        Start  73: vmm/domain/Extrusion/Extrusion.CollinearVerticesAreKept
+207/337 Test #336: vmm/tools/vmm_mesh/missing_file .................................................................   Passed    0.00 sec
+208/337 Test  #60: vmm/domain/Cuboid/Cuboid.UntaggedFacesShareOnePatch .............................................   Passed    0.00 sec
+        Start 146: vmm/geometry/Ring/Ring.SignedAreaAndOrientation
+        Start  95: vmm/domain/ShapeRegistry/ShapeRegistry.MissingOrBadParameters
+209/337 Test  #73: vmm/domain/Extrusion/Extrusion.CollinearVerticesAreKept .........................................   Passed    0.00 sec
+        Start 114: vmm/error/Catalog/Catalog.LanguageSwitch
+210/337 Test #146: vmm/geometry/Ring/Ring.SignedAreaAndOrientation .................................................   Passed    0.00 sec
+211/337 Test  #95: vmm/domain/ShapeRegistry/ShapeRegistry.MissingOrBadParameters ...................................   Passed    0.00 sec
+        Start  45: vmm/core/Random/Random.FirstValueMatchesTheStandardReference
+        Start 279: vmm/reorder/Permutation/Permutation.BandwidthAndProfile
+212/337 Test #114: vmm/error/Catalog/Catalog.LanguageSwitch ........................................................   Passed    0.00 sec
+        Start 156: vmm/geometry/TriangleSurface/TriangleSurface.ContainsAndDistance
+213/337 Test  #45: vmm/core/Random/Random.FirstValueMatchesTheStandardReference ....................................   Passed    0.00 sec
+        Start 284: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.Errors
+214/337 Test #279: vmm/reorder/Permutation/Permutation.BandwidthAndProfile .........................................   Passed    0.00 sec
+215/337 Test #156: vmm/geometry/TriangleSurface/TriangleSurface.ContainsAndDistance ................................   Passed    0.00 sec
+        Start 251: vmm/mesh/InvariantReport/InvariantReport.OpenCellAndFlippedFace
+        Start 335: vmm/tools/vmm_mesh/bad_argument
+216/337 Test #284: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.Errors ..................................   Passed    0.00 sec
+        Start 160: vmm/geometry/TriangleSurface/TriangleSurface.ZeroVolumeIsRejected
+217/337 Test #251: vmm/mesh/InvariantReport/InvariantReport.OpenCellAndFlippedFace .................................   Passed    0.00 sec
+218/337 Test #335: vmm/tools/vmm_mesh/bad_argument .................................................................   Passed    0.00 sec
+        Start 250: vmm/mesh/InvariantReport/InvariantReport.WrongReferenceIsDetected
+        Start 129: vmm/geometry/Box2/Box2.OfPointsAndExpand
+219/337 Test #160: vmm/geometry/TriangleSurface/TriangleSurface.ZeroVolumeIsRejected ...............................   Passed    0.00 sec
+220/337 Test #250: vmm/mesh/InvariantReport/InvariantReport.WrongReferenceIsDetected ...............................   Passed    0.00 sec
+        Start 122: vmm/error/Exception/ValueOrThrow.ReturnsTheValueOfAPrvalue
+        Start 138: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.AreaPerimeterBoxCount
+221/337 Test #129: vmm/geometry/Box2/Box2.OfPointsAndExpand ........................................................   Passed    0.00 sec
+        Start 155: vmm/geometry/TriangleSurface/TriangleSurface.InwardSurfaceIsReoriented
+222/337 Test #122: vmm/error/Exception/ValueOrThrow.ReturnsTheValueOfAPrvalue ......................................   Passed    0.00 sec
+223/337 Test #138: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.AreaPerimeterBoxCount ..........................   Passed    0.00 sec
+        Start 111: vmm/error/Catalog/Catalog.CodesAreSortedAndUnique
+        Start  61: vmm/domain/Cuboid/Cuboid.RejectsDegenerateBoxes
+224/337 Test #155: vmm/geometry/TriangleSurface/TriangleSurface.InwardSurfaceIsReoriented ..........................   Passed    0.00 sec
+        Start  92: vmm/domain/ShapeOutline/ShapeOutline.AcceptsConcaveSimpleRing
+225/337 Test #111: vmm/error/Catalog/Catalog.CodesAreSortedAndUnique ...............................................   Passed    0.00 sec
+226/337 Test  #61: vmm/domain/Cuboid/Cuboid.RejectsDegenerateBoxes .................................................   Passed    0.00 sec
+        Start 282: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.UniformSpacing
+        Start 286: vmm/sites/AdaptiveQuadtreeSource/AdaptiveQuadtreeSource.Errors
+227/337 Test  #92: vmm/domain/ShapeOutline/ShapeOutline.AcceptsConcaveSimpleRing ...................................   Passed    0.00 sec
+        Start  79: vmm/domain/Partition2D/Partition2D.DefaultIsEmpty
+228/337 Test #282: vmm/sites/AdaptiveOctreeSource3D/AdaptiveOctreeSource3D.UniformSpacing ..........................   Passed    0.00 sec
+229/337 Test #286: vmm/sites/AdaptiveQuadtreeSource/AdaptiveQuadtreeSource.Errors ..................................   Passed    0.00 sec
+        Start 124: vmm/error/Exception/ValueOrThrow.LvaluesGiveReferencesWithoutCopy
+        Start 159: vmm/geometry/TriangleSurface/TriangleSurface.RejectsInvalidInput
+230/337 Test  #79: vmm/domain/Partition2D/Partition2D.DefaultIsEmpty ...............................................   Passed    0.00 sec
+231/337 Test #124: vmm/error/Exception/ValueOrThrow.LvaluesGiveReferencesWithoutCopy ...............................   Passed    0.00 sec
+        Start  89: vmm/domain/ShapeOutline/ShapeOutline.HolesAreClockwiseAndReduceArea
+        Start 125: vmm/error/Exception/ValueOrThrow.MovesMoveOnlyValues
+232/337 Test #159: vmm/geometry/TriangleSurface/TriangleSurface.RejectsInvalidInput ................................   Passed    0.00 sec
+233/337 Test  #89: vmm/domain/ShapeOutline/ShapeOutline.HolesAreClockwiseAndReduceArea .............................   Passed    0.00 sec
+        Start  55: vmm/core/Vec/Vec.IdValidityAndOrder
+        Start  85: vmm/domain/Rectangle/Rectangle.OutlineAndTags
+234/337 Test #125: vmm/error/Exception/ValueOrThrow.MovesMoveOnlyValues ............................................   Passed    0.00 sec
+235/337 Test  #55: vmm/core/Vec/Vec.IdValidityAndOrder .............................................................   Passed    0.00 sec
+        Start 158: vmm/geometry/TriangleSurface/TriangleSurface.TwoComponents
+        Start 263: vmm/mesh/Mesh/Mesh.FaceGeometry
+236/337 Test  #85: vmm/domain/Rectangle/Rectangle.OutlineAndTags ...................................................   Passed    0.00 sec
+237/337 Test #158: vmm/geometry/TriangleSurface/TriangleSurface.TwoComponents ......................................   Passed    0.00 sec
+        Start  91: vmm/domain/ShapeOutline/ShapeOutline.RejectsSelfIntersectingRing
+        Start  47: vmm/core/Random/Random.SameSeedSameSequence
+238/337 Test #263: vmm/mesh/Mesh/Mesh.FaceGeometry .................................................................   Passed    0.00 sec
+239/337 Test  #91: vmm/domain/ShapeOutline/ShapeOutline.RejectsSelfIntersectingRing ................................   Passed    0.00 sec
+        Start  99: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.UserShapes
+        Start 186: vmm/integration/CvtApi/CvtApi.PlanarControlsAndResidual
+240/337 Test  #47: vmm/core/Random/Random.SameSeedSameSequence .....................................................   Passed    0.00 sec
+        Start  49: vmm/core/Random/Random.ShuffleIsAPermutationAndDeterministic
+241/337 Test  #99: vmm/domain/ShapeRegistry3D/ShapeRegistry3D.UserShapes ...........................................   Passed    0.00 sec
+        Start  48: vmm/core/Random/Random.BelowIsInRangeAndCoversIt
+242/337 Test  #49: vmm/core/Random/Random.ShuffleIsAPermutationAndDeterministic ....................................   Passed    0.00 sec
+        Start  81: vmm/domain/Partition3D/Partition3D.RegionSurfaces
+243/337 Test #186: vmm/integration/CvtApi/CvtApi.PlanarControlsAndResidual .........................................   Passed    0.00 sec
+244/337 Test  #48: vmm/core/Random/Random.BelowIsInRangeAndCoversIt ................................................   Passed    0.00 sec
+        Start  51: vmm/core/Tolerance/Tolerance.ScalesWithTheLength
+        Start 144: vmm/geometry/RepairSurface/RepairSurface.RemovesCollapsedAndDuplicatedTriangles
+245/337 Test  #81: vmm/domain/Partition3D/Partition3D.RegionSurfaces ...............................................   Passed    0.00 sec
+246/337 Test  #51: vmm/core/Tolerance/Tolerance.ScalesWithTheLength ................................................   Passed    0.00 sec
+        Start 255: vmm/mesh/InvariantReport/InvariantReport.NonOrthogonalityIsReportedNotChecked
+        Start  96: vmm/domain/ShapeRegistry/ShapeRegistry.UserShapesCanBeAdded
+247/337 Test #144: vmm/geometry/RepairSurface/RepairSurface.RemovesCollapsedAndDuplicatedTriangles .................   Passed    0.00 sec
+248/337 Test #255: vmm/mesh/InvariantReport/InvariantReport.NonOrthogonalityIsReportedNotChecked ...................   Passed    0.00 sec
+        Start 148: vmm/geometry/Ring/Ring.PerimeterAndContains
+        Start 313: vmm/sites/UniformRandomSource3D/UniformRandomSource3D.InvalidParameters
+249/337 Test  #96: vmm/domain/ShapeRegistry/ShapeRegistry.UserShapesCanBeAdded .....................................   Passed    0.00 sec
+250/337 Test #148: vmm/geometry/Ring/Ring.PerimeterAndContains .....................................................   Passed    0.00 sec
+        Start  39: vmm/core/Csr/Csr.DefaultIsEmptyWithOneOffset
+        Start  68: vmm/domain/Declaration3D/Declaration3D.Errors
+251/337 Test #313: vmm/sites/UniformRandomSource3D/UniformRandomSource3D.InvalidParameters .........................   Passed    0.00 sec
+252/337 Test  #39: vmm/core/Csr/Csr.DefaultIsEmptyWithOneOffset ....................................................   Passed    0.00 sec
+        Start 240: vmm/io/Stl/Stl.RequiresCompleteAsciiFacets
+        Start 151: vmm/geometry/SegmentIndex2/SegmentIndex2.SquareBoundary
+253/337 Test  #68: vmm/domain/Declaration3D/Declaration3D.Errors ...................................................   Passed    0.00 sec
+        Start 252: vmm/mesh/InvariantReport/InvariantReport.InterfacesAndCellMeasures
+254/337 Test #240: vmm/io/Stl/Stl.RequiresCompleteAsciiFacets ......................................................   Passed    0.00 sec
+255/337 Test #151: vmm/geometry/SegmentIndex2/SegmentIndex2.SquareBoundary .........................................   Passed    0.00 sec
+        Start 153: vmm/geometry/SegmentIndex2/SegmentIndex2.DegenerateExtent
+        Start 123: vmm/error/Exception/ValueOrThrow.ThrowsTheErrorOfAFailure
+256/337 Test #252: vmm/mesh/InvariantReport/InvariantReport.InterfacesAndCellMeasures ..............................   Passed    0.00 sec
+        Start  82: vmm/domain/Partition3D/Partition3D.FromAShape
+257/337 Test #153: vmm/geometry/SegmentIndex2/SegmentIndex2.DegenerateExtent .......................................   Passed    0.00 sec
+258/337 Test #123: vmm/error/Exception/ValueOrThrow.ThrowsTheErrorOfAFailure .......................................   Passed    0.00 sec
+        Start  78: vmm/domain/Partition2D/Partition2D.LoopsAndPolygons
+        Start  42: vmm/core/Csr/Csr.SparsePatternInsertsDiagonalInOrder
+259/337 Test  #82: vmm/domain/Partition3D/Partition3D.FromAShape ...................................................   Passed    0.00 sec
+        Start 132: vmm/geometry/Box3/Box3.OfPointsAndExpand
+260/337 Test  #78: vmm/domain/Partition2D/Partition2D.LoopsAndPolygons .............................................   Passed    0.00 sec
+261/337 Test  #42: vmm/core/Csr/Csr.SparsePatternInsertsDiagonalInOrder ............................................   Passed    0.00 sec
+        Start 110: vmm/error/Catalog/Catalog.EveryCodeHasBothTexts
+        Start  43: vmm/core/Csr/Csr.SparsePatternOfIsolatedCellIsDiagonalOnly
+262/337 Test #132: vmm/geometry/Box3/Box3.OfPointsAndExpand ........................................................   Passed    0.00 sec
+        Start 143: vmm/geometry/RepairSurface/RepairSurface.FlipsMinorityTrianglesAndTurnsOutward
+263/337 Test #110: vmm/error/Catalog/Catalog.EveryCodeHasBothTexts .................................................   Passed    0.00 sec
+264/337 Test  #43: vmm/core/Csr/Csr.SparsePatternOfIsolatedCellIsDiagonalOnly ......................................   Passed    0.00 sec
+        Start 254: vmm/mesh/InvariantReport/InvariantReport.EachConditionFailsOnItsOwn
+        Start 119: vmm/error/Error/Error.ResultCarriesValueOrError
+265/337 Test #143: vmm/geometry/RepairSurface/RepairSurface.FlipsMinorityTrianglesAndTurnsOutward ..................   Passed    0.00 sec
+        Start 139: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.ContainsAndDistance
+266/337 Test #254: vmm/mesh/InvariantReport/InvariantReport.EachConditionFailsOnItsOwn .............................   Passed    0.00 sec
+267/337 Test #119: vmm/error/Error/Error.ResultCarriesValueOrError .................................................   Passed    0.00 sec
+        Start 113: vmm/error/Catalog/Catalog.CategoryIsTheHundreds
+        Start 182: vmm/integration/Cvt/Cvt.LayeredPinchOutAndAbsentRegion
+268/337 Test #139: vmm/geometry/PolygonWithHoles2/PolygonWithHoles2.ContainsAndDistance ............................   Passed    0.00 sec
+269/337 Test #113: vmm/error/Catalog/Catalog.CategoryIsTheHundreds .................................................   Passed    0.00 sec
+        Start  52: vmm/core/Tolerance/Tolerance.SamePoint
+        Start 149: vmm/geometry/Ring/Ring.DistanceToSegment
+270/337 Test  #52: vmm/core/Tolerance/Tolerance.SamePoint ..........................................................   Passed    0.00 sec
+        Start  44: vmm/core/Csr/Csr.AsymmetricOrOutOfRangeIsDetected
+271/337 Test #149: vmm/geometry/Ring/Ring.DistanceToSegment ........................................................   Passed    0.00 sec
+        Start 126: vmm/error/Exception/ValueOrThrow.ChecksAStatus
+272/337 Test  #44: vmm/core/Csr/Csr.AsymmetricOrOutOfRangeIsDetected ...............................................   Passed    0.00 sec
+        Start 157: vmm/geometry/TriangleSurface/TriangleSurface.ContainsNearVerticesEdgesAndCavities
+273/337 Test #182: vmm/integration/Cvt/Cvt.LayeredPinchOutAndAbsentRegion ..........................................   Passed    0.00 sec
+        Start  54: vmm/core/Vec/Vec.AngleBetween
+274/337 Test #126: vmm/error/Exception/ValueOrThrow.ChecksAStatus ..................................................   Passed    0.00 sec
+        Start  77: vmm/domain/Partition2D/Partition2D.Measures
+275/337 Test #157: vmm/geometry/TriangleSurface/TriangleSurface.ContainsNearVerticesEdgesAndCavities ...............   Passed    0.00 sec
+276/337 Test  #54: vmm/core/Vec/Vec.AngleBetween ...................................................................   Passed    0.00 sec
+        Start 118: vmm/error/Error/Error.DefaultMessageUsesCurrentLanguage
+        Start 264: vmm/mesh/Mesh/Mesh.RejectsInconsistentData
+277/337 Test  #77: vmm/domain/Partition2D/Partition2D.Measures .....................................................   Passed    0.00 sec
+        Start 101: vmm/domain/Sphere/Sphere.SubdivisionsAreClamped
+278/337 Test #118: vmm/error/Error/Error.DefaultMessageUsesCurrentLanguage .........................................   Passed    0.00 sec
+        Start 202: vmm/integration/Layered/LayeredIntegration.ReaderLimitsTrailingInputAndExceptions
+279/337 Test #264: vmm/mesh/Mesh/Mesh.RejectsInconsistentData ......................................................   Passed    0.00 sec
+280/337 Test #101: vmm/domain/Sphere/Sphere.SubdivisionsAreClamped .................................................   Passed    0.00 sec
+        Start 265: vmm/mesh/Mesh/Mesh.InternalFacesMustBeUpperTriangular
+        Start 239: vmm/io/Stl/Stl.RejectsTruncatedBinaryCountsAndNonFiniteValues
+281/337 Test #265: vmm/mesh/Mesh/Mesh.InternalFacesMustBeUpperTriangular ...........................................   Passed    0.00 sec
+        Start 136: vmm/geometry/HorizonGrid/HorizonGrid.PiecewiseAffineElevation
+282/337 Test #202: vmm/integration/Layered/LayeredIntegration.ReaderLimitsTrailingInputAndExceptions ...............   Passed    0.00 sec
+        Start 266: vmm/mesh/Mesh/Mesh.CellAdjacency
+283/337 Test #239: vmm/io/Stl/Stl.RejectsTruncatedBinaryCountsAndNonFiniteValues ...................................   Passed    0.00 sec
+        Start 262: vmm/mesh/Mesh/Mesh.AccessorsOfTwoSquares
+284/337 Test #136: vmm/geometry/HorizonGrid/HorizonGrid.PiecewiseAffineElevation ...................................   Passed    0.00 sec
+285/337 Test #266: vmm/mesh/Mesh/Mesh.CellAdjacency ................................................................   Passed    0.00 sec
+        Start 178: vmm/integration/Cvt/Cvt.LayeredDomainAndVolumetricReconstruction
+        Start 267: vmm/mesh/Mesh/Mesh.FaceCentroidSmallTranslatedTriangle
+286/337 Test #262: vmm/mesh/Mesh/Mesh.AccessorsOfTwoSquares ........................................................   Passed    0.00 sec
+        Start 260: vmm/mesh/LayeredMesh/LayeredMesh.RejectsShiftedSupportAndWrongRegion
+287/337 Test #267: vmm/mesh/Mesh/Mesh.FaceCentroidSmallTranslatedTriangle ..........................................   Passed    0.00 sec
+        Start  12: vmm/app/MeshConfig/MeshConfig.RejectsEmptyNonFiniteAndOversizedNumericInput
+288/337 Test #178: vmm/integration/Cvt/Cvt.LayeredDomainAndVolumetricReconstruction ................................   Passed    0.00 sec
+        Start 199: vmm/integration/Layered/LayeredIntegration.TruncatedPersistenceAndStreamFailures
+289/337 Test #260: vmm/mesh/LayeredMesh/LayeredMesh.RejectsShiftedSupportAndWrongRegion ............................   Passed    0.00 sec
+290/337 Test  #12: vmm/app/MeshConfig/MeshConfig.RejectsEmptyNonFiniteAndOversizedNumericInput .....................   Passed    0.00 sec
+        Start 185: vmm/integration/Cvt/Cvt.ScaleTranslationAndIterationLimit
+        Start 256: vmm/mesh/LayeredMesh/LayeredMesh.GeometryAndQueries
+291/337 Test #185: vmm/integration/Cvt/Cvt.ScaleTranslationAndIterationLimit .......................................   Passed    0.00 sec
+        Start 257: vmm/mesh/LayeredMesh/LayeredMesh.RejectsInvalidMetadata
+292/337 Test #256: vmm/mesh/LayeredMesh/LayeredMesh.GeometryAndQueries .............................................   Passed    0.00 sec
+        Start 259: vmm/mesh/LayeredMesh/LayeredMesh.EmptyIntervalsAndErrors
+293/337 Test #257: vmm/mesh/LayeredMesh/LayeredMesh.RejectsInvalidMetadata .........................................   Passed    0.00 sec
+        Start 134: vmm/geometry/HorizonGrid/HorizonGrid.FrozenSamplingAndAccessors
+294/337 Test #259: vmm/mesh/LayeredMesh/LayeredMesh.EmptyIntervalsAndErrors ........................................   Passed    0.00 sec
+        Start 258: vmm/mesh/LayeredMesh/LayeredMesh.PinchOutInsideAColumn
+295/337 Test #134: vmm/geometry/HorizonGrid/HorizonGrid.FrozenSamplingAndAccessors .................................   Passed    0.00 sec
+        Start 232: vmm/io/Native/Native.RejectsEveryTruncatedSection
+296/337 Test #258: vmm/mesh/LayeredMesh/LayeredMesh.PinchOutInsideAColumn ..........................................   Passed    0.00 sec
+        Start 180: vmm/integration/Cvt/Cvt.NonconvexCentroidBacktrackingAndStagnation
+297/337 Test #180: vmm/integration/Cvt/Cvt.NonconvexCentroidBacktrackingAndStagnation ..............................   Passed    0.00 sec
+        Start 176: vmm/integration/Cvt/Cvt.CubeAnalyticEnergyAndConvergence
+298/337 Test #232: vmm/io/Native/Native.RejectsEveryTruncatedSection ...............................................   Passed    0.00 sec
+        Start 135: vmm/geometry/HorizonGrid/HorizonGrid.RejectsInvalidGeometry
+299/337 Test #135: vmm/geometry/HorizonGrid/HorizonGrid.RejectsInvalidGeometry .....................................   Passed    0.00 sec
+        Start 175: vmm/integration/Cvt/Cvt.SquareAnalyticEnergyAndConvergence
+300/337 Test #176: vmm/integration/Cvt/Cvt.CubeAnalyticEnergyAndConvergence ........................................   Passed    0.00 sec
+        Start 233: vmm/io/Native/Native.ConvertsStreamExceptions
+301/337 Test #175: vmm/integration/Cvt/Cvt.SquareAnalyticEnergyAndConvergence ......................................   Passed    0.00 sec
+        Start 231: vmm/io/Native/Native.RejectsHostileCountsAndTrailingData
+302/337 Test #233: vmm/io/Native/Native.ConvertsStreamExceptions ...................................................   Passed    0.00 sec
+        Start 226: vmm/io/Native/Native.RoundTripIsExact
+303/337 Test #231: vmm/io/Native/Native.RejectsHostileCountsAndTrailingData ........................................   Passed    0.00 sec
+        Start 198: vmm/integration/Layered/LayeredIntegration.FixedFiniteObliqueInterfaceIn2DAndExtrusion
+304/337 Test #199: vmm/integration/Layered/LayeredIntegration.TruncatedPersistenceAndStreamFailures ................   Passed    0.02 sec
+        Start 177: vmm/integration/Cvt/Cvt.InvalidControlsAndSites
+305/337 Test #177: vmm/integration/Cvt/Cvt.InvalidControlsAndSites .................................................   Passed    0.00 sec
+        Start 192: vmm/integration/Layered/LayeredIntegration.NonconvexHoleAndDisconnectedRegions
+306/337 Test #226: vmm/io/Native/Native.RoundTripIsExact ...........................................................   Passed    0.01 sec
+        Start 194: vmm/integration/Layered/LayeredIntegration.RoundTripAndRenumbering
+307/337 Test #198: vmm/integration/Layered/LayeredIntegration.FixedFiniteObliqueInterfaceIn2DAndExtrusion ..........   Passed    0.01 sec
+        Start 193: vmm/integration/Layered/LayeredIntegration.FixedObliqueSupportWithChangedBaseSites
+308/337 Test #192: vmm/integration/Layered/LayeredIntegration.NonconvexHoleAndDisconnectedRegions ..................   Passed    0.01 sec
+        Start 197: vmm/integration/Layered/LayeredIntegration.DeterministicAcrossScalesAndTranslations
+309/337 Test #197: vmm/integration/Layered/LayeredIntegration.DeterministicAcrossScalesAndTranslations .............   Passed    0.00 sec
+        Start 196: vmm/integration/Layered/LayeredIntegration.ConfigComposesBaseAndHorizons
+310/337 Test #194: vmm/integration/Layered/LayeredIntegration.RoundTripAndRenumbering ..............................   Passed    0.01 sec
+        Start 200: vmm/integration/Layered/LayeredIntegration.InvalidOverlayInputs
+311/337 Test #193: vmm/integration/Layered/LayeredIntegration.FixedObliqueSupportWithChangedBaseSites ..............   Passed    0.01 sec
+        Start 201: vmm/integration/Layered/LayeredIntegration.InvalidExtrusionGeometry
+312/337 Test #200: vmm/integration/Layered/LayeredIntegration.InvalidOverlayInputs .................................   Passed    0.00 sec
+        Start   5: vmm/app/MeshConfig/MeshConfig.ParsesGlobalsSectionsAndComments
+313/337 Test #201: vmm/integration/Layered/LayeredIntegration.InvalidExtrusionGeometry .............................   Passed    0.00 sec
+        Start 227: vmm/io/Native/Native.FileVariants
+314/337 Test #196: vmm/integration/Layered/LayeredIntegration.ConfigComposesBaseAndHorizons ........................   Passed    0.00 sec
+315/337 Test   #5: vmm/app/MeshConfig/MeshConfig.ParsesGlobalsSectionsAndComments ..................................   Passed    0.00 sec
+        Start  56: vmm/core/Version/Version.EqualsTheCMakeProject
+        Start   9: vmm/app/MeshConfig/MeshConfig.ReadsAFileAndResolvesPathsFromItsDirectory
+316/337 Test #227: vmm/io/Native/Native.FileVariants ...............................................................   Passed    0.00 sec
+        Start 236: vmm/io/Stl/Stl.BinaryRoundTripAndFiles
+317/337 Test  #56: vmm/core/Version/Version.EqualsTheCMakeProject ..................................................   Passed    0.00 sec
+318/337 Test   #9: vmm/app/MeshConfig/MeshConfig.ReadsAFileAndResolvesPathsFromItsDirectory ........................   Passed    0.00 sec
+        Start 235: vmm/io/Stl/Stl.AsciiRoundTripKeepsPatches
+        Start 229: vmm/io/Native/Native.ParseErrors
+319/337 Test #236: vmm/io/Stl/Stl.BinaryRoundTripAndFiles ..........................................................   Passed    0.00 sec
+320/337 Test #235: vmm/io/Stl/Stl.AsciiRoundTripKeepsPatches .......................................................   Passed    0.00 sec
+        Start  57: vmm/core/Version/Version.StringMatchesTheNumbers
+        Start   7: vmm/app/MeshConfig/MeshConfig.SyntaxErrorsNameTheLine
+321/337 Test #229: vmm/io/Native/Native.ParseErrors ................................................................   Passed    0.00 sec
+322/337 Test  #57: vmm/core/Version/Version.StringMatchesTheNumbers ................................................   Passed    0.00 sec
+        Start   6: vmm/app/MeshConfig/MeshConfig.Defaults
+        Start 230: vmm/io/Native/Native.ThreeDimensionalHeader
+323/337 Test   #7: vmm/app/MeshConfig/MeshConfig.SyntaxErrorsNameTheLine ...........................................   Passed    0.00 sec
+324/337 Test   #6: vmm/app/MeshConfig/MeshConfig.Defaults ..........................................................   Passed    0.00 sec
+        Start  11: vmm/app/MeshConfig/MeshConfig.OutputKeyWinsOverTheFileName
+        Start 237: vmm/io/Stl/Stl.UnnamedSolidsTakeTheDefaultPatch
+325/337 Test #230: vmm/io/Native/Native.ThreeDimensionalHeader .....................................................   Passed    0.00 sec
+326/337 Test  #11: vmm/app/MeshConfig/MeshConfig.OutputKeyWinsOverTheFileName ......................................   Passed    0.00 sec
+        Start 228: vmm/io/Native/Native.RejectsNamesWithSpaces
+        Start  10: vmm/app/MeshConfig/MeshConfig.ReadErrorsNameTheFile
+327/337 Test #237: vmm/io/Stl/Stl.UnnamedSolidsTakeTheDefaultPatch .................................................   Passed    0.00 sec
+        Start   8: vmm/app/MeshConfig/MeshConfig.GlobalKeysAreChecked
+328/337 Test #228: vmm/io/Native/Native.RejectsNamesWithSpaces .....................................................   Passed    0.00 sec
+329/337 Test  #10: vmm/app/MeshConfig/MeshConfig.ReadErrorsNameTheFile .............................................   Passed    0.00 sec
+        Start 238: vmm/io/Stl/Stl.MalformedInput
+        Start 195: vmm/integration/Layered/LayeredIntegration.MalformedFiles
+330/337 Test   #8: vmm/app/MeshConfig/MeshConfig.GlobalKeysAreChecked ..............................................   Passed    0.00 sec
+        Start  13: vmm/app/MeshConfig/MeshConfig.AllocationFailuresStayInsideTheParser
+331/337 Test #238: vmm/io/Stl/Stl.MalformedInput ...................................................................   Passed    0.00 sec
+        Start 174: vmm/integration/ConfigRun/ConfigRun.FragmentedRiverIsVisibleAndCanBeRejected
+332/337 Test #195: vmm/integration/Layered/LayeredIntegration.MalformedFiles .......................................   Passed    0.00 sec
+333/337 Test  #13: vmm/app/MeshConfig/MeshConfig.AllocationFailuresStayInsideTheParser .............................   Passed    0.00 sec
+        Start 234: vmm/io/Native/Native.AllocationFailuresStayInsideTheReader
+        Start 241: vmm/io/Stl/Stl.AllocationFailuresStayInsideTheReader
+334/337 Test #234: vmm/io/Native/Native.AllocationFailuresStayInsideTheReader ......................................   Passed    0.00 sec
+        Start 337: vmm/benchmark/checksum_B1
+335/337 Test #241: vmm/io/Stl/Stl.AllocationFailuresStayInsideTheReader ............................................   Passed    0.00 sec
+336/337 Test #174: vmm/integration/ConfigRun/ConfigRun.FragmentedRiverIsVisibleAndCanBeRejected ....................   Passed    0.01 sec
+337/337 Test #337: vmm/benchmark/checksum_B1 .......................................................................***Skipped   0.04 sec
+
+100% tests passed, 0 tests failed out of 337
+
+Label Time Summary:
+ci      =   2.85 sec*proc (4 tests)
+slow    = 107.22 sec*proc (24 tests)
+vmm     = 116.89 sec*proc (337 tests)
+
+Total Test time (real) =  39.04 sec
+
+The following tests did not run:
+	337 - vmm/benchmark/checksum_B1 (Skipped)

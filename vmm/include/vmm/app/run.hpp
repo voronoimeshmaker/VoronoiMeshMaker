@@ -56,6 +56,7 @@ struct ConfigRunReport {
     InvariantReport invariants;
     std::vector<std::filesystem::path> written;
     std::optional<CvtReport> cvt;
+    std::size_t fragmented_cells = 0;  ///< disconnected cells in the generated Voronoi mesh
 };
 
 /// @brief Generates the mesh of a configuration and writes it in the requested formats.

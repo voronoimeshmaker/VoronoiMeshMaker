@@ -49,6 +49,7 @@
 | 040 | Facilidade de uso: value_or_throw e vmm-mesh | APROVADA | João |
 | 041 | API 1.0 congelada; versionamento semântico | APROVADA | João |
 | 042 | Clang mínimo 19 | APROVADA | João |
+| 043 | Falhas de recursos nos leitores | PROPOSTA | P30.5 |
 
 ---
 
@@ -616,3 +617,14 @@
   distribuição são compilados com a libstdc++.
 - Consequências: requisitos do manual, diretrizes e matriz da CI atualizados. Nenhuma mudança de código.
 
+
+## DEC-043 — Falhas de recursos nos leitores
+- Data: 2026-10-17
+- Origem: P30.5; A04 I14; DEC-016
+- Status: PROPOSTA
+- Decisão: acrescentar ResourceExhausted (504) para falhas de alocação ou limites
+  de contêiner nos leitores públicos; entrada malformada permanece ParseError.
+  A conversão de falta de memória não constrói contexto que precise de alocação.
+- Justificativa: distinguir arquivo inválido de recursos locais insuficientes,
+  preservando códigos existentes e Result como fronteira pública.
+- Consequências: catálogo pt/en e testes dos leitores; nenhuma mudança de assinatura.

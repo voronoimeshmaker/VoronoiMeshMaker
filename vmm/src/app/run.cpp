@@ -168,6 +168,7 @@ Result<typename T::Request> make_request(const MeshConfig& config, const ConfigR
     }
     typename T::Request request;
     request.sites.seed = config.seed();
+    request.reject_fragmented = config.global().find("reject_fragmented") == "true";
     if (config.interface_pairs()) T::pairs(request, *config.interface_pairs());
     if (config.tolerance()) request.build.relative_tolerance = *config.tolerance();
     auto& declaration = request.declaration;
@@ -223,6 +224,14 @@ Result<ConfigRunReport> write_all(const MeshConfig& config, const MeshResult& re
     report.internal_faces = result.mesh.internal_face_count();
     report.boundary_faces = result.mesh.boundary_faces().size();
     report.invariants = result.invariants;
+    if constexpr (requires { result.fragmented_cells; }) report.fragmented_cells = result.fragmented_cells.size();
+    if (config.global().find("reject_fragmented") == "true" && report.fragmented_cells > 0) {
+        std::string cells;
+        if constexpr (requires { result.fragmented_cells; }) {
+            for (CellId c : result.fragmented_cells) cells += std::format("{}{}", cells.empty() ? "" : ", ", c.index());
+        }
+        return fail(ErrorCode::FragmentedCells, "cells: " + cells);
+    }
     const auto table = writers<std::decay_t<decltype(result.mesh)>>();
     const auto base = config.output();
     if (base.has_parent_path()) {
@@ -268,8 +277,8 @@ Result<ConfigRunReport> run_cvt(const MeshConfig& config,const Partition& partit
     auto optimized=optimize_cvt(partition,sites,options);
     if(!optimized) return std::unexpected(optimized.error());
     const auto ref=invariant_reference(partition);
-    struct Output { decltype(optimized->mesh)& mesh; InvariantReport invariants; };
-    const Output out{optimized->mesh,check_invariants(optimized->mesh,ref)};
+    struct Output { decltype(optimized->mesh)& mesh; InvariantReport invariants; const std::vector<CellId>& fragmented_cells; };
+    const Output out{optimized->mesh,check_invariants(optimized->mesh,ref),optimized->fragmented_cells};
     auto report=write_all(config,out);
     if(!report) return std::unexpected(report.error());
     report->dimension=dimension;
@@ -323,7 +332,12 @@ Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistr
             // The result is general Voronoi geometry, without stale column metadata.
             return run_cvt(config,domain->partition,*sites,**cvt,3);
         }
-        struct Output { const Mesh3D& mesh; InvariantReport invariants; };
+        struct Output { const Mesh3D& mesh; InvariantReport invariants; std::vector<CellId> fragmented_cells; };
+        std::vector<CellId> fragmented;
+        for (CellId c : layered->mesh().cells()) {
+            const auto column = CellId::from_index(layered->data().column[c.index()]);
+            if (std::ranges::find(base->fragmented_cells, column) != base->fragmented_cells.end()) fragmented.push_back(c);
+        }
         // Generation has already checked independent per-cell volumes.
         const auto metrics = compute_metrics(layered->mesh());
         InvariantReference reference;
@@ -333,7 +347,7 @@ Result<ConfigRunReport> run_config(const MeshConfig& config, const ConfigRegistr
             reference.region_measure[layered->mesh().region(c).index()] += metrics.cell_measure[c.index()];
         }
         const auto diagnostics = check_invariants(layered->mesh(), reference);
-        auto report = write_all(config, Output{layered->mesh(), diagnostics});
+        auto report = write_all(config, Output{layered->mesh(), diagnostics, std::move(fragmented)});
         if (!report) return std::unexpected(report.error());
         report->dimension = 3;
         auto path = config.output(); path += ".vlayers";

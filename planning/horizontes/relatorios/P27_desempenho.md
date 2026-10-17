@@ -1,5 +1,11 @@
 # P27 — desempenho sintético incremental
 
+> **Estado em fb02bb7 (revisão P30, 2026-10-17):** horizontes, colunas e CVT
+> estão implementados e registrados no histórico de main. As menções abaixo a
+> CVT futuro ou a trabalho sem commit descrevem a data da entrega original;
+> não representam o estado atual. O agente desta revisão não fez commit,
+> tag ou push. Limitações e correções pendentes: A01–A05 e P30–P37.
+
 Ambiente Ubuntu-26.04-Test; Release da árvore ativa em 2026-10-04.
 Comando: `python3 planning/horizontes/prototypes/P27/benchmark.py`.
 O tempo inclui processo CLI, geração da base, extrusão e gravação vmesh/vlayers.

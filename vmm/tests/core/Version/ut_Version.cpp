@@ -23,11 +23,16 @@
 
 namespace {
 
-TEST(Version, EqualsTheCMakeProject) { EXPECT_EQ(vmm::version_string, std::string_view(VMM_PROJECT_VERSION)); }
+TEST(Version, EqualsTheCMakeProject) {
+    EXPECT_EQ(std::format("{}.{}.{}", vmm::version_major, vmm::version_minor, vmm::version_patch),
+              std::string_view(VMM_PROJECT_VERSION));
+    EXPECT_EQ(vmm::version_prerelease, "dev");
+}
 
 TEST(Version, StringMatchesTheNumbers) {
     EXPECT_EQ(vmm::version_string,
-              std::format("{}.{}.{}", vmm::version_major, vmm::version_minor, vmm::version_patch));
+              std::format("{}.{}.{}-{}", vmm::version_major, vmm::version_minor, vmm::version_patch,
+                          vmm::version_prerelease));
 }
 
 }  // namespace

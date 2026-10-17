@@ -1,0 +1,74 @@
+Test project /home/jflavio/Programas/VMM/build
+      Start   5: vmm/app/MeshConfig/MeshConfig.ParsesGlobalsSectionsAndComments
+ 1/33 Test   #5: vmm/app/MeshConfig/MeshConfig.ParsesGlobalsSectionsAndComments ...........................   Passed    0.00 sec
+      Start   6: vmm/app/MeshConfig/MeshConfig.Defaults
+ 2/33 Test   #6: vmm/app/MeshConfig/MeshConfig.Defaults ...................................................   Passed    0.00 sec
+      Start   7: vmm/app/MeshConfig/MeshConfig.SyntaxErrorsNameTheLine
+ 3/33 Test   #7: vmm/app/MeshConfig/MeshConfig.SyntaxErrorsNameTheLine ....................................   Passed    0.00 sec
+      Start   8: vmm/app/MeshConfig/MeshConfig.GlobalKeysAreChecked
+ 4/33 Test   #8: vmm/app/MeshConfig/MeshConfig.GlobalKeysAreChecked .......................................   Passed    0.00 sec
+      Start   9: vmm/app/MeshConfig/MeshConfig.ReadsAFileAndResolvesPathsFromItsDirectory
+ 5/33 Test   #9: vmm/app/MeshConfig/MeshConfig.ReadsAFileAndResolvesPathsFromItsDirectory .................   Passed    0.00 sec
+      Start  10: vmm/app/MeshConfig/MeshConfig.ReadErrorsNameTheFile
+ 6/33 Test  #10: vmm/app/MeshConfig/MeshConfig.ReadErrorsNameTheFile ......................................   Passed    0.00 sec
+      Start  11: vmm/app/MeshConfig/MeshConfig.OutputKeyWinsOverTheFileName
+ 7/33 Test  #11: vmm/app/MeshConfig/MeshConfig.OutputKeyWinsOverTheFileName ...............................   Passed    0.00 sec
+      Start  12: vmm/app/MeshConfig/MeshConfig.RejectsEmptyNonFiniteAndOversizedNumericInput
+ 8/33 Test  #12: vmm/app/MeshConfig/MeshConfig.RejectsEmptyNonFiniteAndOversizedNumericInput ..............   Passed    0.00 sec
+      Start 190: vmm/integration/Layered/LayeredIntegration.NonconvexHoleAndDisconnectedRegions
+ 9/33 Test #190: vmm/integration/Layered/LayeredIntegration.NonconvexHoleAndDisconnectedRegions ...........   Passed    0.01 sec
+      Start 191: vmm/integration/Layered/LayeredIntegration.FixedObliqueSupportWithChangedBaseSites
+10/33 Test #191: vmm/integration/Layered/LayeredIntegration.FixedObliqueSupportWithChangedBaseSites .......   Passed    0.01 sec
+      Start 192: vmm/integration/Layered/LayeredIntegration.RoundTripAndRenumbering
+11/33 Test #192: vmm/integration/Layered/LayeredIntegration.RoundTripAndRenumbering .......................   Passed    0.01 sec
+      Start 193: vmm/integration/Layered/LayeredIntegration.MalformedFiles
+12/33 Test #193: vmm/integration/Layered/LayeredIntegration.MalformedFiles ................................   Passed    0.00 sec
+      Start 194: vmm/integration/Layered/LayeredIntegration.ConfigComposesBaseAndHorizons
+13/33 Test #194: vmm/integration/Layered/LayeredIntegration.ConfigComposesBaseAndHorizons .................   Passed    0.00 sec
+      Start 195: vmm/integration/Layered/LayeredIntegration.DeterministicAcrossScalesAndTranslations
+14/33 Test #195: vmm/integration/Layered/LayeredIntegration.DeterministicAcrossScalesAndTranslations ......   Passed    0.00 sec
+      Start 196: vmm/integration/Layered/LayeredIntegration.FixedFiniteObliqueInterfaceIn2DAndExtrusion
+15/33 Test #196: vmm/integration/Layered/LayeredIntegration.FixedFiniteObliqueInterfaceIn2DAndExtrusion ...   Passed    0.01 sec
+      Start 197: vmm/integration/Layered/LayeredIntegration.TruncatedPersistenceAndStreamFailures
+16/33 Test #197: vmm/integration/Layered/LayeredIntegration.TruncatedPersistenceAndStreamFailures .........   Passed    0.01 sec
+      Start 198: vmm/integration/Layered/LayeredIntegration.InvalidOverlayInputs
+17/33 Test #198: vmm/integration/Layered/LayeredIntegration.InvalidOverlayInputs ..........................   Passed    0.00 sec
+      Start 199: vmm/integration/Layered/LayeredIntegration.InvalidExtrusionGeometry
+18/33 Test #199: vmm/integration/Layered/LayeredIntegration.InvalidExtrusionGeometry ......................   Passed    0.00 sec
+      Start 200: vmm/integration/Layered/LayeredIntegration.ReaderLimitsTrailingInputAndExceptions
+19/33 Test #200: vmm/integration/Layered/LayeredIntegration.ReaderLimitsTrailingInputAndExceptions ........   Passed    0.00 sec
+      Start 224: vmm/io/Native/Native.RoundTripIsExact
+20/33 Test #224: vmm/io/Native/Native.RoundTripIsExact ....................................................   Passed    0.01 sec
+      Start 225: vmm/io/Native/Native.FileVariants
+21/33 Test #225: vmm/io/Native/Native.FileVariants ........................................................   Passed    0.00 sec
+      Start 226: vmm/io/Native/Native.RejectsNamesWithSpaces
+22/33 Test #226: vmm/io/Native/Native.RejectsNamesWithSpaces ..............................................   Passed    0.00 sec
+      Start 227: vmm/io/Native/Native.ParseErrors
+23/33 Test #227: vmm/io/Native/Native.ParseErrors .........................................................   Passed    0.00 sec
+      Start 228: vmm/io/Native/Native.ThreeDimensionalHeader
+24/33 Test #228: vmm/io/Native/Native.ThreeDimensionalHeader ..............................................   Passed    0.00 sec
+      Start 229: vmm/io/Native/Native.RejectsHostileCountsAndTrailingData
+25/33 Test #229: vmm/io/Native/Native.RejectsHostileCountsAndTrailingData .................................   Passed    0.00 sec
+      Start 230: vmm/io/Native/Native.RejectsEveryTruncatedSection
+26/33 Test #230: vmm/io/Native/Native.RejectsEveryTruncatedSection ........................................   Passed    0.00 sec
+      Start 231: vmm/io/Native/Native.ConvertsStreamExceptions
+27/33 Test #231: vmm/io/Native/Native.ConvertsStreamExceptions ............................................   Passed    0.00 sec
+      Start 232: vmm/io/Stl/Stl.AsciiRoundTripKeepsPatches
+28/33 Test #232: vmm/io/Stl/Stl.AsciiRoundTripKeepsPatches ................................................   Passed    0.00 sec
+      Start 233: vmm/io/Stl/Stl.BinaryRoundTripAndFiles
+29/33 Test #233: vmm/io/Stl/Stl.BinaryRoundTripAndFiles ...................................................   Passed    0.00 sec
+      Start 234: vmm/io/Stl/Stl.UnnamedSolidsTakeTheDefaultPatch
+30/33 Test #234: vmm/io/Stl/Stl.UnnamedSolidsTakeTheDefaultPatch ..........................................   Passed    0.00 sec
+      Start 235: vmm/io/Stl/Stl.MalformedInput
+31/33 Test #235: vmm/io/Stl/Stl.MalformedInput ............................................................   Passed    0.00 sec
+      Start 236: vmm/io/Stl/Stl.RejectsTruncatedBinaryCountsAndNonFiniteValues
+32/33 Test #236: vmm/io/Stl/Stl.RejectsTruncatedBinaryCountsAndNonFiniteValues ............................   Passed    0.00 sec
+      Start 237: vmm/io/Stl/Stl.RequiresCompleteAsciiFacets
+33/33 Test #237: vmm/io/Stl/Stl.RequiresCompleteAsciiFacets ...............................................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 33
+
+Label Time Summary:
+vmm    =   0.08 sec*proc (33 tests)
+
+Total Test time (real) =   0.09 sec

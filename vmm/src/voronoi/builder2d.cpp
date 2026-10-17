@@ -325,6 +325,7 @@ private:
             if (clip.pieces.empty()) return fail(ErrorCode::InvariantViolated, "empty clipped cell", CellId{i});
             if (clip.pieces.size() > 1) {
                 ++out_.stats.fragmented_cells;
+                out_.fragmented_cells.push_back(CellId{i});
                 log(Error(ErrorCode::InvariantViolated, "cell made of several pieces (kept whole)", CellId{i},
                           Severity::Warning));
             }

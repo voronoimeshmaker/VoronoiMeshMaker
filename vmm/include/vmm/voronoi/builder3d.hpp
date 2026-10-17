@@ -58,6 +58,7 @@ struct Build3D {
     Mesh3D mesh;
     BuildStats3D stats;
     std::vector<Real> cell_volume;  ///< independent volume of every cell (exact for clipped cells)
+    std::vector<CellId> fragmented_cells = {};  ///< canonical cell IDs, DEC-035
 };
 
 /// @brief Builds the conforming 3D Voronoi mesh of a partition (one or several regions).

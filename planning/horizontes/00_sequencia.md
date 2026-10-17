@@ -1,5 +1,11 @@
 # Sequência — colunas e horizontes no VMM
 
+> **Estado em fb02bb7 (revisão P30, 2026-10-17):** horizontes, colunas e CVT
+> estão implementados e registrados no histórico de main. As menções abaixo a
+> CVT futuro ou a trabalho sem commit descrevem a data da entrega original;
+> não representam o estado atual. O agente desta revisão não fez commit,
+> tag ou push. Limitações e correções pendentes: A01–A05 e P30–P37.
+
 - Versão do plano: 1.0 — 2026-10-03.
 - Estado: P21–P29 concluídos em 2026-10-04; versão 1.1.0 preparada para revisão, não publicada.
 - Repositório: /home/jflavio/Programas/VMM, WSL Ubuntu-26.04-Test.

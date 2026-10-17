@@ -93,13 +93,13 @@ struct PlanarCvt {
     using Sites=SiteSet;
     static constexpr std::size_t dimension=2;
     static Status validate(const Partition& p,const Sites& s) { return validate_sites(p,s); }
-    static Result<Mesh2D> build(const Partition& p,const Sites& s) {
+    static Result<Build2D> build(const Partition& p,const Sites& s) {
         auto result=build_mesh_2d(p,s,cgal_backend_2d());
         if(!result) return std::unexpected(result.error());
         auto ref=invariant_reference(p); ref.cell_measure=result->cell_polygon_area;
         if(!check_invariants(result->mesh,ref).passed(ref) || !fixed_support(p,result->mesh))
             return fail(ErrorCode::InvariantViolated,"CVT reconstructed 2D mesh");
-        return std::move(result->mesh);
+        return std::move(*result);
     }
 };
 struct SpatialCvt {
@@ -107,13 +107,13 @@ struct SpatialCvt {
     using Sites=SiteSet3D;
     static constexpr std::size_t dimension=3;
     static Status validate(const Partition& p,const Sites& s) { return validate_sites_3d(p,s); }
-    static Result<Mesh3D> build(const Partition& p,const Sites& s) {
+    static Result<Build3D> build(const Partition& p,const Sites& s) {
         auto result=build_mesh_3d(p,s,cgal_backend_3d());
         if(!result) return std::unexpected(result.error());
         auto ref=invariant_reference(p); ref.cell_measure=result->cell_volume;
         if(!check_invariants(result->mesh,ref).passed(ref) || !fixed_support(p,result->mesh))
             return fail(ErrorCode::InvariantViolated,"CVT reconstructed 3D mesh");
-        return std::move(result->mesh);
+        return std::move(*result);
     }
 };
 template<class Traits>
@@ -133,7 +133,7 @@ Result<CvtResult<Traits::dimension>> run(const typename Traits::Partition& parti
     if(!valid) return std::unexpected(valid.error());
     auto initial=Traits::build(partition,input);
     if(!initial) return std::unexpected(initial.error());
-    CvtResult<D> out{std::move(*initial),{}};
+    CvtResult<D> out{std::move(initial->mesh),{},std::move(initial->fragmented_cells)};
     auto sites=input;
     Real energy=cvt_energy(out.mesh);
     if(!std::isfinite(energy) || energy<=0)
@@ -167,13 +167,14 @@ Result<CvtResult<Traits::dimension>> run(const typename Traits::Partition& parti
                 out.report.last_rejection=rebuilt.error().message();
                 ++out.report.rejected_steps; continue;
             }
-            const Real next=cvt_energy(*rebuilt);
+            const Real next=cvt_energy(rebuilt->mesh);
             if(!std::isfinite(next) || next<=0 || next>energy ||
                energy-next<=32*std::numeric_limits<Real>::epsilon()*energy) {
                 out.report.last_rejection="no numerically resolved decrease in CVT energy";
                 ++out.report.rejected_steps; continue;
             }
-            out.mesh=std::move(*rebuilt); sites=std::move(candidate); energy=next;
+            out.fragmented_cells=std::move(rebuilt->fragmented_cells);
+            out.mesh=std::move(rebuilt->mesh); sites=std::move(candidate); energy=next;
             out.report.energy.push_back(energy);
             out.report.relative_displacement.push_back(step*residual);
             accepted=true; break;

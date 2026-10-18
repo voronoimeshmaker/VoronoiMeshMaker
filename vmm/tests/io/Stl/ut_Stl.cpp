@@ -142,3 +142,22 @@ TEST(Stl, AllocationFailuresStayInsideTheReader) {
 }
 
 }  // namespace
+
+TEST(Stl, AllocationFailuresInFileReaders) {
+    const auto path=std::filesystem::temp_directory_path()/"vmm_p30_allocation.stl";
+    ASSERT_TRUE(vmm::write_stl(tagged_cube(),path));
+    for(std::size_t attempt=0;attempt<120;++attempt) {
+        vmm::test::fail_allocation_after(attempt);
+        const auto soup=vmm::read_stl(path);
+        vmm::test::stop_allocation_failure();
+        if(vmm::test::allocation_failed) { EXPECT_FALSE(soup); }
+        vmm::test::fail_allocation_after(attempt);
+        const auto surface=vmm::read_stl_surface(path);
+        vmm::test::stop_allocation_failure();
+        if(vmm::test::allocation_failed) { EXPECT_FALSE(surface); }
+    }
+    std::filesystem::remove(path);
+    std::istringstream broken;
+    broken.setstate(std::ios::badbit);
+    EXPECT_FALSE(vmm::read_stl(broken));
+}

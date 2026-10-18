@@ -41,3 +41,16 @@ inline void stop_allocation_failure() { allocation_countdown = std::numeric_limi
 [[gnu::noinline]] void* operator new[](std::size_t size) { return ::operator new(size); }
 [[gnu::noinline]] void operator delete[](void* memory) noexcept { ::operator delete(memory); }
 [[gnu::noinline]] void operator delete[](void* memory, std::size_t) noexcept { ::operator delete(memory); }
+
+[[gnu::noinline]] void* operator new(std::size_t size, const std::nothrow_t&) noexcept {
+    try { return ::operator new(size); } catch (const std::bad_alloc&) { return nullptr; }
+}
+[[gnu::noinline]] void* operator new[](std::size_t size, const std::nothrow_t&) noexcept {
+    try { return ::operator new[](size); } catch (const std::bad_alloc&) { return nullptr; }
+}
+[[gnu::noinline]] void operator delete(void* memory, const std::nothrow_t&) noexcept {
+    ::operator delete(memory);
+}
+[[gnu::noinline]] void operator delete[](void* memory, const std::nothrow_t&) noexcept {
+    ::operator delete[](memory);
+}

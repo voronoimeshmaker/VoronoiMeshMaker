@@ -2,3 +2,11 @@
 # Values must be measured in WSL Ubuntu-26.04-Test, never copied from cloud runs.
 # Platform: OS-architecture-compiler-version-CGALversion-configuration-nativeX-ltoY.
 # Cases with counts/refinement explicitly identified; records added after measurement.
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B1-100000 6bc6e07963550eb2
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B1-1000000 30df5ed2ebaeaf4a
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B2 4471f98f4ddaafee
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B3 66120ec8a8da0200
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B4-200000 9802537f1663e195
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B5-100000 82f55978edd93325
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B6-grid70-20000 1059ea667e4a1683
+Linux-x86_64-GNU-15.2.0-CGAL6.2.1-Release-nativeOFF-ltoOFF B7-refinement2 0c93ccd9e9c5348d

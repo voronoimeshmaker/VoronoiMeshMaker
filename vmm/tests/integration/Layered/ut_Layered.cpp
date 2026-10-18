@@ -18,6 +18,7 @@
 //==============================================================================
 //  VoronoiMeshMaker
 //==============================================================================
+#include "allocation_failure.hpp"
 #include "simple_meshes.hpp"
 #include <vmm/app/run.hpp>
 #include <vmm/backend/column_overlay.hpp>
@@ -289,4 +290,35 @@ TEST(LayeredIntegration, ReaderLimitsTrailingInputAndExceptions) {
     broken.exceptions(std::ios::failbit | std::ios::badbit);
     EXPECT_NO_THROW(EXPECT_FALSE(vmm::read_horizons(broken)));
     EXPECT_NO_THROW(EXPECT_FALSE(vmm::read_layered(broken)));
+}
+
+TEST(LayeredIntegration, AllocationFailuresInStreamAndFileReaders) {
+    auto b=base(false,false); ASSERT_TRUE(b);
+    auto h=horizons(); ASSERT_TRUE(h);
+    auto m=vmm::generate_layered_mesh(b->mesh,*h); ASSERT_TRUE(m);
+    std::ostringstream output; ASSERT_TRUE(vmm::write_layered(*m,output));
+    const auto text=output.str();
+    const auto path=std::filesystem::temp_directory_path()/"vmm_p30_layered_allocation.layers";
+    ASSERT_TRUE(vmm::write_layered(*m,path));
+    const std::string spec="VMM_HORIZONS 1\n2 0 1\n2 0 1\n2\n\"a\"\n4 0 0 0 0\n\"b\"\n4 1 1 1 1\n1\n2 0 1\n";
+    for(std::size_t attempt=0;attempt<120;++attempt) {
+        std::istringstream in(text), horizons_in(spec);
+        vmm::test::fail_allocation_after(attempt);
+        const auto layered=vmm::read_layered(in);
+        vmm::test::stop_allocation_failure();
+        if(vmm::test::allocation_failed) { EXPECT_FALSE(layered); }
+        vmm::test::fail_allocation_after(attempt);
+        const auto horizon=vmm::read_horizons(horizons_in);
+        vmm::test::stop_allocation_failure();
+        if(vmm::test::allocation_failed) { EXPECT_FALSE(horizon); }
+        vmm::test::fail_allocation_after(attempt);
+        const auto file=vmm::read_layered(path);
+        vmm::test::stop_allocation_failure();
+        if(vmm::test::allocation_failed) { EXPECT_FALSE(file); }
+        vmm::test::fail_allocation_after(attempt);
+        const auto invalid=vmm::read_horizons(path);
+        vmm::test::stop_allocation_failure();
+        EXPECT_FALSE(invalid);
+    }
+    std::filesystem::remove(path);
 }

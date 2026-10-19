@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <set>
 #include <utility>
 //==============================================================================
@@ -19,6 +20,13 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
     if(d.horizons.horizon_count()<2 || d.column_count==0 ||
        d.fractions.size()!=d.horizons.horizon_count()-1)
         return fail(ErrorCode::InvalidArgument,"invalid column/horizon counts");
+    if((!d.base_generator.empty() && d.base_generator.size()!=d.column_count) ||
+       (!d.site_is_centroid.empty() && d.site_is_centroid.size()!=d.mesh.cell_count()))
+        return fail(ErrorCode::InconsistentData,"layered generator metadata sizes");
+    for(const auto& generator:d.base_generator) for(Real coordinate:generator)
+        if(!std::isfinite(coordinate)) return fail(ErrorCode::InconsistentData,"non-finite base generator");
+    for(auto flag:d.site_is_centroid) if(flag>1)
+        return fail(ErrorCode::InconsistentData,"invalid centroid fallback flag");
     std::size_t layers=0;
     for(const auto& f:d.fractions) {
         if(f.size()<2 || f.front()!=0 || f.back()!=1 ||
@@ -28,6 +36,21 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
         if(layers>std::numeric_limits<std::size_t>::max()-(f.size()-1))
             return fail(ErrorCode::InvalidArgument,"layer count overflow");
         layers+=f.size()-1;
+    }
+    if(d.column_levels.empty()!=d.kfloor.empty())
+        return fail(ErrorCode::InconsistentData,"flat levels and kfloor must be supplied together");
+    if(!d.column_levels.empty()) {
+        if(d.column_levels.size()!=d.column_count || d.kfloor.size()!=d.column_count)
+            return fail(ErrorCode::InconsistentData,"flat column metadata sizes");
+        for(std::size_t column=0;column<d.column_count;++column) {
+            const auto& levels=d.column_levels[column];
+            if(levels.size()!=layers+1 || !std::ranges::all_of(levels,[](Real z){return std::isfinite(z);}) ||
+               !std::is_sorted(levels.begin(),levels.end()))
+                return fail(ErrorCode::InconsistentData,"flat elevations must be finite and nondecreasing");
+            std::size_t first=0;
+            while(first<layers && levels[first]==levels[first+1]) ++first;
+            if(d.kfloor[column]!=first) return fail(ErrorCode::InconsistentData,"incorrect kfloor");
+        }
     }
     if(d.column.size()!=d.mesh.cell_count() || d.layer.size()!=d.mesh.cell_count() ||
        d.face_level.size()!=d.mesh.face_count())
@@ -80,6 +103,16 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
         for(std::size_t k=0;k<verts.size();++k)
             samples.push_back(0.5*(d.mesh.point(verts[k])+d.mesh.point(verts[(k+1)%verts.size()])));
         for(const auto& p:samples) {
+            if(!d.column_levels.empty()) {
+                for(CellId c:{d.mesh.owner(f),d.mesh.neighbour(f)}) if(c.valid()) {
+                    const auto& levels=d.column_levels[d.column[c.index()]];
+                    const auto layer=d.layer[c.index()];
+                    if(p[2]<levels[layer]-tol || p[2]>levels[layer+1]+tol)
+                        return fail(ErrorCode::InconsistentData,"cell crosses flat column levels");
+                    if(level!=lateral_face && std::abs(p[2]-levels[level])>tol)
+                        return fail(ErrorCode::InconsistentData,"face left its flat column support");
+                }
+            } else {
             if(level!=lateral_face) {
                 const auto l=level==layers ? layers-1 : level;
                 auto a=d.horizons.elevation(intervals[l],{p[0],p[1]});
@@ -94,12 +127,13 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
                 if(!a || !b || p[2]<std::lerp(*a,*b,lower[l])-tol || p[2]>std::lerp(*a,*b,upper[l])+tol)
                     return fail(ErrorCode::InconsistentData,"cell crosses a horizon");
             }
+            }
         }
         if(d.mesh.is_internal(f)) {
             const auto a=d.mesh.owner(f).index(),b=d.mesh.neighbour(f).index();
             if(level!=lateral_face && d.column[a]!=d.column[b])
                 return fail(ErrorCode::InconsistentData,"horizontal face connects different columns");
-            if(level==lateral_face && d.layer[a]!=d.layer[b])
+            if(d.column_levels.empty() && level==lateral_face && d.layer[a]!=d.layer[b])
                 return fail(ErrorCode::InconsistentData,"lateral face connects different layers");
         }
     }
@@ -118,22 +152,37 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
     }
     if(!check_invariants(d.mesh,reference).passed(reference))
         return fail(ErrorCode::InconsistentData,"layered mesh closure or orientation failure");
-    LayeredMesh out; out.data_=std::move(d); return out;
+    LayeredMesh out;
+    out.columns_.offsets.assign(d.column_count+1,0);
+    for(auto column:d.column) ++out.columns_.offsets[column+1];
+    std::partial_sum(out.columns_.offsets.begin(),out.columns_.offsets.end(),out.columns_.offsets.begin());
+    out.columns_.values.resize(d.mesh.cell_count());
+    auto cursor=out.columns_.offsets;
+    for(CellId cell:d.mesh.cells()) out.columns_.values[cursor[d.column[cell.index()]]++]=cell;
+    for(std::size_t column=0;column<d.column_count;++column) {
+        auto first=out.columns_.values.begin()+static_cast<std::ptrdiff_t>(out.columns_.offsets[column]);
+        auto last=out.columns_.values.begin()+static_cast<std::ptrdiff_t>(out.columns_.offsets[column+1]);
+        std::sort(first,last,[&](CellId a,CellId b){return d.layer[a.index()]<d.layer[b.index()];});
+    }
+    std::vector<CellPair> pairs;
+    for(FaceId face:d.mesh.internal_faces()) if(d.face_level[face.index()]!=lateral_face)
+        pairs.emplace_back(d.mesh.owner(face),d.mesh.neighbour(face));
+    out.vertical_=build_adjacency(d.mesh.cell_count(),pairs);
+    out.data_=std::move(d);
+    return out;
+}
+std::span<const CellId> LayeredMesh::cells_in_column_view(std::size_t column) const noexcept {
+    return column<columns_.rows() ? columns_.row(column) : std::span<const CellId>{};
+}
+std::span<const CellId> LayeredMesh::vertical_neighbours_view(CellId cell) const noexcept {
+    return cell.valid() && cell.index()<vertical_.rows() ? vertical_.row(cell.index()) : std::span<const CellId>{};
 }
 std::vector<CellId> LayeredMesh::cells_in_column(std::size_t column) const {
-    std::vector<CellId> out;
-    for(std::size_t c=0;c<data_.column.size();++c)
-        if(data_.column[c]==column) out.push_back(CellId::from_index(c));
-    std::ranges::sort(out,[&](CellId a,CellId b){return data_.layer[a.index()]<data_.layer[b.index()];});
-    return out;
+    const auto row=cells_in_column_view(column);
+    return {row.begin(),row.end()};
 }
 std::vector<CellId> LayeredMesh::vertical_neighbours(CellId cell) const {
-    std::vector<CellId> out;
-    for(FaceId f:data_.mesh.internal_faces()) if(data_.face_level[f.index()]!=lateral_face) {
-        if(data_.mesh.owner(f)==cell) out.push_back(data_.mesh.neighbour(f));
-        if(data_.mesh.neighbour(f)==cell) out.push_back(data_.mesh.owner(f));
-    }
-    std::ranges::sort(out); out.erase(std::unique(out.begin(),out.end()),out.end());
-    return out;
+    const auto row=vertical_neighbours_view(cell);
+    return {row.begin(),row.end()};
 }
 } // namespace vmm

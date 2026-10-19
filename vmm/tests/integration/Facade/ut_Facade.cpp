@@ -31,6 +31,7 @@ TEST(Facade, AnchorA1EndToEnd) {
     vmm::MeshRequest2D req{vmm::test::anchor_a1(), {}, {}, {}, {}};
     const vmm::SpacingField h = [](const Vec2& x) { return std::min(5.0, 0.5 + 0.15 * std::abs(x[1] + 5)); };
     for (std::size_t r = 0; r < 3; ++r) req.sources.push_back(vmm::sites_for(RegionId::from_index(r), vmm::AdaptiveQuadtreeSource(h, 0.5)));
+    req.reject_fragmented = true;
     const auto res = vmm::generate_mesh_2d(req);
     ASSERT_TRUE(res) << res.error().message();
     EXPECT_GT(res->mesh.cell_count(), 1000u);
@@ -38,6 +39,10 @@ TEST(Facade, AnchorA1EndToEnd) {
     EXPECT_TRUE(res->validation.ok());
     EXPECT_GT(res->invariants.interface_faces, 0u);
     EXPECT_EQ(res->stats.cells, res->mesh.cell_count());
+    req.build.relative_tolerance = -1;
+    const auto invalid_build = vmm::generate_mesh_2d(req);
+    ASSERT_FALSE(invalid_build);
+    EXPECT_EQ(invalid_build.error().code(), vmm::ErrorCode::InvalidLengthScale);
 }
 
 TEST(Facade, VoidStopsThePipeline) {

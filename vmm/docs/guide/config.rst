@@ -138,7 +138,7 @@ nos registros abertos de ``ConfigRegistries`` e passam a valer nos arquivos:
    const auto report = vmm::value_or_throw(vmm::run_config(config, registries));
 
 Células fragmentadas
--------------------
+-------------------------
 
 Em domínios não convexos, uma célula pode ter vários pedaços desconexos.
 O comportamento padrão mantém esses pedaços juntos (DEC-035). O executável

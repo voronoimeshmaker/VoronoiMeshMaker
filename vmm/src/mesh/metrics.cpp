@@ -42,6 +42,7 @@ Metrics<D> compute_metrics(const Mesh<D>& m) {
     r.intersection.resize(nf);
     r.nonorthogonality.resize(nf);
     r.skewness.resize(nf);
+    r.vertical_skew.assign(nf,0);
     r.cell_measure.assign(nc, 0);
     r.cell_centroid.assign(nc, Vec<D>{});
     std::vector<Vec<D>> moment(nc, Vec<D>{});
@@ -78,6 +79,10 @@ Metrics<D> compute_metrics(const Mesh<D>& m) {
             r.distance[i] = std::abs(h);
             r.intersection[i] = xo + h * n;
             r.nonorthogonality[i] = angle_between(g.area_vector, g.centroid - xo);
+        }
+        if constexpr (D==3) {
+            const Vec3 delta=(m.is_internal(f) ? m.site(m.neighbour(f)) : g.centroid)-xo;
+            r.vertical_skew[i]=std::atan2(std::abs(delta[2]),std::hypot(delta[0],delta[1]));
         }
         r.skewness[i] = r.distance[i] > 0 ? norm(g.centroid - r.intersection[i]) / r.distance[i] : 0;
     }

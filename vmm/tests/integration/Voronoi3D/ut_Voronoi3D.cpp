@@ -237,3 +237,37 @@ TEST(Voronoi3D, FacadeErrors) {
 }
 
 }  // namespace
+
+TEST(Voronoi3D, FragmentedCellsAreReportedAndRejected) {
+    vmm::MeshRequest3D request;
+    const auto medium=*request.declaration.media().add("solid");
+    const auto outer=request.declaration.add_region("outer",medium,vmm::Cuboid({0,0,0},{3,1,1}));
+    const auto divider=request.declaration.add_region("divider",medium,vmm::Cuboid({1,0,0},{2,1,1}));
+    ASSERT_TRUE(outer); ASSERT_TRUE(divider);
+    request.sources={
+        vmm::sites_for_3d(*outer,vmm::ExplicitSites3D({{0.5,0.5,0.5}})),
+        vmm::sites_for_3d(*divider,vmm::ExplicitSites3D({{1.5,0.5,0.5}}))};
+    const auto result=vmm::generate_mesh_3d(request);
+    ASSERT_TRUE(result) << result.error().message();
+    ASSERT_EQ(result->fragmented_cells.size(),1u);
+    EXPECT_EQ(result->stats.fragmented_cells,1u);
+    EXPECT_LT(result->fragmented_cells.front().index(),result->mesh.cell_count());
+    request.reject_fragmented=true;
+    const auto rejected=vmm::generate_mesh_3d(request);
+    ASSERT_FALSE(rejected);
+    EXPECT_EQ(rejected.error().code(),vmm::ErrorCode::FragmentedCells);
+    EXPECT_NE(rejected.error().context().find("cells:"),std::string::npos);
+    request.sources.front()=vmm::sites_for_3d(*outer,vmm::ExplicitSites3D({{0.5,0.5,0.25},{0.5,0.5,0.75}}));
+    const auto multiple=vmm::generate_mesh_3d(request);
+    ASSERT_FALSE(multiple);
+    EXPECT_EQ(multiple.error().code(),vmm::ErrorCode::FragmentedCells);
+    EXPECT_NE(multiple.error().context().find(", "),std::string::npos);
+    request.sources.front()=vmm::sites_for_3d(*outer,vmm::ExplicitSites3D({{0.5,0.5,0.5},{2.5,0.5,0.5}}));
+    const auto connected=vmm::generate_mesh_3d(request);
+    ASSERT_TRUE(connected) << connected.error().message();
+    EXPECT_TRUE(connected->fragmented_cells.empty());
+    request.build.relative_tolerance=-1;
+    const auto invalid_build=vmm::generate_mesh_3d(request);
+    ASSERT_FALSE(invalid_build);
+    EXPECT_EQ(invalid_build.error().code(),vmm::ErrorCode::InvalidLengthScale);
+}

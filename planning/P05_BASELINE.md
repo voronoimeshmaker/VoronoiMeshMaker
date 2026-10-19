@@ -187,3 +187,13 @@ Aplicados só depois da aprovação desta linha de base:
 6. DEC-025 — roteiro 0.1 a 1.0? Recomendação: aprovar.
 7. DEC-026 — diretrizes vigentes em `planning/` até o P13? Recomendação: aprovar.
 8. Aplicar os ajustes da §6 na sequência v5.2? Recomendação: aprovar.
+
+## Revisão P31 — 2026-10-18 (aditiva)
+
+Histórico acima preservado. Autorização de João: conversa 2026-10-17/18.
+R24 passa a build portátil por padrão (NATIVE_ARCH/LTO OFF), preset fast
+opcional com ambos ON, conforme DEC-050; implementação na P36.
+R12/R22 mantêm CMake >=3.28 conforme DEC-051, GCC>=14 e Clang>=19
+(DEC-042); configuração 3.28.3 e 4.4.4 validada na P30.
+DEC-048 distingue API 1.0 estável dos recursos experimentais da 1.1.
+Requisitos de testes, cobertura e evidências permanecem inalterados.

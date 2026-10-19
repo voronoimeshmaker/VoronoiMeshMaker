@@ -39,6 +39,10 @@ struct CvtResult { Mesh<D> mesh; CvtReport report; std::vector<CellId> fragmente
 /// @note The mesh must contain oriented planar faces and actual Voronoi generators.
 template<std::size_t D>
 [[nodiscard]] Real cvt_energy(const Mesh<D>& mesh);
+/// Layered prisms are not Voronoi cells of their reference sites.
+[[nodiscard]] inline Result<Real> cvt_energy(const LayeredMesh&) {
+    return fail(ErrorCode::InvalidArgument,"CVT energy requires Voronoi cells; layered reference sites are not Voronoi generators");
+}
 /// @brief Runs constrained Lloyd on an immutable 2D regional partition.
 /// @param partition Fixed boundary/interface geometry, reused at every iteration.
 /// @param sites Initial generators and fixed region membership; weights unsupported.

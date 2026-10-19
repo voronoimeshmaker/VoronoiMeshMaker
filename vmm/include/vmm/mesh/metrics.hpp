@@ -40,6 +40,9 @@ struct Metrics {
     std::vector<Real> nonorthogonality;
     /// |face centroid - intersection| / distance.
     std::vector<Real> skewness;
+    /// Absolute inclination of the site-to-site vector above the xy plane (radians).
+    /// Boundary faces use the site-to-face-centroid vector; zero for 2D meshes.
+    std::vector<Real> vertical_skew = {};
 };
 
 /// @brief Finite-volume metrics of every cell and face.

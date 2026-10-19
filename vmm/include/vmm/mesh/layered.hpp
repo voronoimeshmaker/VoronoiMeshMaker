@@ -4,11 +4,14 @@
 //  C++ standard library
 //==============================================================================
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <span>
 #include <vector>
 //==============================================================================
 //  VoronoiMeshMaker
 //==============================================================================
+#include <vmm/core/csr.hpp>
 #include <vmm/geometry/horizons.hpp>
 #include <vmm/mesh/mesh.hpp>
 namespace vmm {
@@ -23,6 +26,12 @@ struct LayeredData {
     std::vector<std::size_t> column;
     std::vector<std::size_t> layer;
     std::vector<std::size_t> face_level;
+    std::vector<Vec2> base_generator = {};
+    std::vector<std::uint8_t> site_is_centroid = {};
+    /// Optional constant subdivision elevations per column (flat-column geometry).
+    std::vector<std::vector<Real>> column_levels = {};
+    /// First nonempty nominal layer per column; layer count denotes an empty column.
+    std::vector<std::size_t> kfloor = {};
 };
 /// Immutable mesh with explicit columns; identifiers are not physical properties.
 class LayeredMesh {
@@ -47,7 +56,23 @@ public:
     [[nodiscard]] std::vector<CellId> cells_in_column(std::size_t column) const;
     /// Returns all neighbours across horizontal subdivision surfaces.
     [[nodiscard]] std::vector<CellId> vertical_neighbours(CellId cell) const;
+    /// Constant-time view, valid until this immutable object is destroyed or assigned.
+    [[nodiscard]] std::span<const CellId> cells_in_column_view(std::size_t column) const noexcept;
+    /// Constant-time view of unique vertical neighbours, sorted by cell ID.
+    [[nodiscard]] std::span<const CellId> vertical_neighbours_view(CellId cell) const noexcept;
 private:
     LayeredData data_;
+    Csr<CellId> columns_;
+    Csr<CellId> vertical_;
+
 };
+/// Derived geometry for one column; empty columns have zero minimum thickness.
+struct ColumnQuality {
+    Real min_thickness = 0;
+    Real max_interface_slope = 0; ///< Angle above the xy plane, radians.
+    Real max_vertical_skew = 0; ///< Lateral-face site-vector inclination, radians.
+    std::size_t absent_layers = 0; ///< Nominal layers without a cell, regardless of cause.
+};
+/// Computes quality from present geometry; does not infer missing generation history.
+[[nodiscard]] std::vector<ColumnQuality> column_quality_report(const LayeredMesh& layered);
 } // namespace vmm

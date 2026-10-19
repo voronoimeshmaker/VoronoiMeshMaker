@@ -1,5 +1,28 @@
 # P30 — Higiene de build, leitores e rastreabilidade
 
+## Estado atual — 2026-10-18
+
+**CONCLUÍDA em 2026-10-18; avanço à P31 autorizado.** João autorizou a retomada
+explicitamente («conclua então») e já dispensou pausas de aprovação. Os registros
+abaixo são cronológicos; estados antigos de espera ou pendência não são o estado
+atual. P31–P37 ainda não iniciadas.
+
+- Correções P30.1–P30.8 implementadas; referências B1–B7 medidas localmente.
+- Documentação pt_BR/en compilada com Sphinx -W, sem avisos na tentativa 2.
+- Últimas suítes completas anteriores aos testes adicionais: Release 340/340;
+  Clang, cobertura e ASan/UBSan 339 aprovados + checksum não registrado pulado.
+- Testes adicionais cobrem fragmentação/rejeição 3D, múltiplos IDs, aceitação
+  sem fragmentação e propagação de tolerância inválida em 2D/3D.
+- Medição incremental após esses testes: fachada 100% linhas, 82,1% ramos;
+  exceção histórica da fachada removida. O resultado precisa ser confirmado
+  pela execução limpa final, iniciada com build/p30_final_validation.py.
+- O script executa rebuild e suíte completa nas quatro configurações, limpa
+  somente os .gcda do build de cobertura e compila a documentação ao fim.
+  Logs: build/p30-final-*.log. Não iniciar outro processo enquanto estiver ativo.
+- Após sucesso, copiar evidências finais, conferir os critérios, encerrar P30
+  e formalizar D1–D7 na P31. Não pedir novamente autorização já concedida.
+
+
 ## Ambiente e versões
 
 2026-10-17; WSL Ubuntu-26.04-Test, /home/jflavio/Programas/VMM.
@@ -182,3 +205,77 @@ essa instrução, que prevalece sobre as pausas anteriores.
 Primeira validação final: Release 339/340 passaram; único erro: ordem dos
 includes no novo teste Layered. Corrigida sem relaxar o verificador. Segunda
 tentativa da sequência final iniciada; checksum B1 já passou na primeira.
+
+### Retomada 2026-10-17 21:39 America/Sao_Paulo
+
+Segunda sequência final: Release GCC 340/340 (checksum incluído), 41,39 s;
+Clang 339 aprovados/1 checksum sem referência pulado, 39,22 s; cobertura limpa
+339 aprovados/1 checksum pulado, 706,74 s. Gate de cobertura automatizado
+passou com exceções preexistentes: total 96,7% linhas/89,9% ramos. A exceção
+da fachada ainda exige revisão dos novos caminhos; o total não prova o
+critério estrito por arquivo. ASan/UBSan final continua ativo; documentação
+está encadeada após seu sucesso, sem processo duplicado. Logs concluídos
+copiados para evidencias/P30. P30 segue aberta.
+
+### Retomada 2026-10-17 22:38 America/Sao_Paulo
+
+ASan/UBSan final: 339 aprovados, 1 checksum sem referência pulado, zero falhas;
+3021,15 s. As quatro suítes completas terminaram. Sphinx tentativa 1 falhou
+por sublinhados curtos em dois títulos novos (config.rst e io.rst); corrigidos
+e iniciada tentativa 2, pt_BR seguido de en, mantendo -W.
+Auditoria detalhada da fachada identificou código novo 3D de rejeição sem
+execução: linhas 54–57 de facade.cpp. A exceção preexistente de cobertura
+não justifica esse caminho novo. Próxima iteração necessária: teste de
+fragmentação 3D (domínio dividido por região de precedência, sítio único na
+região desconexa), confirmar lista e rejeição, depois medir ramos da fachada.
+Apenas se o gate estrito continuar impedido por caminhos realmente inalcançáveis
+deve-se documentar a limitação, sem declarar o requisito integral cumprido.
+
+### Iteração de cobertura da fachada — 2026-10-17 23:42 local
+
+Documentação pt_BR/en passou com Sphinx -W na segunda tentativa. Novo teste
+3D verifica domínio dividido por região prioritária, lista de fragmentos,
+rejeição, múltiplos IDs e aceitação de células conexas. Testes também verificam
+propagação de tolerância inválida em 2D/3D. Três tentativas incrementais passaram
+nos testes, elevando facade.cpp de 61,5% para 74,4%, 76,9% e 79,5% dos ramos;
+linhas agora 100%. O critério estrito 80% ainda não foi alcançado: 62/78 ramos.
+A exceção histórica não foi ampliada. Limite de três tentativas atingido nesta
+iteração: registrar impasse, não repetir automaticamente nem alegar conclusão.
+A descrição histórica de exceção contém afirmação incorreta: falhas de build
+são alcançáveis pela tolerância negativa e foram exercitadas. Os novos testes
+ainda precisam ser incorporados às suítes completas após resolver o impasse.
+
+### Retomada autorizada explicitamente — 2026-10-18
+
+João: «conclua então». Nova iteração focada em cobertura. Auditoria revelou
+que a inserção anterior do teste de tolerância 2D não ocorreu: o padrão de
+substituição não existia. Corrigido com verificação explícita do ponto de
+inserção. A afirmação anterior de teste de tolerância 2D estava incorreta;
+a tolerância 3D havia sido efetivamente exercitada. Tentativa 1 em validação.
+
+Tentativa 1 passou: fachada 100% linhas e 82,1% ramos (64/78). Removida
+a exceção histórica da fachada, agora desnecessária e com justificativa
+incorreta. Nenhuma exceção acrescentada. Sequência integral final será repetida
+para incorporar os testes novos e confirmar cobertura limpa sem a exceção.
+
+### Verificação 2026-10-18 08:02 America/Sao_Paulo
+
+Sequência atual ainda ativa, sem duplicação: Release 341 aprovados (41,90 s);
+Clang 340 aprovados/1 checksum pulado (39,52 s); cobertura limpa 340 aprovados/
+1 checksum pulado (707,09 s). Logs atualizados em evidencias/P30. ASan/UBSan
+ainda em execução, documentação encadeada após sucesso. Sem nova alteração
+de código nem avanço de etapa durante a validação.
+
+## Fechamento P30 — FATO VERIFICADO
+
+Árvore local, sem commit/tag/push. Release GCC: 341 aprovados em 41,90 s.
+Clang19: 340 aprovados/1 checksum não registrado pulado, 39,52 s.
+Cobertura limpa GCC14: 340 aprovados/1 checksum pulado, 707,09 s.
+ASan/UBSan GCC14: 340 aprovados/1 checksum pulado, 2961,18 s, zero falhas.
+Fachada: 100% linhas e 82,1% ramos, sem exceção. Gate de cobertura passou.
+Sphinx pt_BR e en: sucesso com -W. CMake 3.28.3/4.4.4 e firewall passaram.
+B1–B7 medidos no WSL; checksum B1 reduzido passou em Release registrado.
+Leitores, fragmentação/CLI, verificador negativo e versão dev validados.
+Evidências finais copiadas para evidencias/P30; histórico acima preservado.
+Decisões pendentes: nenhuma que impeça P31; D1–D7 autorizadas pelo João.
+A aprovação prévia permite prosseguir, mantendo os critérios das próximas etapas.

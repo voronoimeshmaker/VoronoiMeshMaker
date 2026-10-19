@@ -50,6 +50,17 @@
 | 041 | API 1.0 congelada; versionamento semântico | APROVADA | João |
 | 042 | Clang mínimo 19 | APROVADA | João |
 | 043 | Falhas de recursos nos leitores | PROPOSTA | P30.5 |
+| 044 | Horizontes facetados fixos | PROPOSTA | P31 |
+| 045 | Regiões, intervalos e desaparecimento | PROPOSTA | P31 |
+| 046 | Persistência experimental de horizontes | PROPOSTA | P31 |
+| 047 | CVT de partição fixa | PROPOSTA | P31 |
+| 048 | D1 — Experimental na 1.x | PROPOSTA | P31 |
+| 049 | D2 — Sítio de coluna no gerador da base | PROPOSTA | P31 |
+| 050 | D3 — Build portátil por padrão | PROPOSTA | P31 |
+| 051 | D4 — CMake mínimo 3.28 | PROPOSTA | P31 |
+| 052 | D5 — Referência da versão 1.0.0 | PROPOSTA | P31 |
+| 053 | D6 — Execução autônoma com evidências | PROPOSTA | P31 |
+| 054 | D7 — Modo plano por coluna | PROPOSTA | P31 |
 
 ---
 
@@ -628,3 +639,91 @@
 - Justificativa: distinguir arquivo inválido de recursos locais insuficientes,
   preservando códigos existentes e Result como fronteira pública.
 - Consequências: catálogo pt/en e testes dos leitores; nenhuma mudança de assinatura.
+
+## DEC-044 — Horizontes facetados fixos
+- Data: 2026-10-18
+- Origem: planning/horizontes/01_requisitos.md: Q01/Q02/Q05/Q09 e H06/H09
+- Status: PROPOSTA
+- Decisão: HorizonGrid representa gráficos z(x,y) em grade retangular triangulada fixa, z positivo para cima. Funções/cotas são discretizadas; suporte, extensão e pares regionais ficam fixos, permitindo subdivisão das faces.
+- Justificativa: Separar erro de discretização de movimento indevido das interfaces.
+- Consequências: geometry/horizons.hpp; P32.
+
+## DEC-045 — Regiões, intervalos e desaparecimento
+- Data: 2026-10-18
+- Origem: planning/horizontes/01_requisitos.md: H01–H07 e Q03/Q04/Q07/Q08/Q10
+- Status: PROPOSTA
+- Decisão: Região 3D é região da base × intervalo; subdivisões internas não são interfaces obrigatórias. Base compartilhada, subdivisões uniformes/graduadas com quantidade nominal por intervalo, pinch-out explícito, bases não convexas/com buracos/componentes separados. Identificadores geométricos não são propriedades físicas; casos sintéticos medem custos.
+- Justificativa: Manter independência do MohidNG e fronteiras regionais obrigatórias.
+- Consequências: mesh/layered.hpp; P32.
+
+## DEC-046 — Persistência experimental de horizontes
+- Data: 2026-10-18
+- Origem: planning/horizontes/01_requisitos.md: Q06; vmm/src/io/layered.cpp
+- Status: PROPOSTA
+- Decisão: VMM_HORIZONS 1 (.hgrid) e VMM_LAYERS 1 (.vlayers) persistem horizontes/metadados via API e CLI; são experimentais na 1.x. Mudanças exigem versão e diagnóstico, sem reinterpretar arquivos silenciosamente. .vmesh 1 permanece estável pela DEC-041.
+- Justificativa: Preservar identidade dos dados e distinguir formatos novos da API 1.0.
+- Consequências: io/layered.hpp; P32/P36.
+
+## DEC-047 — CVT de partição fixa
+- Data: 2026-10-18
+- Origem: planning/cvt/00_sequencia.md: Decisões e C01–C05
+- Status: PROPOSTA
+- Decisão: Lloyd 2D/3D preserva partição e regiões dos sítios, sem inserir/remover sítios implicitamente; busca de passo impede movimentos inválidos. Estagnação não é convergência. Densidade uniforme é o estado inicial, a estender na P35; chaves cvt_* controlam a execução. CVT de colunas pode perder organização em colunas preservando interfaces.
+- Justificativa: Documentar decisões já implementadas sem confundir densidade geométrica com propriedade física.
+- Consequências: cvt.hpp; P35.
+
+## DEC-048 — D1 — Experimental na 1.x
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D1; autorização João 2026-10-17/18
+- Status: PROPOSTA
+- Decisão: Colunas/CVT e novos formatos/chaves são experimentais, sem garantia na 1.x; símbolos permanecem no namespace atual. Complementa DEC-041 apenas para novidades da 1.1; API 1.0 preservada. column_overlay.hpp é interno, mantido no caminho atual pois implementação e teste de integração o incluem.
+- Justificativa: Permitir correções necessárias sem quebrar a API 1.0 nem mover símbolos desnecessariamente.
+- Consequências: docs/api.rst; P31/P32/P35.
+
+## DEC-049 — D2 — Sítio de coluna no gerador da base
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D2
+- Status: PROPOSTA
+- Decisão: Usar (x,y) do gerador da base e z no meio da célula na vertical desse gerador. Centroide apenas como fallback explicitamente marcado. Substitui a escolha implícita de centroide em colunas; não altera a API 1.0.
+- Justificativa: Restaurar ortogonalidade lateral onde geometricamente aplicável.
+- Consequências: mesh/layered.hpp; P32.
+
+## DEC-050 — D3 — Build portátil por padrão
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D3
+- Status: PROPOSTA
+- Decisão: NATIVE_ARCH=OFF e LTO=OFF por padrão, preset fast ativa ambos. Substitui DEC-034 nesse ponto e revisa R24.
+- Justificativa: Evitar binários dependentes da CPU local por padrão.
+- Consequências: CMake/Presets; P36.
+
+## DEC-051 — D4 — CMake mínimo 3.28
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D4; evidências P30
+- Status: PROPOSTA
+- Decisão: Manter CMake mínimo 3.28; extrair requisitos do CGAL no probe sem ligar alias importado. R12/R22 mantêm o mínimo. Complementa decisões de toolchain sem substituir mínimos dos compiladores.
+- Justificativa: Configuração mínima e atual verificadas localmente.
+- Consequências: cmake/VerifyCGALHeaders.cmake; P30.
+
+## DEC-052 — D5 — Referência da versão 1.0.0
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D5; evidencias/P30/ci_da5c03e.json
+- Status: PROPOSTA
+- Decisão: Referência 1.0.0 é da5c03eab5865e14fe7ab7ed1ff29d529cd80d79, com CI histórica verde; complementa DEC-041. Criar/publicar tag continua reservado ao João.
+- Justificativa: Fixar referência auditável da compatibilidade.
+- Consequências: CONTRIBUTING/versão; P30/P37.
+
+## DEC-053 — D6 — Execução autônoma com evidências
+- Data: 2026-10-18
+- Origem: planning/horizontes/01_requisitos.md: H08; P30_P37_correcoes_A05.md: D6; conversa 2026-10-17/18
+- Status: PROPOSTA
+- Decisão: Planejar antes de implementar. Execução sem aprovação intermediária autorizada por João, com evidência versionada e suíte completa ao fim de cada etapa. Não equivale a aprovar testes falhos, dispensar critérios ou autorizar commit/tag/push.
+- Justificativa: Resolver a regra de execução mantendo rastreabilidade e verificação.
+- Consequências: relatórios/evidências; P30–P37.
+
+## DEC-054 — D7 — Modo plano por coluna
+- Data: 2026-10-18
+- Origem: P30_P37_correcoes_A05.md: D7
+- Status: PROPOSTA
+- Decisão: Acrescentar uma cota por interface e coluna, compatível com uso SZZ pelo MohidNG; preservar o modo linear por partes fiel ao MDT. Não introduzir dependência do solver. Complementa DEC-044, sem substituir o modo atual.
+- Justificativa: Atender geometria 2,5D do consumidor mantendo alternativa existente.
+- Consequências: layered.hpp/config; P32.

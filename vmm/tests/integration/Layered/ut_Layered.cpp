@@ -84,6 +84,8 @@ TEST(LayeredIntegration, RoundTripAndRenumbering) {
     ASSERT_TRUE(vmm::write_layered(*m,stream));
     auto restored=vmm::read_layered(stream); ASSERT_TRUE(restored) << restored.error().message();
     EXPECT_EQ(restored->mesh().points(),m->mesh().points());
+    EXPECT_EQ(restored->data().base_generator,m->data().base_generator);
+    EXPECT_EQ(restored->data().site_is_centroid,m->data().site_is_centroid);
     EXPECT_EQ(restored->data().column,m->data().column);
     EXPECT_EQ(restored->data().layer,m->data().layer);
     EXPECT_EQ(restored->data().face_level,m->data().face_level);
@@ -321,4 +323,96 @@ TEST(LayeredIntegration, AllocationFailuresInStreamAndFileReaders) {
         EXPECT_FALSE(invalid);
     }
     std::filesystem::remove(path);
+}
+
+TEST(LayeredIntegration, OverlayClipsGridAndKeepsBoundaryPatches) {
+    const std::vector<vmm::ColumnEdge> edges{
+        {{0,0},{1,0},vmm::CellId{0},{},vmm::PatchId{0}},
+        {{1,0},{1,1},vmm::CellId{0},{},vmm::PatchId{1}},
+        {{1,1},{0,1},vmm::CellId{0},{},vmm::PatchId{2}},
+        {{0,1},{0,0},vmm::CellId{0},{},vmm::PatchId{3}}};
+    std::vector<double> axis;
+    for(int i=-100;i<=100;++i) axis.push_back(static_cast<double>(i));
+    const auto grid=vmm::HorizonGrid::make(axis,axis,{"bottom","top"},
+        {std::vector<double>(axis.size()*axis.size(),0),std::vector<double>(axis.size()*axis.size(),1)});
+    ASSERT_TRUE(grid);
+    const auto overlay=vmm::cgal_column_overlay(edges,1,*grid);
+    ASSERT_TRUE(overlay) << overlay.error().message();
+    EXPECT_EQ(overlay->points.size(),4u);
+    EXPECT_EQ(overlay->triangles.size(),2u);
+    std::vector<std::size_t> patches;
+    double area=0;
+    for(const auto& triangle:overlay->triangles) {
+        EXPECT_EQ(triangle.column,vmm::CellId{0});
+        const auto a=overlay->points[triangle.vertices[0]],b=overlay->points[triangle.vertices[1]],c=overlay->points[triangle.vertices[2]];
+        area+=0.5*((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));
+        for(auto patch:triangle.patches) if(patch.valid()) patches.push_back(patch.index());
+    }
+    std::sort(patches.begin(),patches.end());
+    EXPECT_EQ(patches,(std::vector<std::size_t>{0,1,2,3}));
+    EXPECT_DOUBLE_EQ(area,1);
+    auto overlap=edges;
+    for(auto edge:edges) { edge.owner=vmm::CellId{1}; overlap.push_back(edge); }
+    const auto conflict=vmm::cgal_column_overlay(overlap,2,*grid);
+    ASSERT_FALSE(conflict);
+    EXPECT_EQ(conflict.error().code(),vmm::ErrorCode::InvalidPolygon);
+    EXPECT_NE(conflict.error().context().find("conflict"),std::string::npos);
+    auto inverted=edges;
+    for(auto& edge:inverted) std::swap(edge.a,edge.b);
+    EXPECT_FALSE(vmm::cgal_column_overlay(inverted,1,*grid));
+}
+
+TEST(LayeredIntegration, AlignedGridRoundingProperties) {
+    for(const double h:{0.1,0.3,1.0/3,0.125})
+        for(const double displacement:{0.,1e-15,1e-13,1e-9})
+            for(const vmm::Vec2 origin:{vmm::Vec2{0,0},vmm::Vec2{500000,7500000}}) {
+                SCOPED_TRACE(::testing::Message()<<"h="<<h<<" displacement="<<displacement<<" origin="<<origin[0]);
+                vmm::MeshRequest2D request;
+                const auto medium=*request.declaration.media().add("rock");
+                const auto region=request.declaration.add_region("base",medium,
+                    vmm::Rectangle({0,0},{3*h,3*h}));
+                ASSERT_TRUE(region);
+                request.sources={vmm::sites_for(*region,vmm::CartesianGridSource(h,{h/2,h/2}))};
+                auto base_mesh=vmm::generate_mesh_2d(request);
+                ASSERT_TRUE(base_mesh) << base_mesh.error().message();
+                auto translated_data=base_mesh->mesh.data();
+                for(auto& point:translated_data.points) point=point+origin;
+                for(auto& site:translated_data.sites) site=site+origin;
+                const auto translated=vmm::Mesh2D::from_data(std::move(translated_data));
+                ASSERT_TRUE(translated);
+                std::vector<double> x,y;
+                for(int i=-1;i<=4;++i) {
+                    x.push_back(origin[0]+static_cast<double>(i)*h+displacement*3*h);
+                    y.push_back(origin[1]+static_cast<double>(i)*h+displacement*3*h);
+                }
+                const auto grid=vmm::HorizonGrid::make(x,y,{"bottom","top"},
+                    {std::vector<double>(36,0),std::vector<double>(36,h)});
+                ASSERT_TRUE(grid);
+                const auto layered=vmm::generate_layered_mesh(*translated,*grid);
+                EXPECT_TRUE(layered) << layered.error().message();
+            }
+}
+
+TEST(LayeredIntegration, ReadsLegacyVersionOneWithoutGeneratorMetadata) {
+    auto b=base(false,false); ASSERT_TRUE(b);
+    auto h=horizons(); ASSERT_TRUE(h);
+    auto mesh=vmm::generate_layered_mesh(b->mesh,*h); ASSERT_TRUE(mesh);
+    std::ostringstream output; ASSERT_TRUE(vmm::write_layered(*mesh,output));
+    const auto text=output.str();
+    const auto native=text.find("vmm-mesh"); ASSERT_NE(native,std::string::npos);
+    std::istringstream prefix(text.substr(0,native));
+    std::vector<std::string> lines;
+    for(std::string line;std::getline(prefix,line);) lines.push_back(line);
+    ASSERT_GT(lines.size(),3u);
+    lines.resize(lines.size()-2);
+    lines.front()="VMM_LAYERS 1";
+    std::ostringstream legacy;
+    for(const auto& line:lines) legacy<<line<<'\n';
+    legacy<<text.substr(native);
+    std::istringstream input(legacy.str());
+    const auto restored=vmm::read_layered(input);
+    ASSERT_TRUE(restored) << restored.error().message();
+    EXPECT_TRUE(restored->data().base_generator.empty());
+    EXPECT_TRUE(restored->data().site_is_centroid.empty());
+    EXPECT_EQ(restored->mesh().points(),mesh->mesh().points());
 }

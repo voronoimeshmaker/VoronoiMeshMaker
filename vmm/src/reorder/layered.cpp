@@ -24,6 +24,8 @@ Result<LayeredMesh> renumber(const LayeredMesh& input,const Permutation& permuta
     for(CellId c:mesh->cells()) {
         d.column[c.index()]=input.data().column[permutation.old_of(c).index()];
         d.layer[c.index()]=input.data().layer[permutation.old_of(c).index()];
+        if(!d.site_is_centroid.empty())
+            d.site_is_centroid[c.index()]=input.data().site_is_centroid[permutation.old_of(c).index()];
     }
     for(FaceId f:mesh->faces()) {
         const auto verts=mesh->face_vertices(f);

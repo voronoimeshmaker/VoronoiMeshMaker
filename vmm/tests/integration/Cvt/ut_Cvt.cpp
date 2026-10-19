@@ -242,3 +242,21 @@ TEST(Cvt, ScaleTranslationAndIterationLimit) {
         EXPECT_NEAR(m->report.energy.back()/std::pow(scale,4),1./6+(0.09+0.04)/4,1e-9);
     }
 }
+
+TEST(Cvt, MergedConcaveLayeredBoundaryPreservesVolume) {
+    vmm::MeshRequest2D request;
+    const auto medium=*request.declaration.media().add("geometry");
+    const auto region=request.declaration.add_region("L",medium,
+        vmm::PolygonShape({{0,0},{2,0},{2,1},{1,1},{1,2},{0,2}}));
+    ASSERT_TRUE(region);
+    request.sources={vmm::sites_for(*region,vmm::ExplicitSites({{0.5,0.5}}))};
+    const auto base=vmm::generate_mesh_2d(request); ASSERT_TRUE(base);
+    const auto grid=vmm::HorizonGrid::make({0,1,2},{0,1,2},{"bottom","top"},
+        {std::vector<double>(9,0),std::vector<double>(9,1)});
+    ASSERT_TRUE(grid);
+    const auto layered=vmm::generate_layered_mesh(base->mesh,*grid);
+    ASSERT_TRUE(layered) << layered.error().message();
+    const auto domain=vmm::cvt_domain(*layered);
+    ASSERT_TRUE(domain) << domain.error().message();
+    EXPECT_NEAR(domain->partition.total_volume(),3,3e-12);
+}

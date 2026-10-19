@@ -10,7 +10,8 @@ campos novos podem entrar em versões menores.
 
 * **Estável:** os headers de ``vmm/include/vmm`` no namespace ``vmm``, os
   códigos de erro, o formato ``.vmesh`` versão 1 e as chaves dos arquivos de
-  configuração.
+  configuração existentes na referência 1.0.0 (DEC-052). As exceções
+  experimentais da 1.1 estão listadas abaixo.
 * **Interno, pode mudar em qualquer versão:** tudo o que
   ``vmm/backend/backend2d.hpp`` e ``backend3d.hpp`` declaram, exceto os nomes
   ``Backend2D`` e ``Backend3D`` e o membro ``build_partition`` (obter o
@@ -21,6 +22,20 @@ campos novos podem entrar em versões menores.
 * **Sem garantia:** compatibilidade binária (recompile ao atualizar) e malhas
   idênticas bit a bit entre versões menores; os invariantes da DEC-011 valem
   sempre.
+
+Experimental na 1.x
+------------------------
+
+Sem garantia de estabilidade na série 1.x (DEC-048): ``cvt.hpp``,
+``layered.hpp``, ``mesh/layered.hpp``, ``io/layered.hpp``,
+``geometry/horizons.hpp``, chaves ``horizons`` e ``cvt_*``, formatos
+``.hgrid`` e ``.vlayers``. Os símbolos permanecem no namespace atual.
+A API 1.0 e o formato ``.vmesh`` versão 1 continuam estáveis.
+``backend/column_overlay.hpp`` é interno e não é contrato para consumidores.
+
+Experimental in 1.x: the headers, configuration keys and file formats listed
+above have no stability guarantee in 1.x. Existing 1.0 API remains stable.
+
 
 Símbolos
 --------

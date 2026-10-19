@@ -37,7 +37,7 @@ bool count_fits(std::istream& in, std::size_t count) {
 
 Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
     const auto& d=mesh.data();
-    out << "VMM_LAYERS 1\n" << std::setprecision(17);
+    out << "VMM_LAYERS " << (d.column_levels.empty()?2:3) << '\n' << std::setprecision(17);
     const auto row=[&](const auto& values) {
         out << values.size();
         for(const auto& v:values) out << ' ' << v;
@@ -52,6 +52,16 @@ Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
     out << d.column_count << ' ' << d.fractions.size() << '\n';
     for(const auto& f:d.fractions) row(f);
     row(d.column); row(d.layer); row(d.face_level);
+    std::vector<Real> generators;
+    for(const auto& point:d.base_generator) { generators.push_back(point[0]); generators.push_back(point[1]); }
+    row(generators);
+    const std::vector<unsigned> flags(d.site_is_centroid.begin(),d.site_is_centroid.end());
+    row(flags);
+    if(!d.column_levels.empty()) {
+        out << d.column_levels.size() << '\n';
+        for(const auto& levels:d.column_levels) row(levels);
+        row(d.kfloor);
+    }
     auto st=write_native(d.mesh,out);
     if(!st) return st;
     return out ? Status{} : fail(ErrorCode::FileOpenFailed,"writing layered mesh");
@@ -59,7 +69,7 @@ Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
 Result<LayeredMesh> read_layered(std::istream& in) try {
     std::string magic; int version=0;
     if(!(in>>magic>>version) || magic!="VMM_LAYERS") return fail(ErrorCode::ParseError,"layered header");
-    if(version!=1) return fail(ErrorCode::UnsupportedVersion,"layered format");
+    if(version!=1 && version!=2 && version!=3) return fail(ErrorCode::UnsupportedVersion,"layered format");
     const auto row=[&]<class T>(std::vector<T>& values) {
         std::size_t n=0;
         if(!(in>>n) || !count_fits(in,n)) return false;
@@ -96,6 +106,29 @@ Result<LayeredMesh> read_layered(std::istream& in) try {
     }
     if(!row(d.column)||!row(d.layer)||!row(d.face_level))
         return fail(ErrorCode::ParseError,"layer metadata");
+    if(version>=2) {
+        std::vector<Real> generators;
+        std::vector<unsigned> flags;
+        if(!row(generators) || generators.size()%2!=0 || !row(flags))
+            return fail(ErrorCode::ParseError,"generator metadata");
+        for(std::size_t i=0;i<generators.size();i+=2)
+            d.base_generator.push_back({generators[i],generators[i+1]});
+        for(auto flag:flags) {
+            if(flag>1) return fail(ErrorCode::ParseError,"centroid fallback flag");
+            d.site_is_centroid.push_back(static_cast<std::uint8_t>(flag));
+        }
+    }
+    if(version==3) {
+        std::size_t columns=0;
+        if(!(in>>columns) || columns!=d.column_count || !count_fits(in,columns))
+            return fail(ErrorCode::ParseError,"flat column count");
+        for(std::size_t column=0;column<columns;++column) {
+            std::vector<Real> levels;
+            if(!row(levels)) return fail(ErrorCode::ParseError,"flat column levels");
+            d.column_levels.push_back(std::move(levels));
+        }
+        if(!row(d.kfloor)) return fail(ErrorCode::ParseError,"kfloor metadata");
+    }
     std::string remainder;
     std::getline(in, remainder);
     if (remainder.find_first_not_of(" \t\r") != std::string::npos)

@@ -94,6 +94,13 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
     }
     LayeredData result;
     result.horizons=horizons; result.column_count=base.cell_count(); result.fractions=fractions;
+    for(CellId column:base.cells()) result.base_generator.push_back(base.site(column));
+    Vec2 footprint_lo=base.points().front(),footprint_hi=footprint_lo;
+    for(const auto& point:base.points()) for(std::size_t k=0;k<2;++k) {
+        footprint_lo[k]=std::min(footprint_lo[k],point[k]);
+        footprint_hi[k]=std::max(footprint_hi[k],point[k]);
+    }
+    const Real thickness_tolerance=1e-12*norm(footprint_hi-footprint_lo);
     MeshData<3> md;
     md.media=base.media();
     for(const auto& reg:base.regions()) for(std::size_t h=0;h<intervals;++h)
@@ -102,8 +109,16 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
     std::vector<Real> expected;
     for(std::size_t c=0;c<volume.size();++c) if(volume[c]>0) {
         cell[c]=CellId::from_index(md.sites.size());
-        md.sites.push_back((1/volume[c])*moment[c]);
         const auto col=c/nl,l=c%nl;
+        const Vec2 generator=result.base_generator[col];
+        const auto bottom=horizons.elevation(interval[l],generator);
+        const auto top=horizons.elevation(interval[l]+1,generator);
+        if(!bottom || !top) return fail(ErrorCode::InvalidArgument,"base generator outside horizon grid");
+        const Real lower=std::lerp(*bottom,*top,cuts[l].first);
+        const Real upper=std::lerp(*bottom,*top,cuts[l].second);
+        const bool fallback=upper-lower<=thickness_tolerance;
+        md.sites.push_back(fallback ? (1/volume[c])*moment[c] : Vec3{generator[0],generator[1],std::midpoint(lower,upper)});
+        result.site_is_centroid.push_back(static_cast<std::uint8_t>(fallback));
         result.column.push_back(col); result.layer.push_back(l);
         md.cell_region.push_back(RegionId::from_index(base.region(CellId::from_index(col)).index()*intervals+interval[l]));
         md.cell_input_site.push_back(SiteId::from_index(col));
@@ -172,6 +187,84 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
             return fail(ErrorCode::InterfaceNotConforming,"unpaired internal lateral face");
         sorted.push_back(std::move(f));
     }
+    // Merge connected coplanar pieces without removing boundary vertices.
+    using Group=std::tuple<CellId,CellId,std::size_t,std::size_t>;
+    using Edge=std::pair<VertexId,VertexId>;
+    std::map<Group,std::vector<std::size_t>> groups;
+    for(std::size_t i=0;i<sorted.size();++i) {
+        const auto& f=sorted[i];
+        groups[{f.owner,f.neighbour,f.level,f.neighbour.valid()?0:f.patch}].push_back(i);
+    }
+    std::vector<Face> merged;
+    std::vector<bool> visited(sorted.size(),false);
+    Vec3 merge_low=md.points.front(),merge_high=merge_low;
+    for(const auto& p:md.points) for(std::size_t k=0;k<3;++k) {
+        merge_low[k]=std::min(merge_low[k],p[k]); merge_high[k]=std::max(merge_high[k],p[k]);
+    }
+    const Real merge_tolerance=1e-12*norm(merge_high-merge_low);
+    for(const auto& [group,members]:groups) {
+        (void)group;
+        std::map<Edge,std::vector<std::size_t>> incidence;
+        for(auto i:members) {
+            const auto& v=sorted[i].vertices;
+            for(std::size_t k=0;k<v.size();++k) incidence[std::minmax(v[k],v[(k+1)%v.size()])].push_back(i);
+        }
+        for(auto seed:members) if(!visited[seed]) {
+            const auto& vertices=sorted[seed].vertices;
+            const Vec3 origin=md.points[vertices.front().index()];
+            Vec3 normal{};
+            for(std::size_t k=1;k+1<vertices.size();++k)
+                normal=normal+cross(md.points[vertices[k].index()]-origin,md.points[vertices[k+1].index()]-origin);
+            const Real magnitude=norm(normal);
+            std::vector<std::size_t> component{seed}; visited[seed]=true;
+            for(std::size_t current=0;current<component.size();++current) {
+                const auto& v=sorted[component[current]].vertices;
+                for(std::size_t k=0;k<v.size();++k)
+                    for(auto candidate:incidence.at(std::minmax(v[k],v[(k+1)%v.size()]))) if(!visited[candidate]) {
+                        const auto& cv=sorted[candidate].vertices;
+                        const bool coplanar=magnitude>0 && std::ranges::all_of(cv,[&](VertexId id) {
+                            return std::abs(dot(md.points[id.index()]-origin,normal))<=merge_tolerance*magnitude;
+                        });
+                        if(coplanar) { visited[candidate]=true; component.push_back(candidate); }
+                    }
+            }
+            std::map<Edge,std::pair<std::size_t,Edge>> boundary;
+            for(auto index:component) {
+                const auto& v=sorted[index].vertices;
+                for(std::size_t k=0;k<v.size();++k) {
+                    const Edge edge{v[k],v[(k+1)%v.size()]};
+                    auto& entry=boundary[std::minmax(edge.first,edge.second)];
+                    ++entry.first; entry.second=edge;
+                }
+            }
+            std::map<VertexId,VertexId> next_vertex;
+            bool simple=true;
+            for(const auto& [edge,entry]:boundary) {
+                (void)edge;
+                if(entry.first==1 && !next_vertex.emplace(entry.second.first,entry.second.second).second) simple=false;
+                if(entry.first>2) simple=false;
+            }
+            std::vector<VertexId> cycle;
+            if(simple && !next_vertex.empty()) {
+                const auto first=next_vertex.begin()->first;
+                auto current=first;
+                do {
+                    cycle.push_back(current);
+                    const auto next=next_vertex.find(current);
+                    if(next==next_vertex.end()) { simple=false; break; }
+                    current=next->second;
+                } while(current!=first && cycle.size()<=next_vertex.size());
+                simple=simple && current==first && cycle.size()==next_vertex.size() && cycle.size()>=3;
+            } else simple=false;
+            if(simple) {
+                Face face=sorted[seed]; face.vertices=std::move(cycle); merged.push_back(std::move(face));
+            } else {
+                // Multiple boundary cycles (holes) retain the original conforming pieces.
+                for(auto index:component) merged.push_back(sorted[index]);
+            }
+        }
+    }
+    sorted=std::move(merged);
     std::ranges::sort(sorted,[](const Face& a,const Face& b) {
         return std::tuple(!a.neighbour.valid(),a.neighbour.valid()?0:a.patch,a.owner,a.neighbour,a.vertices) <
                std::tuple(!b.neighbour.valid(),b.neighbour.valid()?0:b.patch,b.owner,b.neighbour,b.vertices);

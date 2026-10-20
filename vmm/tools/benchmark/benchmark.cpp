@@ -15,10 +15,12 @@
 //  C++ standard library
 //==============================================================================
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <format>
+#include <limits>
 #include <print>
 #include <string>
 #include <vector>
@@ -34,6 +36,7 @@
 #include "../anchors/anchors.hpp"
 #include <vmm/backend/cgal.hpp>
 #include <vmm/domain/shapes3d.hpp>
+#include <vmm/layered.hpp>
 #include <vmm/mesh/invariants.hpp>
 #include <vmm/voronoi/builder2d.hpp>
 #include <vmm/voronoi/builder3d.hpp>
@@ -119,6 +122,49 @@ vmm::anchors::Anchor b1(std::size_t count) {
     return a;
 }
 
+int run_b8(std::size_t count,const std::string& layout,std::size_t refinement,const std::string& mode) {
+    if(count==0 || count>std::numeric_limits<std::size_t>::max()/10 || (layout!="cartesian" && layout!="random") || (mode!="flat" && mode!="linear") || (refinement!=0 && refinement!=4)) {
+        std::println("B8 usage: B8 columns cartesian|random 0|4 flat|linear");return 1;
+    }
+    auto anchor=b1(count);
+    if(layout=="cartesian") {
+        std::size_t nx=static_cast<std::size_t>(std::sqrt(static_cast<double>(count)));
+        while(count%nx!=0) --nx;
+        const auto ny=count/nx;
+        std::vector<vmm::Vec2> points;points.reserve(count);
+        for(std::size_t j=0;j<ny;++j) for(std::size_t i=0;i<nx;++i)
+            points.push_back({(static_cast<double>(i)+.5)/static_cast<double>(nx),
+                              (static_cast<double>(j)+.5)/static_cast<double>(ny)});
+        anchor.sources.clear();
+        anchor.sources.push_back(vmm::sites_for(vmm::RegionId{0},vmm::ExplicitSites(std::move(points))));
+    }
+    const auto start=Clock::now();const auto backend=vmm::cgal_backend_2d();
+    const auto partition=backend.build_partition(anchor.declaration);
+    if(!partition) { std::println("B8 partition: {}",partition.error().message());return 1; }
+    const auto sites=vmm::generate_sites(*partition,anchor.sources,{});
+    if(!sites) { std::println("B8 sites: {}",sites.error().message());return 1; }
+    const auto base=vmm::build_mesh_2d(*partition,*sites,backend);
+    if(!base) { std::println("B8 base: {}",base.error().message());return 1; }
+    const double base_seconds=since(start);
+    const std::size_t divisions=refinement==0?1:refinement*static_cast<std::size_t>(std::ceil(std::sqrt(static_cast<double>(count))));
+    std::vector<double> axis;for(std::size_t i=0;i<=divisions;++i) axis.push_back(static_cast<double>(i)/static_cast<double>(divisions));
+    const std::size_t nodes=axis.size()*axis.size();
+    const auto grid=vmm::HorizonGrid::make(axis,axis,{"bottom","top"},
+        {std::vector<double>(nodes,0),std::vector<double>(nodes,1)});
+    if(!grid) { std::println("B8 grid: {}",grid.error().message());return 1; }
+    std::vector<double> fractions;for(std::size_t i=0;i<=10;++i) fractions.push_back(static_cast<double>(i)/10);
+    const auto generation_start=Clock::now();
+    const auto result=mode=="flat"?vmm::generate_layered_mesh(base->mesh,*grid,{fractions},vmm::FlatColumns<>{}):
+                                    vmm::generate_layered_mesh(base->mesh,*grid,{fractions});
+    const double generation_seconds=since(generation_start);
+    if(!result) { std::println("B8 columns: {}",result.error().message());return 1; }
+    std::println("B8 layout={} mode={} requested={} columns={} layers=10 grid={}x{} base_s={} generation_s={} cells={} faces={} faces_per_cell={} peak_rss_kb={}",
+        layout,mode,count,base->mesh.cell_count(),divisions,divisions,base_seconds,generation_seconds,
+        result->mesh().cell_count(),result->mesh().face_count(),
+        static_cast<double>(result->mesh().face_count())/static_cast<double>(result->mesh().cell_count()),peak_rss_kb());
+    return result->mesh().cell_count()==count*10?0:1;
+}
+
 int run3d(const std::string& name, const vmm::Declaration3D& declaration, std::vector<vmm::RegionSites3D> sources,
           const vmm::SiteGenerationOptions3D& options = {}) {
     const auto backend = vmm::cgal_backend_3d();
@@ -190,6 +236,8 @@ vmm::Declaration3D b5() {
 int main(int argc, char** argv) {
     const std::string which = argc > 1 ? argv[1] : "all";
     const std::size_t count = argc > 2 ? std::strtoull(argv[2], nullptr, 10) : 1000000;
+    if(which=="B8") return run_b8(count,argc>3?argv[3]:"cartesian",
+        argc>4?std::strtoull(argv[4],nullptr,10):0,argc>5?argv[5]:"flat");
     const std::size_t count4 = argc > 3 ? std::strtoull(argv[3], nullptr, 10) : 1000000;
     const std::size_t count5 = argc > 4 ? std::strtoull(argv[4], nullptr, 10) : 100000;
     std::println("vmm benchmark (DEC-021) | {}", vmm::cgal_backend_2d().info().versions);

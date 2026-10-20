@@ -47,6 +47,7 @@ Backend2D cgal_backend_2d() {
     b.build_partition = &cgal_detail::build_partition;
     b.delaunay_pairs = &cgal_detail::delaunay_pairs;
     b.clip_by_region = &cgal_detail::clip_by_region;
+    b.clip_site_by_region = &cgal_detail::clip_site_by_region;
     b.info = &cgal_detail::info;
     return b;
 }

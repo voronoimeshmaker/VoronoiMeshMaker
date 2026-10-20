@@ -32,6 +32,9 @@ struct LayeredData {
     std::vector<std::vector<Real>> column_levels = {};
     /// First nonempty nominal layer per column; layer count denotes an empty column.
     std::vector<std::size_t> kfloor = {};
+    std::vector<std::size_t> omitted_count = {};
+    std::vector<std::size_t> merged_count = {};
+    std::vector<std::size_t> bottom_adjusted_count = {};
 };
 /// Immutable mesh with explicit columns; identifiers are not physical properties.
 class LayeredMesh {
@@ -72,6 +75,10 @@ struct ColumnQuality {
     Real max_interface_slope = 0; ///< Angle above the xy plane, radians.
     Real max_vertical_skew = 0; ///< Lateral-face site-vector inclination, radians.
     std::size_t absent_layers = 0; ///< Nominal layers without a cell, regardless of cause.
+    bool history_available = false;
+    std::size_t omitted = 0;
+    std::size_t merged = 0;
+    std::size_t bottom_adjusted = 0;
 };
 /// Computes quality from present geometry; does not infer missing generation history.
 [[nodiscard]] std::vector<ColumnQuality> column_quality_report(const LayeredMesh& layered);

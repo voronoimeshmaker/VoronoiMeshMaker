@@ -618,6 +618,29 @@ CellClip3 clip_cell_3d(const LabelledPolyhedron3& cell, const PreparedDomain3& d
             return r;
         }
     }
+    // Coplanar Boolean faces may inherit the cell label. Domain support wins.
+    const auto domain_labels = state->domain.property_map<EMesh::Face_index, FaceLabel>(kLabelProperty).value();
+    for (const auto face : out.faces()) {
+        if (r.local) break;
+        if ((out_label[face] & kDomainFace) != 0) continue;
+        const auto vertices = face_points(out, face);
+        Box3 bounds;
+        for (const auto& vertex : vertices) bounds.expand(to_vec(vertex));
+        std::vector<IMesh::Face_index> candidates;
+        state->tree.all_intersected_primitives(
+            Epick::Iso_cuboid_3(bounds.lo()[0], bounds.lo()[1], bounds.lo()[2],
+                               bounds.hi()[0], bounds.hi()[1], bounds.hi()[2]),
+            std::back_inserter(candidates));
+        for (const auto candidate : candidates) {
+            const EMesh::Face_index support(static_cast<EMesh::size_type>(static_cast<std::size_t>(candidate)));
+            const auto points = face_points(state->domain, support);
+            const Epeck::Triangle_3 triangle(points[0], points[1], points[2]);
+            if (triangle.has_on(vertices[0]) && triangle.has_on(vertices[1]) && triangle.has_on(vertices[2])) {
+                out_label[face] = domain_labels[support];
+                break;
+            }
+        }
+    }
     r.volume = CGAL::to_double(PMP::volume(out));
     auto fcc = out.add_property_map<EMesh::Face_index, std::size_t>("f:vmm_cc", 0).first;
     r.components = PMP::connected_components(out, fcc);

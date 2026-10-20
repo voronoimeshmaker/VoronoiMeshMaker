@@ -45,12 +45,14 @@ private:
 /// Merges positive thin layers into adjacent cells of the same horizon interval.
 [[nodiscard]] Result<void> merge_thin_layers(std::vector<Real>& levels,
     std::span<const std::size_t> intervals,Real minimum);
+[[nodiscard]] inline bool omit_thin_layer(Real thickness,Real minimum) { return thickness<minimum; }
 /// Without a thickness policy, positive thin layers are rejected; zero layers remain absent.
 struct FlatColumnOptions {
     Real min_thickness_absolute = 0;
     Real min_thickness_relative = 0; ///< Fraction of the whole column thickness, in [0,1].
     std::function<Result<void>(std::vector<Real>&,std::span<const std::size_t>,Real)> thickness_policy = {};
     Real min_bottom_thickness = 0; ///< Raises the bottom cell top within its horizon interval.
+    std::function<bool(Real,Real)> omit_layer = {}; ///< Called with thickness and threshold; true removes the cell.
 };
 /// Open sampling policy; custom callables have the same signature as the default.
 template<class Sampler=decltype(&sample_at_base_generator)>

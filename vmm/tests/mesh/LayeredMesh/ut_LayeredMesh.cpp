@@ -255,3 +255,45 @@ TEST(LayeredMesh, DirectFlatColumnsWithSteps) {
     const auto stepped=vmm::generate_layered_mesh(*base,*grid,{},vmm::FlatColumns<decltype(custom)>{custom});
     ASSERT_TRUE(stepped) << stepped.error().message();
 }
+
+TEST(LayeredMesh, FlatMultipleHolesAndDisconnectedComponents) {
+    for(const bool disconnected:{false,true}) {
+        vmm::MeshData<2> data;
+        const std::vector<std::vector<vmm::Vec2>> rings=disconnected?
+            std::vector<std::vector<vmm::Vec2>>{{{0,0},{1,0},{1,1},{0,1}},{{2,0},{3,0},{3,1},{2,1}}}:
+            std::vector<std::vector<vmm::Vec2>>{{{0,0},{5,0},{5,3},{0,3}},{{1,1},{1,2},{2,2},{2,1}},{{3,1},{3,2},{4,2},{4,1}}};
+        for(const auto& ring:rings) {
+            const auto start=data.points.size();data.points.insert(data.points.end(),ring.begin(),ring.end());
+            for(std::size_t i=0;i<ring.size();++i) {
+                const vmm::VertexId edge[]={vmm::VertexId::from_index(start+i),vmm::VertexId::from_index(start+(i+1)%ring.size())};
+                data.face_vertices.push_row(edge);data.owner.push_back(vmm::CellId::from_index(0));
+            }
+        }
+        data.patches={{"wall",0,data.owner.size()}};data.sites={{.5,.5}};
+        data.cell_region={vmm::RegionId::from_index(0)};data.cell_input_site={vmm::SiteId::from_index(0)};
+        data.regions={{"r",vmm::MediumId::from_index(0)}};data.media={"m"};
+        const auto base=vmm::Mesh2D::from_data(std::move(data));ASSERT_TRUE(base);
+        const auto grid=vmm::HorizonGrid::make({0,5},{0,3},{"bottom","top"},{{0,0,0,0},{2,2,2,2}});ASSERT_TRUE(grid);
+        const auto mesh=vmm::generate_layered_mesh(*base,*grid,{{0,.5,1}},vmm::FlatColumns<>{});
+        ASSERT_TRUE(mesh) << mesh.error().message();
+        const auto metrics=vmm::compute_metrics(mesh->mesh());
+        EXPECT_NEAR(std::accumulate(metrics.cell_measure.begin(),metrics.cell_measure.end(),0.),disconnected?4.:26.,1e-12);
+        for(auto cell:mesh->mesh().cells()) EXPECT_EQ(mesh->vertical_neighbours_view(cell).size(),1u);
+    }
+}
+
+TEST(LayeredMesh, ConstantDenseTerrainMatchesCoarseGeometry) {
+    const auto base=vmm::Mesh2D::from_data(vmm::test::two_squares_data());ASSERT_TRUE(base);
+    std::vector<double> x,y;
+    for(std::size_t i=0;i<=80;++i) x.push_back(static_cast<double>(i)/40);
+    for(std::size_t i=0;i<=40;++i) y.push_back(static_cast<double>(i)/40);
+    const auto dense=vmm::HorizonGrid::make(x,y,{"bottom","top"},
+        {std::vector<double>(x.size()*y.size(),0),std::vector<double>(x.size()*y.size(),2)});ASSERT_TRUE(dense);
+    const auto coarse=vmm::HorizonGrid::make({0,2},{0,1},{"bottom","top"},{{0,0,0,0},{2,2,2,2}});ASSERT_TRUE(coarse);
+    const auto a=vmm::generate_layered_mesh(*base,*dense),b=vmm::generate_layered_mesh(*base,*coarse);
+    ASSERT_TRUE(a);ASSERT_TRUE(b);
+    EXPECT_EQ(a->mesh().point_count(),b->mesh().point_count());
+    EXPECT_EQ(a->mesh().face_count(),b->mesh().face_count());
+    EXPECT_EQ(a->data().horizons.x(),x);EXPECT_EQ(a->data().horizons.y(),y);
+    EXPECT_EQ(vmm::compute_metrics(a->mesh()).cell_measure,vmm::compute_metrics(b->mesh()).cell_measure);
+}

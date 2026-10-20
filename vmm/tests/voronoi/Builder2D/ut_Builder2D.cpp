@@ -175,3 +175,63 @@ TEST(Builder2D, Errors) {
 }
 
 }  // namespace
+
+TEST(Builder2D, BoundaryCoincidentWithBisectorKeepsFiniteVertices) {
+    for (double thickness : {0.05, 0.1, 0.5, 1.0})
+    for (double offset : {0.0, 1e-9, 0.01}) {
+        SCOPED_TRACE(::testing::Message() << "thickness=" << thickness << " offset=" << offset);
+        vmm::Declaration2D d;
+        const auto medium = *d.media().add("water");
+        const auto region = d.add_region("block", medium,
+            vmm::Rectangle({0, 0}, {4, 2.1}));
+        ASSERT_TRUE(region);
+        ASSERT_TRUE(d.add_hole(vmm::Rectangle({0.6, 1.0}, {3.4, 1.0 + thickness})));
+        const auto backend = vmm::cgal_backend_2d();
+        const auto partition = backend.build_partition(d);
+        ASSERT_TRUE(partition);
+        const std::vector<vmm::RegionSites> sources{vmm::sites_for(*region,
+            vmm::CartesianGridSource(0.5, {0.25 + offset, 0.25 + offset}))};
+        const auto sites = vmm::generate_sites(*partition, sources);
+        ASSERT_TRUE(sites);
+        const auto result = vmm::build_mesh_2d(*partition, *sites, backend);
+        ASSERT_TRUE(result) << result.error().message();
+        EXPECT_EQ(result->stats.unmatched_bisector_pieces, 0u);
+        vmm::test::expect_invariants(*partition, *result, "coincident boundary");
+    }
+}
+
+TEST(Builder2D, RotatedThinObstaclesWithGridSources) {
+    const auto backend = vmm::cgal_backend_2d();
+    for (bool hexagonal : {false, true})
+    for (double thickness : {0.05, 0.1, 1.0})
+    for (double angle : {0.0, 1.5707963267948966, 0.7853981633974483})
+    for (vmm::Vec2 origin : {vmm::Vec2{0, 0}, vmm::Vec2{13, -7}}) {
+        SCOPED_TRACE(::testing::Message() << "hex=" << hexagonal << " t=" << thickness << " angle=" << angle);
+        const auto transform = [&](vmm::Vec2 p) {
+            return origin + vmm::Vec2{std::cos(angle)*p[0]-std::sin(angle)*p[1],
+                                     std::sin(angle)*p[0]+std::cos(angle)*p[1]};
+        };
+        vmm::Declaration2D initial;
+        const auto medium = *initial.media().add("water");
+        const auto region = *initial.add_region("block", medium, vmm::Rectangle({0,0},{4,2.1}));
+        ASSERT_TRUE(initial.add_hole(vmm::Rectangle({0.6,1},{3.4,1+thickness})));
+        const auto domain = backend.build_partition(initial);
+        ASSERT_TRUE(domain);
+        std::vector<vmm::RegionSites> sources;
+        if (hexagonal) sources.push_back(vmm::sites_for(region,vmm::HexagonalGridSource(0.5,{0.25,0.25})));
+        else sources.push_back(vmm::sites_for(region,vmm::CartesianGridSource(0.5,{0.25,0.25})));
+        const auto sites = vmm::generate_sites(*domain,sources);
+        ASSERT_TRUE(sites);
+        vmm::Declaration2D rotated;
+        const auto rm = *rotated.media().add("water");
+        ASSERT_TRUE(rotated.add_region("block",rm,vmm::PolygonShape({transform({0,0}),transform({4,0}),transform({4,2.1}),transform({0,2.1})})));
+        ASSERT_TRUE(rotated.add_hole(vmm::PolygonShape({transform({0.6,1}),transform({3.4,1}),transform({3.4,1+thickness}),transform({0.6,1+thickness})})));
+        const auto partition = backend.build_partition(rotated);
+        ASSERT_TRUE(partition);
+        vmm::SiteSet moved;
+        for (const auto point : sites->positions()) moved.add(transform(point),region);
+        const auto result = vmm::build_mesh_2d(*partition,moved,backend);
+        ASSERT_TRUE(result) << result.error().message();
+        vmm::test::expect_invariants(*partition,*result,"rotated thin obstacle");
+    }
+}

@@ -46,3 +46,8 @@ contada de cotas por coluna e uma linha contada de KFloor. KFloor é o primeiro
 índice de camada não vazia; o número de camadas representa coluna vazia.
 Os formatos 1 e 2 continuam legíveis. O escritor usa v2 quando não há cotas
 constantes por coluna, e v3 quando esses metadados estão presentes.
+
+``VMM_LAYERS 4`` acrescenta após KFloor três linhas contadas por coluna:
+camadas omitidas, camadas fundidas e ajustes da célula de fundo. O leitor
+mantém as versões 1–3; ausência de histórico não significa contagem zero.
+KFloor identifica a primeira célula presente, inclusive após omissão.

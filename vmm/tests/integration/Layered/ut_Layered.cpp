@@ -416,3 +416,35 @@ TEST(LayeredIntegration, ReadsLegacyVersionOneWithoutGeneratorMetadata) {
     EXPECT_TRUE(restored->data().site_is_centroid.empty());
     EXPECT_EQ(restored->mesh().points(),mesh->mesh().points());
 }
+
+TEST(LayeredIntegration, ConstantUtmTerrainHasNoArtificialBreakLine) {
+    const vmm::Vec2 origin{500000,7500000};
+    const double h=0.3;
+    const std::vector<vmm::ColumnEdge> edges{
+        {origin,origin+vmm::Vec2{h,0},vmm::CellId{0},{},vmm::PatchId{0}},
+        {origin+vmm::Vec2{h,0},origin+vmm::Vec2{h,h},vmm::CellId{0},{},vmm::PatchId{1}},
+        {origin+vmm::Vec2{h,h},origin+vmm::Vec2{0,h},vmm::CellId{0},{},vmm::PatchId{2}},
+        {origin+vmm::Vec2{0,h},origin,vmm::CellId{0},{},vmm::PatchId{3}}};
+    const auto grid=vmm::HorizonGrid::make(
+        {origin[0]-h,origin[0]+4*h},{origin[1]-h,origin[1]+4*h},
+        {"bottom","top"},{std::vector<double>(4,0),std::vector<double>(4,h)});
+    ASSERT_TRUE(grid);
+    const auto overlay=vmm::cgal_column_overlay(edges,1,*grid);
+    ASSERT_TRUE(overlay) << overlay.error().message();
+    EXPECT_EQ(overlay->points.size(),4u);
+    EXPECT_EQ(overlay->triangles.size(),2u);
+    double area=0;
+    std::size_t boundary=0;
+    for(const auto& triangle:overlay->triangles) {
+        const auto a=overlay->points[triangle.vertices[0]];
+        const auto b=overlay->points[triangle.vertices[1]];
+        const auto c=overlay->points[triangle.vertices[2]];
+        const double twice=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+        EXPECT_GT(twice,0);
+        area+=twice/2;
+        EXPECT_EQ(triangle.column,vmm::CellId{0});
+        for(const auto patch:triangle.patches) boundary+=patch.valid();
+    }
+    EXPECT_EQ(boundary,4u);
+    EXPECT_DOUBLE_EQ(area,(edges[1].a[0]-origin[0])*(edges[2].a[1]-origin[1]));
+}

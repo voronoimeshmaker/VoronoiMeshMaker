@@ -50,7 +50,18 @@ Result<LayeredMesh> generate_layered_mesh(const Mesh2D& base, const HorizonGrid&
             return fail(ErrorCode::InvalidPolygon,"invalid footprint edge");
         edges.push_back({a,b,base.owner(f),base.neighbour(f),base.patch(f)});
     }
-    auto overlay=cgal_column_overlay(edges,base.cell_count(),horizons);
+    const bool constant=std::ranges::all_of(horizons.elevations(),[](const auto& values) {
+        return std::ranges::all_of(values,[&](Real value){return value==values.front();});
+    });
+    const auto overlay_grid=[&]() -> Result<HorizonGrid> {
+        if(!constant) return horizons;
+        std::vector<std::vector<Real>> elevations;
+        for(const auto& values:horizons.elevations()) elevations.emplace_back(4,values.front());
+        return HorizonGrid::make({horizons.x().front(),horizons.x().back()},
+            {horizons.y().front(),horizons.y().back()},horizons.names(),std::move(elevations));
+    }();
+    if(!overlay_grid) return std::unexpected(overlay_grid.error());
+    auto overlay=cgal_column_overlay(edges,base.cell_count(),*overlay_grid);
     if(!overlay) return std::unexpected(overlay.error());
     const auto& ov=*overlay;
     if(ov.triangles.empty()) return fail(ErrorCode::InvalidPolygon,"empty footprint");

@@ -4,10 +4,10 @@
 //==============================================================================
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
-#include <map>
 #include <numeric>
-#include <set>
+#include <unordered_set>
 #include <utility>
 //==============================================================================
 //  VoronoiMeshMaker
@@ -47,19 +47,35 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
             if(levels.size()!=layers+1 || !std::ranges::all_of(levels,[](Real z){return std::isfinite(z);}) ||
                !std::is_sorted(levels.begin(),levels.end()))
                 return fail(ErrorCode::InconsistentData,"flat elevations must be finite and nondecreasing");
-            std::size_t first=0;
-            while(first<layers && levels[first]==levels[first+1]) ++first;
-            if(d.kfloor[column]!=first) return fail(ErrorCode::InconsistentData,"incorrect kfloor");
+
         }
     }
     if(d.column.size()!=d.mesh.cell_count() || d.layer.size()!=d.mesh.cell_count() ||
        d.face_level.size()!=d.mesh.face_count())
         return fail(ErrorCode::InconsistentData,"layered metadata sizes");
-    std::set<std::pair<std::size_t,std::size_t>> used;
+    const auto pair_hash=[](const std::pair<std::size_t,std::size_t>& key) {
+        return std::hash<std::size_t>{}(key.first) ^ (std::hash<std::size_t>{}(key.second)<<1);
+    };
+    std::unordered_set<std::pair<std::size_t,std::size_t>,decltype(pair_hash)> used;
+    used.reserve(d.column.size());
     for(std::size_t c=0;c<d.column.size();++c) {
         if(d.column[c]>=d.column_count || d.layer[c]>=layers ||
            !used.emplace(d.column[c],d.layer[c]).second)
             return fail(ErrorCode::InconsistentData,"invalid or repeated column/layer pair");
+    }
+    if(!d.column_levels.empty()) {
+        std::vector<std::size_t> first(d.column_count,layers);
+        for(std::size_t c=0;c<d.column.size();++c) first[d.column[c]]=std::min(first[d.column[c]],d.layer[c]);
+        if(first!=d.kfloor) return fail(ErrorCode::InconsistentData,"incorrect kfloor");
+    }
+    const bool history=!d.omitted_count.empty() || !d.merged_count.empty() || !d.bottom_adjusted_count.empty();
+    if(history) {
+        if(d.column_levels.empty() || d.omitted_count.size()!=d.column_count ||
+           d.merged_count.size()!=d.column_count || d.bottom_adjusted_count.size()!=d.column_count)
+            return fail(ErrorCode::InconsistentData,"column history dimensions");
+        for(std::size_t c=0;c<d.column_count;++c)
+            if(d.omitted_count[c]>layers || d.merged_count[c]>layers-d.omitted_count[c] || d.bottom_adjusted_count[c]>1)
+                return fail(ErrorCode::InconsistentData,"invalid column history counts");
     }
     for(auto level:d.face_level) if(level!=lateral_face && level>layers)
         return fail(ErrorCode::InconsistentData,"face level out of range");
@@ -77,18 +93,25 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
         for(std::size_t k=1;k<d.fractions[h].size();++k) {
             intervals.push_back(h); lower.push_back(d.fractions[h][k-1]); upper.push_back(d.fractions[h][k]);
         }
-    std::map<std::size_t,std::size_t> column_region;
+    std::vector<std::size_t> column_region(d.column_count,std::numeric_limits<std::size_t>::max());
     for(CellId c:d.mesh.cells()) {
         for(Real x:d.mesh.site(c)) if(!std::isfinite(x))
             return fail(ErrorCode::InconsistentData,"non-finite cell reference");
         const auto region=d.mesh.region(c).index(),h=intervals[d.layer[c.index()]];
         if(region%d.fractions.size()!=h)
             return fail(ErrorCode::InconsistentData,"region does not match horizon interval");
-        const auto [it,added]=column_region.emplace(d.column[c.index()],region/d.fractions.size());
-        if(!added && it->second!=region/d.fractions.size())
+        auto& previous=column_region[d.column[c.index()]];
+        if(previous!=std::numeric_limits<std::size_t>::max() && previous!=region/d.fractions.size())
             return fail(ErrorCode::InconsistentData,"column has inconsistent horizontal regions");
+        previous=region/d.fractions.size();
     }
-    std::set<std::vector<VertexId>> face_keys;
+    const auto face_hash=[](const std::vector<VertexId>& vertices) {
+        std::size_t value=0;
+        for(auto vertex:vertices) value^=std::hash<std::size_t>{}(vertex.index())+0x9e3779b9U+(value<<6)+(value>>2);
+        return value;
+    };
+    std::unordered_set<std::vector<VertexId>,decltype(face_hash)> face_keys;
+    face_keys.reserve(d.mesh.face_count());
     for(FaceId f:d.mesh.faces()) {
         const auto level=d.face_level[f.index()];
         std::vector<Vec3> samples;
@@ -164,10 +187,15 @@ Result<LayeredMesh> LayeredMesh::from_data(LayeredData d) {
         auto last=out.columns_.values.begin()+static_cast<std::ptrdiff_t>(out.columns_.offsets[column+1]);
         std::sort(first,last,[&](CellId a,CellId b){return d.layer[a.index()]<d.layer[b.index()];});
     }
-    std::vector<CellPair> pairs;
-    for(FaceId face:d.mesh.internal_faces()) if(d.face_level[face.index()]!=lateral_face)
-        pairs.emplace_back(d.mesh.owner(face),d.mesh.neighbour(face));
-    out.vertical_=build_adjacency(d.mesh.cell_count(),pairs);
+    std::vector<std::vector<CellId>> neighbours(d.mesh.cell_count());
+    for(FaceId face:d.mesh.internal_faces()) if(d.face_level[face.index()]!=lateral_face) {
+        neighbours[d.mesh.owner(face).index()].push_back(d.mesh.neighbour(face));
+        neighbours[d.mesh.neighbour(face).index()].push_back(d.mesh.owner(face));
+    }
+    for(auto& row:neighbours) {
+        std::ranges::sort(row);row.erase(std::unique(row.begin(),row.end()),row.end());
+        out.vertical_.push_row(row);
+    }
     out.data_=std::move(d);
     return out;
 }

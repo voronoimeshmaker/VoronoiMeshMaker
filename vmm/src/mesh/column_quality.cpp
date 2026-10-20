@@ -24,6 +24,10 @@ std::vector<ColumnQuality> column_quality_report(const LayeredMesh& layered) {
     for(std::size_t c=0;c<data.column_count;++c) {
         auto& q=result[c]; const auto cells=layered.cells_in_column_view(c);
         q.absent_layers=interval.size()-cells.size();
+        q.history_available=!data.omitted_count.empty();
+        if(q.history_available) {
+            q.omitted=data.omitted_count[c];q.merged=data.merged_count[c];q.bottom_adjusted=data.bottom_adjusted_count[c];
+        }
         if(!cells.empty()) q.min_thickness=std::numeric_limits<Real>::infinity();
         if(!data.column_levels.empty()) for(auto cell:cells) {
             const auto l=data.layer[cell.index()];

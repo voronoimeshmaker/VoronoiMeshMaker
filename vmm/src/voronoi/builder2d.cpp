@@ -125,7 +125,7 @@ public:
                 cell = clip_halfplane(cell, Line2{0.5 * (sites_[a] + sites_[b]), sites_[j] - sites_[i]}, j);
             }
             merge_close_vertices(cell);
-            if (auto ok = add_cell(i, cell); !ok) return std::unexpected(ok.error());
+            if (auto ok = add_cell(i, cell, start, neighbours[i]); !ok) return std::unexpected(ok.error());
         }
         out_.stats.seconds_cells = seconds_since(t0);
         t0 = Clock::now();
@@ -233,13 +233,17 @@ private:
         return a + Vec2{(c[1] * bb - b[1] * cc) / d, (b[0] * cc - c[0] * bb) / d};
     }
 
-    Vec2 bisector_cut(std::uint32_t i, std::uint32_t j, std::size_t s) const {
+    Vec2 bisector_cut(std::uint32_t i, std::uint32_t j, std::size_t s, Vec2 intersection) const {
         const std::uint32_t a = std::min(i, j);
         const std::uint32_t b = std::max(i, j);
         const Vec2 m = 0.5 * (sites_[a] + sites_[b]);
         const Vec2 n = sites_[b] - sites_[a];
         const Vec2 e = seg_[s].second - seg_[s].first;
-        const Real t = dot(m - seg_[s].first, n) / dot(e, n);
+        // A coincident support has no unique intersection. Keep the vertex
+        // already constructed by the labelled region clipping operation.
+        const Real denominator = dot(e, n);
+        if (denominator == 0) return intersection;
+        const Real t = dot(m - seg_[s].first, n) / denominator;
         return seg_[s].first + t * e;
     }
 
@@ -278,7 +282,7 @@ private:
         }
     }
 
-    void canonicalise(std::uint32_t i, LabelledLoop2& loop) {
+    void canonicalise(std::uint32_t i, LabelledLoop2& loop, bool preserve) {
         LabelledLoop2 merged;
         const std::size_t n = loop.points.size();
         for (std::size_t k = 0; k < n; ++k) {
@@ -291,12 +295,13 @@ private:
             const EdgeLabel in = merged.labels[(k + m - 1) % m];
             const EdgeLabel out = merged.labels[k];
             Vec2& v = merged.points[k];
+            if (preserve && !(is_site(in) && is_site(out))) continue;
             if (is_site(in) && is_site(out)) {
                 v = circumcenter(i, static_cast<std::uint32_t>(in), static_cast<std::uint32_t>(out));
             } else if (is_site(in) && is_segment(out)) {
-                v = bisector_cut(i, static_cast<std::uint32_t>(in), segment_of(out));
+                v = bisector_cut(i, static_cast<std::uint32_t>(in), segment_of(out), v);
             } else if (is_segment(in) && is_site(out)) {
-                v = bisector_cut(i, static_cast<std::uint32_t>(out), segment_of(in));
+                v = bisector_cut(i, static_cast<std::uint32_t>(out), segment_of(in), v);
             } else if (is_segment(in) && is_segment(out)) {
                 v = corner(segment_of(in), segment_of(out));
             } else {
@@ -306,9 +311,11 @@ private:
         loop = std::move(merged);
     }
 
-    Status add_cell(std::uint32_t i, const LabelledLoop2& convex) {
+    Status add_cell(std::uint32_t i, const LabelledLoop2& convex, const LabelledLoop2& box,
+                    std::span<const std::uint32_t> neighbours) {
         const std::size_t r = region_[i].index();
         std::vector<LabelledLoop2> loops;
+        bool exact = false;
         const Box2 cell_box = Box2::of(convex.points);
         if (options_.fast_path && !index_[r].may_touch(cell_box)) {
             ++out_.stats.fast_cells;
@@ -319,7 +326,9 @@ private:
             for (std::size_t c = 0; c < components_[r].size(); ++c) {
                 if (component_boxes_[r][c].overlaps(cell_box)) near.push_back(components_[r][c]);
             }
-            RegionClip2 clip = backend_.clip_by_region(convex, near);
+            exact = backend_.clip_site_by_region != nullptr && index_[r].may_touch(cell_box);
+            RegionClip2 clip = exact ? backend_.clip_site_by_region(box, sites_, i, neighbours, near)
+                                     : backend_.clip_by_region(convex, near);
             if (!clip.error.empty()) return fail(ErrorCode::BackendFailure, clip.error, CellId{i});
             out_.stats.unlabelled_edges += clip.unlabelled_edges;
             if (clip.pieces.empty()) return fail(ErrorCode::InvariantViolated, "empty clipped cell", CellId{i});
@@ -335,7 +344,7 @@ private:
             }
         }
         for (auto& loop : loops) {
-            canonicalise(i, loop);
+            canonicalise(i, loop, exact);
             const std::size_t n = loop.points.size();
             Real area = 0;
             for (std::size_t k = 0; k < n; ++k) {

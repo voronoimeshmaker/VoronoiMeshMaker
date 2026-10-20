@@ -67,6 +67,10 @@ struct Backend2D {
     RegionClip2 (*clip_by_region)(const LabelledLoop2&, std::span<const LabelledPolygon2>) = nullptr;
     BackendInfo (*info)() = nullptr;
 
+    /// Exact bisectors followed by region clipping, for boundary cells.
+    RegionClip2 (*clip_site_by_region)(const LabelledLoop2&, std::span<const Vec2>,
+        std::uint32_t, std::span<const std::uint32_t>, std::span<const LabelledPolygon2>) = nullptr;
+
     [[nodiscard]] bool complete() const noexcept {
         return build_partition != nullptr && delaunay_pairs != nullptr && clip_by_region != nullptr && info != nullptr;
     }

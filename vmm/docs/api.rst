@@ -47,3 +47,27 @@ Location e Examples, extraídas dos comentários Doxygen dos headers públicos e
 .. doxygennamespace:: vmm
    :members:
    :undoc-members:
+
+Colunas planas experimentais
+----------------------------
+
+``FlatColumns`` aceita um sampler no gerador (padrão) ou
+``PolygonMeanSampler(base)``. O segundo integra a superfície linear por partes
+por recorte local e requer que a base permaneça viva e inalterada.
+``FlatColumnOptions`` declara espessuras mínima absoluta, relativa e da célula
+de fundo. Sem callable adicional, camadas positivas abaixo do mínimo são
+recusadas. ``merge_thin_layers`` pode ser usado em ``thickness_policy``;
+``omit_thin_layer`` em ``omit_layer``. A fusão preserva interfaces regionais;
+a omissão preserva cotas e cria faces de contorno nas lacunas.
+
+``column_quality_report`` informa espessura mínima local, inclinação das
+interfaces e das ligações laterais em radianos, além de camadas ausentes.
+``history_available`` distingue dados legados de contagens registradas de
+omissão, fusão e ajuste do fundo. Arquivos com histórico usam a revisão 4.
+
+Bases com buracos são decompostas em faces horizontais sem novos vértices;
+o caminho geral de decomposição não tem garantia de custo linear. O caso
+simples mantém uma face por interface. O benchmark B8 aceita número de
+colunas, ``cartesian``/``random``, refinamento ``0`` (MDT 1×1) ou ``4``, e
+``flat``/``linear``. Os tempos publicados são medições do ambiente indicado,
+não garantias para qualquer geometria ou máquina.

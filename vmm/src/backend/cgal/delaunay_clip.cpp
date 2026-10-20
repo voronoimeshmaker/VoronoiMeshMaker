@@ -89,7 +89,7 @@ LabelledLoop2 to_loop(const Polygon& poly, const std::vector<Support>& region, c
         auto label = find_label(region, p, q);
         if (!label) label = find_label(cell, p, q);
         if (!label) ++report.unlabelled_edges;
-        loop.points.push_back(Vec2{CGAL::to_double(p.x()), CGAL::to_double(p.y())});
+        loop.points.push_back(Vec2{CGAL::to_double(CGAL::exact(p.x())), CGAL::to_double(CGAL::exact(p.y()))});
         loop.labels.push_back(label.value_or(EdgeLabel{0}));
     }
     return loop;
@@ -151,6 +151,70 @@ RegionClip2 clip_by_region(const LabelledLoop2& cell_loop, std::span<const Label
         RegionClip2 failed;
         failed.error = e.what();
         return failed;
+    }
+}
+
+RegionClip2 clip_site_by_region(const LabelledLoop2& box, std::span<const Vec2> sites,
+    std::uint32_t owner, std::span<const std::uint32_t> neighbours,
+    std::span<const LabelledPolygon2> components) {
+    try {
+        std::vector<Point> points;
+        for (const auto p : box.points) points.emplace_back(p[0], p[1]);
+        std::vector<EdgeLabel> labels = box.labels;
+        const Point site(sites[owner][0], sites[owner][1]);
+        for (const auto neighbour : neighbours) {
+            const Point other(sites[neighbour][0], sites[neighbour][1]);
+            const auto side = [&](const Point& p) {
+                return CGAL::squared_distance(p, site) - CGAL::squared_distance(p, other);
+            };
+            std::vector<Point> clipped;
+            std::vector<EdgeLabel> incoming;
+            for (std::size_t k = 0; k < points.size(); ++k) {
+                const auto& p = points[k];
+                const auto& q = points[(k + 1) % points.size()];
+                const auto fp = side(p), fq = side(q);
+                const bool in_p = fp <= 0, in_q = fq <= 0;
+                if (in_p && in_q) {
+                    clipped.push_back(q); incoming.push_back(labels[k]);
+                } else if (in_p != in_q) {
+                    clipped.push_back(p + (fp / (fp - fq)) * (q - p));
+                    incoming.push_back(in_p ? labels[k] : neighbour);
+                    if (!in_p) { clipped.push_back(q); incoming.push_back(labels[k]); }
+                }
+            }
+            points.clear(); labels.clear();
+            for (std::size_t k = 0; k < clipped.size(); ++k) {
+                if (clipped[k] == clipped[(k + clipped.size() - 1) % clipped.size()]) continue;
+                points.push_back(clipped[k]); labels.push_back(incoming[k]);
+            }
+            if (!labels.empty()) std::rotate(labels.begin(), labels.begin() + 1, labels.end());
+        }
+        RegionClip2 report;
+        if (points.size() < 3) return report;
+        Polygon cell;
+        std::vector<Support> cell_supports, region_supports;
+        for (std::size_t k = 0; k < points.size(); ++k) {
+            cell.push_back(points[k]);
+            cell_supports.push_back({points[k], points[(k+1)%points.size()], labels[k]});
+        }
+        std::vector<PolygonWithHoles> regions;
+        for (const auto& component : components) {
+            Polygon outer = to_polygon(component.outer, region_supports);
+            std::vector<Polygon> holes;
+            for (const auto& hole : component.holes) holes.push_back(to_polygon(hole, region_supports));
+            regions.emplace_back(outer, holes.begin(), holes.end());
+        }
+        std::vector<PolygonWithHoles> result;
+        for (const auto& region : regions) CGAL::intersection(cell, region, std::back_inserter(result));
+        for (const auto& piece : result) {
+            LabelledPolygon2 output;
+            output.outer = to_loop(piece.outer_boundary(), region_supports, cell_supports, report);
+            for (const auto& hole : piece.holes()) output.holes.push_back(to_loop(hole, region_supports, cell_supports, report));
+            report.pieces.push_back(std::move(output));
+        }
+        return report;
+    } catch (const std::exception& error) {
+        RegionClip2 failed; failed.error = error.what(); return failed;
     }
 }
 

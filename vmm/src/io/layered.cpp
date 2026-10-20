@@ -37,7 +37,7 @@ bool count_fits(std::istream& in, std::size_t count) {
 
 Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
     const auto& d=mesh.data();
-    out << "VMM_LAYERS " << (d.column_levels.empty()?2:3) << '\n' << std::setprecision(17);
+    out << "VMM_LAYERS " << (!d.omitted_count.empty()?4:d.column_levels.empty()?2:3) << '\n' << std::setprecision(17);
     const auto row=[&](const auto& values) {
         out << values.size();
         for(const auto& v:values) out << ' ' << v;
@@ -62,6 +62,7 @@ Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
         for(const auto& levels:d.column_levels) row(levels);
         row(d.kfloor);
     }
+    if(!d.omitted_count.empty()) { row(d.omitted_count);row(d.merged_count);row(d.bottom_adjusted_count); }
     auto st=write_native(d.mesh,out);
     if(!st) return st;
     return out ? Status{} : fail(ErrorCode::FileOpenFailed,"writing layered mesh");
@@ -69,7 +70,7 @@ Status write_layered(const LayeredMesh& mesh,std::ostream& out) {
 Result<LayeredMesh> read_layered(std::istream& in) try {
     std::string magic; int version=0;
     if(!(in>>magic>>version) || magic!="VMM_LAYERS") return fail(ErrorCode::ParseError,"layered header");
-    if(version!=1 && version!=2 && version!=3) return fail(ErrorCode::UnsupportedVersion,"layered format");
+    if(version!=1 && version!=2 && version!=3 && version!=4) return fail(ErrorCode::UnsupportedVersion,"layered format");
     const auto row=[&]<class T>(std::vector<T>& values) {
         std::size_t n=0;
         if(!(in>>n) || !count_fits(in,n)) return false;
@@ -118,7 +119,7 @@ Result<LayeredMesh> read_layered(std::istream& in) try {
             d.site_is_centroid.push_back(static_cast<std::uint8_t>(flag));
         }
     }
-    if(version==3) {
+    if(version>=3) {
         std::size_t columns=0;
         if(!(in>>columns) || columns!=d.column_count || !count_fits(in,columns))
             return fail(ErrorCode::ParseError,"flat column count");
@@ -129,6 +130,8 @@ Result<LayeredMesh> read_layered(std::istream& in) try {
         }
         if(!row(d.kfloor)) return fail(ErrorCode::ParseError,"kfloor metadata");
     }
+    if(version==4 && (!row(d.omitted_count) || !row(d.merged_count) || !row(d.bottom_adjusted_count)))
+        return fail(ErrorCode::ParseError,"column history");
     std::string remainder;
     std::getline(in, remainder);
     if (remainder.find_first_not_of(" \t\r") != std::string::npos)

@@ -173,6 +173,9 @@ if(VMM_BUILD_VMM_TESTS)
         if(dir MATCHES "^integration/(RandomConfigurations|Anchors|AnchorA3|MultiRegion3D|Voronoi3D|StlDomain)$")
             set(labels "vmm\\;slow")  # escaped: gtest_discover_tests flattens lists
         endif()
+        if(dir MATCHES "LayeredQueriesPerf")
+            set(labels "vmm\\;perf")
+        endif()
         gtest_discover_tests(${target} TEST_PREFIX "vmm/${dir}/" DISCOVERY_TIMEOUT 60
                              PROPERTIES LABELS "${labels}")
     endforeach()

@@ -66,7 +66,11 @@ Result<ColumnOverlay> cgal_column_overlay(std::span<const ColumnEdge> edges,
         const auto last_index=[](const auto& axis,Real value) {
             return std::min(axis.size()-1,static_cast<std::size_t>(std::upper_bound(axis.begin(),axis.end(),value)-axis.begin()));
         };
-        for(std::size_t j=first_index(y,lo[1]);j<last_index(y,hi[1]);++j)
+        // Constant horizons have no internal break lines to constrain.
+        const bool constant=std::ranges::all_of(grid.elevations(),[](const auto& values) {
+            return std::ranges::all_of(values,[&](Real value){return value==values.front();});
+        });
+        for(std::size_t j=first_index(y,lo[1]);!constant && j<last_index(y,hi[1]);++j)
             for(std::size_t i=first_index(x,lo[0]);i<last_index(x,hi[0]);++i) {
                 const P a(x[i],y[j]),b(x[i+1],y[j]),c(x[i+1],y[j+1]),d(x[i],y[j+1]);
                 segments.emplace_back(a,b); segments.emplace_back(b,c);

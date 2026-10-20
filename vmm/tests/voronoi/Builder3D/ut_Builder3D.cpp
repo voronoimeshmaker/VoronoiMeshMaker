@@ -119,3 +119,27 @@ TEST(Builder3D, Errors) {
 }
 
 }  // namespace
+
+TEST(Builder3D, ThinSlabCoincidentWithBisector) {
+    for (const double shift : {0.0, 0.01}) {
+        vmm::Declaration3D declaration;
+        const auto medium = *declaration.media().add("water");
+        ASSERT_TRUE(declaration.add_region("block", medium,
+            vmm::Cuboid({0, 0, 0}, {2, 2, 2.1})));
+        ASSERT_TRUE(declaration.add_hole(vmm::Cuboid({0.3, 0.3, 1.0}, {1.7, 1.7, 1.1})));
+        const auto backend = vmm::cgal_backend_3d();
+        const auto partition = backend.build_partition(declaration);
+        ASSERT_TRUE(partition);
+        SiteSet3D sites;
+        for (int x = 0; x < 4; ++x)
+            for (int y = 0; y < 4; ++y)
+                for (int z = 0; z < 4; ++z)
+                    sites.add({0.25 + shift + 0.5*x, 0.25 + shift + 0.5*y,
+                               0.25 + shift + 0.5*z}, RegionId{0});
+        const auto result = vmm::build_mesh_3d(*partition, sites, backend);
+        ASSERT_TRUE(result) << result.error().message();
+        auto reference = vmm::invariant_reference(*partition);
+        reference.cell_measure = result->cell_volume;
+        EXPECT_TRUE(vmm::check_invariants(result->mesh, reference).passed(reference));
+    }
+}

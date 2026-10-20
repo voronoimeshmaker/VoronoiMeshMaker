@@ -25,6 +25,8 @@ namespace vmm::cgal_detail {
 [[nodiscard]] Result<Partition2D> build_partition(const Declaration2D& declaration);
 [[nodiscard]] std::vector<CellPair> delaunay_pairs(std::span<const Vec2> sites);
 [[nodiscard]] RegionClip2 clip_by_region(const LabelledLoop2& cell, std::span<const LabelledPolygon2> components);
+[[nodiscard]] RegionClip2 clip_site_by_region(const LabelledLoop2&, std::span<const Vec2>,
+    std::uint32_t, std::span<const std::uint32_t>, std::span<const LabelledPolygon2>);
 [[nodiscard]] BackendInfo info();
 
 [[nodiscard]] Result<Partition3D> build_partition_3d(const Declaration3D& declaration);

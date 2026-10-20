@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //==============================================================================
+//  C++ standard library
+//==============================================================================
+#include <numeric>
+//==============================================================================
 //  External libraries
 //==============================================================================
 #include <gtest/gtest.h>
@@ -8,6 +12,7 @@
 //==============================================================================
 #include "simple_meshes.hpp"
 #include <vmm/layered.hpp>
+#include <vmm/mesh/metrics.hpp>
 TEST(PolygonMeanSampler, IntegratesAcrossTerrainBreaks) {
     const auto base=vmm::Mesh2D::from_data(vmm::test::two_squares_data()); ASSERT_TRUE(base);
     const auto grid=vmm::HorizonGrid::make({0,.25,1,2},{0,1},{"bottom","top"},
@@ -69,5 +74,13 @@ TEST(PolygonMeanSampler, ConcaveAndHoledCellIntegrals) {
         ASSERT_TRUE(mean) << mean.error().message();
         // L: area 3, integral of y = 5/2. Hole: area 8, integral of y = 25/2.
         EXPECT_NEAR(*mean,hole?41./16.:11./6.,2e-9);
+        const auto flat=vmm::generate_layered_mesh(*base,*grid,{},vmm::FlatColumns{vmm::PolygonMeanSampler(*base)});
+        ASSERT_TRUE(flat) << flat.error().message();
+        const auto metrics=vmm::compute_metrics(flat->mesh());
+        EXPECT_NEAR(std::accumulate(metrics.cell_measure.begin(),metrics.cell_measure.end(),0.),hole?20.5:5.5,1e-7);
+        if(hole) for(auto face:flat->mesh().faces()) if(flat->data().face_level[face.index()]!=vmm::lateral_face) {
+            const auto center=metrics.face_centroid[face.index()];
+            EXPECT_FALSE(center[0]>offset+1 && center[0]<offset+2 && center[1]>15*offset+.5 && center[1]<15*offset+1.5);
+        }
     }
 }
